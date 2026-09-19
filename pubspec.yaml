@@ -1,0 +1,68 @@
+name: mandi
+description: Mandi - Multi-Shop Agricultural Business Management Platform
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.1.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.2
+
+  # Charts
+  fl_chart: ^0.68.0
+
+  # ── Supabase Backend ────────────────────────────────────────────────────
+  supabase_flutter: ^2.8.0
+
+  # Storage (local cache + prefs)
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.5
+
+  # Security
+  crypto: ^3.0.3
+
+  # PDF & Printing
+  pdf: ^3.10.8
+  printing: ^5.12.0
+
+  # Sharing & Communication
+  url_launcher: ^6.3.2
+  share_plus: ^10.1.4
+  image_picker: ^1.0.7
+
+  # Excel Export
+  excel: ^4.0.2
+
+  # Local Notifications
+  flutter_local_notifications: ^17.2.3
+
+  # Utilities
+  intl: ^0.20.2
+  http: ^1.2.0
+  connectivity_plus: ^6.0.3
+  uuid: ^4.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "0xFF0F6B3C"
+  adaptive_icon_foreground: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/logo.png
+    - assets/icons/app_icon.png
