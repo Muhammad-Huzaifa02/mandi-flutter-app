@@ -119,7 +119,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Rate per 40 KG (Maund)',
+                          Text('Rate per 40 KG (Maund)',
                               style: MText.bodySm),
                           const SizedBox(height: MSpacing.xs),
                           Text(
@@ -132,7 +132,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text('Current Stock', style: MText.bodySm),
+                          Text('Current Stock', style: MText.bodySm),
                           const SizedBox(height: MSpacing.xs),
                           Text(
                             MandiCalculator.formatWeightDisplay(

@@ -83,7 +83,6 @@ extension PaymentMethodX on PaymentMethod {
       case PaymentMethod.other:
         return 'other';
       case PaymentMethod.cash:
-      default:
         return 'cash';
     }
   }
@@ -99,7 +98,6 @@ extension PaymentMethodX on PaymentMethod {
       case PaymentMethod.other:
         return 'Other';
       case PaymentMethod.cash:
-      default:
         return 'Cash';
     }
   }

@@ -57,6 +57,8 @@ class MText {
       fontFamily: _font, fontSize: 20, fontWeight: FontWeight.w600);
   static const bodyMd = TextStyle(
       fontFamily: _font, fontSize: 15, fontWeight: FontWeight.w400);
+  static const bodySm = TextStyle(
+      fontFamily: _font, fontSize: 13, fontWeight: FontWeight.w400);
   static const labelMd = TextStyle(
       fontFamily: _font, fontSize: 13, fontWeight: FontWeight.w600);
   static const labelSm = TextStyle(
