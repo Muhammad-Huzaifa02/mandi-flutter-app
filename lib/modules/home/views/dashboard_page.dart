@@ -4,6 +4,8 @@ import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/employees/views/employee_list_page.dart';
+import 'package:mandi/modules/customers/views/customer_list_page.dart';
+import 'package:mandi/modules/suppliers/views/supplier_list_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -46,11 +48,29 @@ class DashboardPage extends StatelessWidget {
               children: [
                 if (shopCtx.hasPermission('manage_employees'))
                   _ManageTile(
-                    icon: Icons.people_alt_outlined,
+                    icon: Icons.badge_outlined,
                     label: 'Employees',
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const EmployeeListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('manage_customers'))
+                  _ManageTile(
+                    icon: Icons.people_alt_outlined,
+                    label: 'Customers',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CustomerListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('manage_suppliers'))
+                  _ManageTile(
+                    icon: Icons.local_shipping_outlined,
+                    label: 'Suppliers',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SupplierListPage()),
                     ),
                   ),
               ],

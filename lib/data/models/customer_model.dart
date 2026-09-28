@@ -2,95 +2,78 @@
 class Customer {
   final String id;
   final String shopId;
+  final String? userId;
   final String name;
   final String phone;
-  final String whatsapp;
+  final String email;
   final String address;
   final String city;
-  final String? cnic;
-  final String customerType; // e.g. "Retail", "Wholesale"
   final double openingBalance;
-  final double totalPurchased;
-  final double totalPaid;
-  final double totalPending;
+  final double runningBalance;
   final DateTime? createdAt;
 
   const Customer({
     required this.id,
     required this.shopId,
+    this.userId,
     required this.name,
     this.phone = '',
-    this.whatsapp = '',
+    this.email = '',
     this.address = '',
     this.city = '',
-    this.cnic,
-    this.customerType = 'Retail',
     this.openingBalance = 0,
-    this.totalPurchased = 0,
-    this.totalPaid = 0,
-    this.totalPending = 0,
+    this.runningBalance = 0,
     this.createdAt,
   });
 
   factory Customer.fromMap(String id, Map<String, dynamic> d) => Customer(
         id: id,
-        shopId: d['shopId'] as String? ?? '',
+        shopId: d['shop_id'] as String? ?? '',
+        userId: d['user_id'] as String?,
         name: d['name'] as String? ?? '',
         phone: d['phone'] as String? ?? '',
-        whatsapp: d['whatsapp'] as String? ?? '',
+        email: d['email'] as String? ?? '',
         address: d['address'] as String? ?? '',
         city: d['city'] as String? ?? '',
-        cnic: d['cnic'] as String?,
-        customerType: d['customerType'] as String? ?? 'Retail',
-        openingBalance: (d['openingBalance'] as num?)?.toDouble() ?? 0,
-        totalPurchased: (d['totalPurchased'] as num?)?.toDouble() ?? 0,
-        totalPaid: (d['totalPaid'] as num?)?.toDouble() ?? 0,
-        totalPending: (d['totalPending'] as num?)?.toDouble() ?? 0,
-        createdAt: (d['createdAt'] as dynamic)?.toDate(),
+        openingBalance: (d['opening_balance'] as num?)?.toDouble() ?? 0,
+        runningBalance: (d['running_balance'] as num?)?.toDouble() ?? 0,
+        createdAt: d['created_at'] != null
+            ? DateTime.tryParse(d['created_at'].toString())
+            : null,
       );
 
   Map<String, dynamic> toMap() => {
-        'shopId': shopId,
+        'shop_id': shopId,
+        'user_id': userId,
         'name': name,
         'phone': phone,
-        'whatsapp': whatsapp,
+        'email': email,
         'address': address,
         'city': city,
-        'cnic': cnic,
-        'customerType': customerType,
-        'openingBalance': openingBalance,
-        'totalPurchased': totalPurchased,
-        'totalPaid': totalPaid,
-        'totalPending': totalPending,
+        'opening_balance': openingBalance,
+        'running_balance': runningBalance,
       };
 
   Customer copyWith({
     String? name,
     String? phone,
-    String? whatsapp,
+    String? email,
     String? address,
     String? city,
-    String? cnic,
-    String? customerType,
     double? openingBalance,
-    double? totalPurchased,
-    double? totalPaid,
-    double? totalPending,
+    double? runningBalance,
   }) =>
       Customer(
         id: id,
         shopId: shopId,
+        userId: userId,
         name: name ?? this.name,
         phone: phone ?? this.phone,
-        whatsapp: whatsapp ?? this.whatsapp,
+        email: email ?? this.email,
         address: address ?? this.address,
         city: city ?? this.city,
-        cnic: cnic ?? this.cnic,
-        customerType: customerType ?? this.customerType,
         openingBalance: openingBalance ?? this.openingBalance,
-        totalPurchased: totalPurchased ?? this.totalPurchased,
-        totalPaid: totalPaid ?? this.totalPaid,
-        totalPending: totalPending ?? this.totalPending,
+        runningBalance: runningBalance ?? this.runningBalance,
         createdAt: createdAt,
       );
 }

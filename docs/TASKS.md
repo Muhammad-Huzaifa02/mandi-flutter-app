@@ -35,12 +35,11 @@
 
 ## In progress / next up
 
-- [ ] **Customer Flutter screens** — list/add(invite)/detail, mirroring
-      `modules/employees/`. Backend (`create-customer` Edge Function,
-      RLS) is ready; no UI yet.
-- [ ] **Supplier Flutter screens** — same shape, plus the dedicated
-      Supplier Dashboard (purchase orders, deliveries, ledger,
-      outstanding balance) sketched in the HTML prototype.
+- [x] **Customer Flutter screens** — list/add(invite)/detail, mirroring
+      `modules/employees/`.
+- [x] **Supplier Flutter screens** — list/add(invite)/detail, mirroring
+      `modules/employees/`.
+- [x] **snake_case pass** on `Customer` & `Supplier` models per RULES.md #8.
 - [ ] **Products/Inventory screens** on `SupabaseService.productsStream`
       — schema and RLS exist, no UI.
 - [ ] **Invoice creation screen** using the

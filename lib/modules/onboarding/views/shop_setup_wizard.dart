@@ -227,8 +227,10 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
 
       if (!mounted) return;
       Navigator.of(context).popUntil((r) => r.isFirst);
-    } catch (e) {
-      setState(() => _error = 'Could not create your shop. Please try again.');
+    } catch (e, stack) {
+      debugPrint('Shop setup error: $e\n$stack');
+      final msg = e is PostgrestException ? e.message : e.toString();
+      setState(() => _error = 'Could not create shop: $msg');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
