@@ -383,7 +383,7 @@ create or replace function public.create_shop_with_owner(
 )
 returns uuid
 language plpgsql
-security invoker
+security definer
 set search_path = public
 as $$
 declare
@@ -445,7 +445,7 @@ create or replace function public.create_invoice_with_stock_deduction(
 )
 returns uuid
 language plpgsql
-security invoker
+security definer
 set search_path = public
 as $$
 declare
