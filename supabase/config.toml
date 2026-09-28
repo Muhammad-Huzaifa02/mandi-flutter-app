@@ -7,7 +7,7 @@
 # It does NOT contain any secret — project_id is just which Supabase
 # project this local folder is linked to, set by `supabase link`, not
 # typed in by hand.
-project_id = "mandi"
+project_id = "kznubtwfzvqvynqpbyve"
 
 [api]
 enabled = true

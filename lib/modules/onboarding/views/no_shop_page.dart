@@ -40,8 +40,10 @@ class NoShopPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => ShopSetupWizard(
-                        ownerName: auth.user?.displayName ?? '',
-                        ownerPhone: '',
+                        ownerName: (auth.user?.userMetadata?['full_name'] as String?) ??
+                            auth.user?.email?.split('@').first ??
+                            '',
+                        ownerPhone: auth.user?.phone ?? '',
                         ownerEmail: auth.user?.email ?? '',
                       ),
                     ),

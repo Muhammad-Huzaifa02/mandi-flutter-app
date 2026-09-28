@@ -34,10 +34,10 @@ class WelcomePage extends StatelessWidget {
                 style: MText.bodyMd.copyWith(color: Colors.white70),
               ),
               const SizedBox(height: MSpacing.lg),
-              Wrap(
+              const Wrap(
                 spacing: MSpacing.sm,
                 alignment: WrapAlignment.center,
-                children: const [
+                children: [
                   _RoleChip('Shop Owners'),
                   _RoleChip('Staff'),
                   _RoleChip('Customers'),

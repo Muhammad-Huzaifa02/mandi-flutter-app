@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/product_model.dart';
 import 'package:mandi/data/models/role_model.dart';
 import 'package:mandi/data/models/shop_member_model.dart';
 import 'package:mandi/data/models/shop_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
-import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
 const _businessTypeOptions = [
@@ -115,9 +115,22 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
   }
 
   Future<void> _finish() async {
-    final uid = context.read<AuthProvider>().uid;
+    final shopCtx = context.read<ShopContextProvider>();
+
+    // Read the session directly from Supabase rather than trusting a
+    // possibly-stale AuthProvider snapshot, and try one silent refresh
+    // before concluding there's genuinely no session.
+    var uid = Supabase.instance.client.auth.currentSession?.user.id;
     if (uid == null) {
-      setState(() => _error = 'Session expired. Please log in again.');
+      try {
+        final refreshed = await Supabase.instance.client.auth.refreshSession();
+        uid = refreshed.session?.user.id;
+      } catch (_) {
+        // fall through — still null, handled below
+      }
+    }
+    if (uid == null) {
+      setState(() => _error = 'session_expired');
       return;
     }
 
@@ -203,13 +216,13 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
       }
 
       if (shopModel != null) {
-        context.read<ShopContextProvider>().adoptNewShop(
-              shopModel,
-              ownerMember,
-              ownerRole,
-            );
+        shopCtx.adoptNewShop(
+          shopModel,
+          ownerMember,
+          ownerRole,
+        );
       } else {
-        await context.read<ShopContextProvider>().loadForUser(uid);
+        await shopCtx.loadForUser(uid);
       }
 
       if (!mounted) return;
@@ -263,7 +276,21 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
                 ],
               ),
             ),
-            if (_error != null)
+            if (_error == 'session_expired') ...[
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: MSpacing.lg),
+                child: Text(
+                  'Your session expired before this could be saved.',
+                  style: TextStyle(color: MColors.danger),
+                ),
+              ),
+              const SizedBox(height: MSpacing.sm),
+              FilledButton(
+                onPressed: () =>
+                    Navigator.of(context).popUntil((r) => r.isFirst),
+                child: const Text('Log In Again'),
+              ),
+            ] else if (_error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: MSpacing.lg),
                 child: Text(_error!, style: const TextStyle(color: MColors.danger)),

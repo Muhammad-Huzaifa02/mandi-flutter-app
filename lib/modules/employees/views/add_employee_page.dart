@@ -167,7 +167,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               ),
               const SizedBox(height: MSpacing.md),
               DropdownButtonFormField<String>(
-                value: _roleId,
+                initialValue: _roleId,
                 decoration: const InputDecoration(labelText: 'Role'),
                 items: roles
                     .map((r) =>

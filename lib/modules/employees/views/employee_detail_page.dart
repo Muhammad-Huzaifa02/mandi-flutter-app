@@ -182,7 +182,7 @@ class _EmployeeDetailPageState extends State<EmployeeDetailPage> {
                 style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
             const SizedBox(height: MSpacing.md),
             DropdownButtonFormField<String>(
-              value: _roleId,
+              initialValue: _roleId,
               decoration: const InputDecoration(labelText: 'Role'),
               // Owner role can't be reassigned to someone else here — a
               // shop needs exactly the owner it was created with.
@@ -240,7 +240,7 @@ class _EmployeeDetailPageState extends State<EmployeeDetailPage> {
               ],
             ],
             const SizedBox(height: MSpacing.xl),
-            Text('Recent Activity', style: MText.titleLg),
+            const Text('Recent Activity', style: MText.titleLg),
             const SizedBox(height: MSpacing.sm),
             _ActivityLog(shopId: widget.member.shopId, uid: widget.member.uid),
           ],

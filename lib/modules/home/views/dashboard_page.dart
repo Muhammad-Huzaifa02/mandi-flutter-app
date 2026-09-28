@@ -11,6 +11,7 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shopCtx = context.watch<ShopContextProvider>();
+    final auth = context.read<AuthProvider>();
     final shop = shopCtx.currentShop;
 
     return Scaffold(
@@ -19,9 +20,9 @@ class DashboardPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await context.read<AuthProvider>().signOut();
-              context.read<ShopContextProvider>().clear();
+            onPressed: () {
+              auth.signOut();
+              shopCtx.clear();
             },
           ),
         ],
@@ -37,7 +38,7 @@ class DashboardPage extends StatelessWidget {
             Text('Role: ${shopCtx.currentRole?.name ?? '—'}',
                 style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
             const SizedBox(height: MSpacing.xl),
-            Text('Manage', style: MText.titleLg),
+            const Text('Manage', style: MText.titleLg),
             const SizedBox(height: MSpacing.sm),
             Wrap(
               spacing: MSpacing.sm,

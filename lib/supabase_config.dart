@@ -15,11 +15,11 @@
 class SupabaseConfig {
   static const String url = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://YOUR_PROJECT_REF.supabase.co',
+    defaultValue: 'https://kznubtwfzvqvynqpbyve.supabase.co',
   );
 
   static const String anonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'YOUR_SUPABASE_ANON_KEY',
+    defaultValue: 'sb_publishable_OA0IRPRnRXw8DRtMK4TX0w_53UlABob',
   );
 }

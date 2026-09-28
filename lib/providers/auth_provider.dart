@@ -36,8 +36,22 @@ class AuthProvider extends ChangeNotifier {
   Future<AuthResponse> signInWithPhone(String e164Phone, String password) =>
       _client.auth.signInWithPassword(phone: e164Phone, password: password);
 
-  Future<AuthResponse> registerWithEmail(String email, String password) =>
-      _client.auth.signUp(email: email, password: password);
+  Future<AuthResponse> registerWithEmail(
+    String email,
+    String password, {
+    String? fullName,
+    Map<String, dynamic>? data,
+  }) {
+    final meta = <String, dynamic>{
+      if (fullName != null && fullName.isNotEmpty) 'full_name': fullName,
+      if (data != null) ...data,
+    };
+    return _client.auth.signUp(
+      email: email,
+      password: password,
+      data: meta.isNotEmpty ? meta : null,
+    );
+  }
 
   /// Email-based recovery — sends a reset link. For phone-based recovery,
   /// use sendPhoneOtp/verifyPhoneOtp below (Supabase phone auth uses OTP,

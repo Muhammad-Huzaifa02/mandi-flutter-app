@@ -543,8 +543,14 @@ alter table public.notifications         enable row level security;
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
 -- lists with names).
+-- profiles: read your own; owners can read profiles of people they've
+-- invited into one of their shops (needed to show staff/customer/supplier
+-- lists with names).
+drop policy if exists "profiles: read own" on public.profiles;
 create policy "profiles: read own" on public.profiles
   for select using (id = auth.uid());
+
+drop policy if exists "profiles: manage_employees can read shop-mates" on public.profiles;
 create policy "profiles: manage_employees can read shop-mates" on public.profiles
   for select using (
     exists (
@@ -555,115 +561,172 @@ create policy "profiles: manage_employees can read shop-mates" on public.profile
         and m2.user_id = profiles.id and m2.status = 'active'
     )
   );
+
+drop policy if exists "profiles: update own" on public.profiles;
 create policy "profiles: update own" on public.profiles
   for update using (id = auth.uid());
 
 -- shops: any active member can read their shop; only the owner updates it.
+drop policy if exists "shops: members can read" on public.shops;
 create policy "shops: members can read" on public.shops
   for select using (public.is_shop_member(id));
+
+drop policy if exists "shops: owner can update" on public.shops;
 create policy "shops: owner can update" on public.shops
   for update using (owner_id = auth.uid());
+
+drop policy if exists "shops: authenticated users can create" on public.shops;
 create policy "shops: authenticated users can create" on public.shops
   for insert with check (owner_id = auth.uid());
 
 -- roles: any active member can read; only manage_roles permission can write.
+drop policy if exists "roles: members can read" on public.roles;
 create policy "roles: members can read" on public.roles
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "roles: manage_roles can write" on public.roles;
 create policy "roles: manage_roles can write" on public.roles
   for all using (public.has_permission(shop_id, 'manage_roles'))
   with check (public.has_permission(shop_id, 'manage_roles'));
 
 -- shop_memberships: you can read your own memberships (any shop) and every
 -- membership in a shop you belong to (to show the staff/customer list).
+drop policy if exists "memberships: read own" on public.shop_memberships;
 create policy "memberships: read own" on public.shop_memberships
   for select using (user_id = auth.uid());
+
+drop policy if exists "memberships: manage_employees can read the roster" on public.shop_memberships;
 create policy "memberships: manage_employees can read the roster" on public.shop_memberships
   for select using (public.has_permission(shop_id, 'manage_employees'));
+
+drop policy if exists "memberships: manage_employees can write" on public.shop_memberships;
 create policy "memberships: manage_employees can write" on public.shop_memberships
   for update using (public.has_permission(shop_id, 'manage_employees'))
   with check (public.has_permission(shop_id, 'manage_employees'));
+
 -- Inserts for staff/customer/supplier go through Edge Functions using the
 -- service role (bypasses RLS by design — see supabase/functions/). The one
 -- client-side insert allowed here is the OWNER's own membership, created
 -- inside create_shop_with_owner() above (security invoker, so this policy
 -- still applies — it's allowed because user_id = auth.uid() there).
+drop policy if exists "memberships: self-insert only" on public.shop_memberships;
 create policy "memberships: self-insert only" on public.shop_memberships
   for insert with check (user_id = auth.uid());
 
 -- invitations: owner/managers of the shop can read; writes are Edge-Function-only.
+drop policy if exists "invitations: shop managers can read" on public.invitations;
 create policy "invitations: shop managers can read" on public.invitations
   for select using (public.has_permission(shop_id, 'manage_employees'));
 
 -- audit_logs: append-only, readable by any active member of the shop.
+drop policy if exists "audit_logs: members can read" on public.audit_logs;
 create policy "audit_logs: members can read" on public.audit_logs
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "audit_logs: members can insert" on public.audit_logs;
 create policy "audit_logs: members can insert" on public.audit_logs
   for insert with check (public.is_shop_member(shop_id));
 
 -- Generic pattern for every remaining shop-owned business table: readable
 -- by any active member, writable only with the matching permission.
+drop policy if exists "products: members can read" on public.products;
 create policy "products: members can read" on public.products
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "products: manage_products can write" on public.products;
 create policy "products: manage_products can write" on public.products
   for all using (public.has_permission(shop_id, 'manage_products'))
   with check (public.has_permission(shop_id, 'manage_products'));
 
+drop policy if exists "customers: members can read" on public.customers;
 create policy "customers: members can read" on public.customers
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "customers: manage_customers can write" on public.customers;
 create policy "customers: manage_customers can write" on public.customers
   for all using (public.has_permission(shop_id, 'manage_customers'))
   with check (public.has_permission(shop_id, 'manage_customers'));
+
+drop policy if exists "customers: self read" on public.customers;
 create policy "customers: self read" on public.customers
   for select using (user_id = auth.uid());
 
+drop policy if exists "suppliers: members can read" on public.suppliers;
 create policy "suppliers: members can read" on public.suppliers
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "suppliers: manage_suppliers can write" on public.suppliers;
 create policy "suppliers: manage_suppliers can write" on public.suppliers
   for all using (public.has_permission(shop_id, 'manage_suppliers'))
   with check (public.has_permission(shop_id, 'manage_suppliers'));
+
+drop policy if exists "suppliers: self read" on public.suppliers;
 create policy "suppliers: self read" on public.suppliers
   for select using (user_id = auth.uid());
 
+drop policy if exists "invoices: members can read" on public.invoices;
 create policy "invoices: members can read" on public.invoices
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "invoices: create_invoice can write" on public.invoices;
 create policy "invoices: create_invoice can write" on public.invoices
   for all using (public.has_permission(shop_id, 'create_invoice'))
   with check (public.has_permission(shop_id, 'create_invoice'));
 
+drop policy if exists "invoice_items: members can read" on public.invoice_items;
 create policy "invoice_items: members can read" on public.invoice_items
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "invoice_items: create_invoice can write" on public.invoice_items;
 create policy "invoice_items: create_invoice can write" on public.invoice_items
   for all using (public.has_permission(shop_id, 'create_invoice'))
   with check (public.has_permission(shop_id, 'create_invoice'));
 
+drop policy if exists "purchase_orders: members can read" on public.purchase_orders;
 create policy "purchase_orders: members can read" on public.purchase_orders
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "purchase_orders: create_purchase can write" on public.purchase_orders;
 create policy "purchase_orders: create_purchase can write" on public.purchase_orders
   for all using (public.has_permission(shop_id, 'create_purchase'))
   with check (public.has_permission(shop_id, 'create_purchase'));
 
+drop policy if exists "inventory_txn: members can read" on public.inventory_transactions;
 create policy "inventory_txn: members can read" on public.inventory_transactions
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "inventory_txn: manage_inventory can write" on public.inventory_transactions;
 create policy "inventory_txn: manage_inventory can write" on public.inventory_transactions
   for all using (public.has_permission(shop_id, 'manage_inventory'))
   with check (public.has_permission(shop_id, 'manage_inventory'));
 
+drop policy if exists "expenses: members can read" on public.expenses;
 create policy "expenses: members can read" on public.expenses
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "expenses: manage_expenses can write" on public.expenses;
 create policy "expenses: manage_expenses can write" on public.expenses
   for all using (public.has_permission(shop_id, 'manage_expenses'))
   with check (public.has_permission(shop_id, 'manage_expenses'));
 
+drop policy if exists "payments: members can read" on public.payments;
 create policy "payments: members can read" on public.payments
   for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "payments: create_receipt can write" on public.payments;
 create policy "payments: create_receipt can write" on public.payments
   for all using (public.has_permission(shop_id, 'create_receipt'))
   with check (public.has_permission(shop_id, 'create_receipt'));
 
+drop policy if exists "notifications: recipient can read" on public.notifications;
 create policy "notifications: recipient can read" on public.notifications
   for select using (user_id = auth.uid());
+
+drop policy if exists "notifications: recipient can mark read" on public.notifications;
 create policy "notifications: recipient can mark read" on public.notifications
   for update using (user_id = auth.uid());
+
+drop policy if exists "notifications: members can insert for their shop" on public.notifications;
 create policy "notifications: members can insert for their shop" on public.notifications
   for insert with check (public.is_shop_member(shop_id));
 
@@ -682,44 +745,66 @@ on conflict (id) do nothing;
 -- {user_id}/{filename} instead, since an avatar isn't shop-owned).
 -- storage.foldername(name)[1] is the first path segment.
 
+drop policy if exists "shop-assets: shop members can read" on storage.objects;
 create policy "shop-assets: shop members can read"
   on storage.objects for select
   using (bucket_id = 'shop-assets' and public.is_shop_member((storage.foldername(name))[1]::uuid));
+
+drop policy if exists "shop-assets: manage_settings can write" on storage.objects;
 create policy "shop-assets: manage_settings can write"
   on storage.objects for insert
   with check (bucket_id = 'shop-assets' and public.has_permission((storage.foldername(name))[1]::uuid, 'manage_settings'));
+
+drop policy if exists "shop-assets: manage_settings can update" on storage.objects;
 create policy "shop-assets: manage_settings can update"
   on storage.objects for update
   using (bucket_id = 'shop-assets' and public.has_permission((storage.foldername(name))[1]::uuid, 'manage_settings'));
+
+drop policy if exists "shop-assets: manage_settings can delete" on storage.objects;
 create policy "shop-assets: manage_settings can delete"
   on storage.objects for delete
   using (bucket_id = 'shop-assets' and public.has_permission((storage.foldername(name))[1]::uuid, 'manage_settings'));
 
+drop policy if exists "product-images: shop members can read" on storage.objects;
 create policy "product-images: shop members can read"
   on storage.objects for select
   using (bucket_id = 'product-images' and public.is_shop_member((storage.foldername(name))[1]::uuid));
+
+drop policy if exists "product-images: manage_products can write" on storage.objects;
 create policy "product-images: manage_products can write"
   on storage.objects for insert
   with check (bucket_id = 'product-images' and public.has_permission((storage.foldername(name))[1]::uuid, 'manage_products'));
+
+drop policy if exists "product-images: manage_products can update" on storage.objects;
 create policy "product-images: manage_products can update"
   on storage.objects for update
   using (bucket_id = 'product-images' and public.has_permission((storage.foldername(name))[1]::uuid, 'manage_products'));
+
+drop policy if exists "product-images: manage_products can delete" on storage.objects;
 create policy "product-images: manage_products can delete"
   on storage.objects for delete
   using (bucket_id = 'product-images' and public.has_permission((storage.foldername(name))[1]::uuid, 'manage_products'));
 
+drop policy if exists "avatars: anyone can read" on storage.objects;
 create policy "avatars: anyone can read"
   on storage.objects for select using (bucket_id = 'avatars');
+
+drop policy if exists "avatars: owner can write their own" on storage.objects;
 create policy "avatars: owner can write their own"
   on storage.objects for insert
   with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "avatars: owner can update their own" on storage.objects;
 create policy "avatars: owner can update their own"
   on storage.objects for update
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 
+drop policy if exists "documents: shop members can read" on storage.objects;
 create policy "documents: shop members can read"
   on storage.objects for select
   using (bucket_id = 'documents' and public.is_shop_member((storage.foldername(name))[1]::uuid));
+
+drop policy if exists "documents: shop members can upload" on storage.objects;
 create policy "documents: shop members can upload"
   on storage.objects for insert
   with check (bucket_id = 'documents' and public.is_shop_member((storage.foldername(name))[1]::uuid));

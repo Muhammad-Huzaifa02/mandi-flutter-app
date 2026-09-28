@@ -102,7 +102,7 @@ class _EmployeeTile extends StatelessWidget {
           MaterialPageRoute(builder: (_) => EmployeeDetailPage(member: member)),
         ),
         leading: CircleAvatar(
-          backgroundColor: MColors.primary.withOpacity(0.12),
+          backgroundColor: MColors.primary.withValues(alpha: 0.12),
           backgroundImage:
               member.photoUrl != null ? NetworkImage(member.photoUrl!) : null,
           child: member.photoUrl == null
@@ -118,7 +118,7 @@ class _EmployeeTile extends StatelessWidget {
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: (active ? MColors.success : MColors.danger).withOpacity(0.12),
+            color: (active ? MColors.success : MColors.danger).withValues(alpha: 0.12),
             borderRadius: MRadius.full,
           ),
           child: Text(
