@@ -28,7 +28,10 @@ class _LoginPageState extends State<LoginPage> {
   bool get _looksLikeEmail => _identifier.text.contains('@');
 
   void _onIdentifierChanged(String v) {
-    if (_looksLikeEmail) return; // don't reformat while typing an email
+    // If the input contains letters, '@', or is empty, leave it untouched
+    // so users can type email addresses freely without any characters being erased.
+    if (v.isEmpty || v.contains('@') || !PkPhone.looksLikePhone(v)) return;
+
     final formatted = PkPhone.formatLocalFull(v);
     if (formatted != v) {
       _identifier.value = TextEditingValue(
