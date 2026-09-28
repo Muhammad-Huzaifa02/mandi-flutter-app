@@ -1,28 +1,18 @@
 /// A product belonging to exactly one shop.
-///
-/// `shopId` is set once at creation and never changes. Every query for
-/// products MUST filter by shopId — see SupabaseService.productsStream.
 class Product {
   final String id;
   final String shopId;
   final String name;
   final String category;
-  final String? imageUrl;
   final String sku;
   final String description;
-
-  /// The pricing/weight unit this product is bought and sold in,
-  /// e.g. "40kg", "50kg", "kg", "mann", "bag". Free text so shops can
-  /// define their own custom units (spec section 4/10).
   final String unit;
   final double weightPerUnitKg;
-
   final double purchasePrice;
-  final double sellingPrice;
+  final double sellingPrice; // Price per 40kg (Maund / Mann)
   final double minStockLevel;
   final double currentStock;
-
-  final String? supplierId;
+  final String? imageUrl;
   final bool isActive;
   final DateTime? createdAt;
 
@@ -30,17 +20,16 @@ class Product {
     required this.id,
     required this.shopId,
     required this.name,
-    this.category = 'Other Grains',
-    this.imageUrl,
+    this.category = 'Grains',
     this.sku = '',
     this.description = '',
-    this.unit = '40kg',
+    this.unit = '40 KG (Maund)',
     this.weightPerUnitKg = 40,
     this.purchasePrice = 0,
     this.sellingPrice = 0,
     this.minStockLevel = 0,
     this.currentStock = 0,
-    this.supplierId,
+    this.imageUrl,
     this.isActive = true,
     this.createdAt,
   });
@@ -49,44 +38,43 @@ class Product {
 
   factory Product.fromMap(String id, Map<String, dynamic> d) => Product(
         id: id,
-        shopId: d['shopId'] as String? ?? '',
+        shopId: d['shop_id'] as String? ?? '',
         name: d['name'] as String? ?? '',
-        category: d['category'] as String? ?? 'Other Grains',
-        imageUrl: d['imageUrl'] as String?,
+        category: d['category'] as String? ?? 'Grains',
         sku: d['sku'] as String? ?? '',
         description: d['description'] as String? ?? '',
-        unit: d['unit'] as String? ?? '40kg',
-        weightPerUnitKg: (d['weightPerUnitKg'] as num?)?.toDouble() ?? 40,
-        purchasePrice: (d['purchasePrice'] as num?)?.toDouble() ?? 0,
-        sellingPrice: (d['sellingPrice'] as num?)?.toDouble() ?? 0,
-        minStockLevel: (d['minStockLevel'] as num?)?.toDouble() ?? 0,
-        currentStock: (d['currentStock'] as num?)?.toDouble() ?? 0,
-        supplierId: d['supplierId'] as String?,
-        isActive: d['isActive'] as bool? ?? true,
-        createdAt: (d['createdAt'] as dynamic)?.toDate(),
+        unit: d['unit'] as String? ?? '40 KG (Maund)',
+        weightPerUnitKg: (d['weight_per_unit_kg'] as num?)?.toDouble() ?? 40,
+        purchasePrice: (d['purchase_price'] as num?)?.toDouble() ?? 0,
+        sellingPrice: (d['selling_price'] as num?)?.toDouble() ?? 0,
+        minStockLevel: (d['min_stock_level'] as num?)?.toDouble() ?? 0,
+        currentStock: (d['current_stock'] as num?)?.toDouble() ?? 0,
+        imageUrl: d['image_url'] as String?,
+        isActive: d['is_active'] as bool? ?? true,
+        createdAt: d['created_at'] != null
+            ? DateTime.tryParse(d['created_at'].toString())
+            : null,
       );
 
   Map<String, dynamic> toMap() => {
-        'shopId': shopId,
+        'shop_id': shopId,
         'name': name,
         'category': category,
-        'imageUrl': imageUrl,
         'sku': sku,
         'description': description,
         'unit': unit,
-        'weightPerUnitKg': weightPerUnitKg,
-        'purchasePrice': purchasePrice,
-        'sellingPrice': sellingPrice,
-        'minStockLevel': minStockLevel,
-        'currentStock': currentStock,
-        'supplierId': supplierId,
-        'isActive': isActive,
+        'weight_per_unit_kg': weightPerUnitKg,
+        'purchase_price': purchasePrice,
+        'selling_price': sellingPrice,
+        'min_stock_level': minStockLevel,
+        'current_stock': currentStock,
+        'image_url': imageUrl,
+        'is_active': isActive,
       };
 
   Product copyWith({
     String? name,
     String? category,
-    String? imageUrl,
     String? sku,
     String? description,
     String? unit,
@@ -95,7 +83,7 @@ class Product {
     double? sellingPrice,
     double? minStockLevel,
     double? currentStock,
-    String? supplierId,
+    String? imageUrl,
     bool? isActive,
   }) =>
       Product(
@@ -103,7 +91,6 @@ class Product {
         shopId: shopId,
         name: name ?? this.name,
         category: category ?? this.category,
-        imageUrl: imageUrl ?? this.imageUrl,
         sku: sku ?? this.sku,
         description: description ?? this.description,
         unit: unit ?? this.unit,
@@ -112,29 +99,28 @@ class Product {
         sellingPrice: sellingPrice ?? this.sellingPrice,
         minStockLevel: minStockLevel ?? this.minStockLevel,
         currentStock: currentStock ?? this.currentStock,
-        supplierId: supplierId ?? this.supplierId,
+        imageUrl: imageUrl ?? this.imageUrl,
         isActive: isActive ?? this.isActive,
         createdAt: createdAt,
       );
 
-  /// Common Pakistani mandi products offered as *default suggestions* only
-  /// — shops can add any custom product on top of these (spec section 8).
   static const List<String> defaultSuggestions = [
-    'Rice 1121',
+    'Rice 1121 Kainat',
     'Super Basmati Rice',
     'IRRI-9 Rice',
-    'Wheat',
-    'Barseem',
-    'Monji',
-    'Jui',
-    'Corn',
-    'Maize',
+    'Wheat (Gandum)',
+    'Maize (Makai)',
+    'Barley (Jau)',
+    'Canola',
+    'Mustard (Sarson)',
+    'Cotton (Kapas)',
     'Other Grains',
   ];
 
-  /// Common weight/quantity units offered as defaults — shops can add a
-  /// custom unit too (spec section 4).
   static const List<String> defaultUnits = [
-    'KG', '40 KG', '50 KG', '60 KG', '100 KG', 'Bag', 'Mann', 'Ton',
+    '40 KG (Maund)',
+    '50 KG Bag',
+    '100 KG Bag',
+    'KG',
   ];
 }

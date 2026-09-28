@@ -6,6 +6,7 @@ import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/employees/views/employee_list_page.dart';
 import 'package:mandi/modules/customers/views/customer_list_page.dart';
 import 'package:mandi/modules/suppliers/views/supplier_list_page.dart';
+import 'package:mandi/modules/products/views/product_list_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -71,6 +72,16 @@ class DashboardPage extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const SupplierListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('manage_products') ||
+                    shopCtx.hasPermission('manage_inventory'))
+                  _ManageTile(
+                    icon: Icons.grass_outlined,
+                    label: 'Products',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProductListPage()),
                     ),
                   ),
               ],

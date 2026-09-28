@@ -40,8 +40,9 @@
 - [x] **Supplier Flutter screens** — list/add(invite)/detail, mirroring
       `modules/employees/`.
 - [x] **snake_case pass** on `Customer` & `Supplier` models per RULES.md #8.
-- [ ] **Products/Inventory screens** on `SupabaseService.productsStream`
-      — schema and RLS exist, no UI.
+- [x] **Products/Inventory screens** on `SupabaseService.productsStream`
+      + Mandi 40kg (Maund/Mann) pricing math calculator & low-stock alerts.
+- [x] **snake_case pass** on `Product`, `Customer` & `Supplier` models per RULES.md #8.
 - [ ] **Invoice creation screen** using the
       `create_invoice_with_stock_deduction` RPC (already atomic,
       already row-locks stock) — no UI yet.
