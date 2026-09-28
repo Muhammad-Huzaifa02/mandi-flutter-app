@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onIdentifierChanged(String v) {
     if (_looksLikeEmail) return; // don't reformat while typing an email
-    final formatted = PkPhone.formatAsTyped(v);
+    final formatted = PkPhone.formatLocalFull(v);
     if (formatted != v) {
       _identifier.value = TextEditingValue(
         text: formatted,
@@ -113,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                   onChanged: _onIdentifierChanged,
                   decoration: const InputDecoration(
                     labelText: 'Phone Number or Email',
-                    hintText: '3XX XXXXXXX or you@example.com',
+                    hintText: '0300 1234567 or you@example.com',
                     prefixText: '',
                   ),
                   validator: (v) {
