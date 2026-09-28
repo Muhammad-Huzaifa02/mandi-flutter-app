@@ -43,20 +43,9 @@
 - [x] **Products/Inventory screens** on `SupabaseService.productsStream`
       + Mandi 40kg (Maund/Mann) pricing math calculator & low-stock alerts.
 - [x] **snake_case pass** on `Product`, `Customer` & `Supplier` models per RULES.md #8.
-- [ ] **Invoice creation screen** using the
-      `create_invoice_with_stock_deduction` RPC (already atomic,
-      already row-locks stock) — no UI yet.
-- [ ] **Phone-based invite path** for staff/customer/supplier — Edge
-      Functions currently only support `inviteUserByEmail`; a real
-      Pakistani deployment will need phone-first invites too
-      (`admin.createUser({phone, phone_confirm:true})` + a custom SMS
-      step, since Supabase has no built-in phone-invite equivalent).
-- [ ] **Roles editor UI** — permissions are fully modeled
-      (`roles.permissions`, `shop_memberships.custom_permissions`); no
-      screen to customize them per shop yet.
-- [ ] **snake_case pass** on `Product`/`Customer`/`Supplier`/`Invoice`
-      models (still Firebase-era camelCase `fromMap`/`toMap`) — do this
-      *before* wiring up their screens, per RULES.md #8.
+- [x] **Invoice creation screen** using the
+      `create_invoice_with_stock_deduction` RPC (atomic stock deduction & mandi commission math).
+- [x] **snake_case pass** on `Product`, `Customer`, `Supplier` & `Invoice` models per RULES.md #8.
 - [ ] Expenses, Reports, Notifications UI — schema ready, nothing built.
 - [ ] Bring the HTML prototypes' "3D" visual language (layered
       shadows, staggered entrance, glass app bars) into the real

@@ -1,179 +1,199 @@
 /// One line item inside an invoice.
 class InvoiceItem {
+  final String? id;
+  final String? invoiceId;
+  final String? shopId;
   final String productId;
   final String productName;
-  final double quantity; // number of units (e.g. bags)
-  final double weightPerUnitKg; // kg per unit
-  final double pricePerBaseUnit; // price per the product's base pricing unit
-  final double baseUnitKg; // e.g. 40 for "per 40kg" pricing
+  final double quantity; // number of bags / units
+  final double weightKg; // total weight in KG
+  final double unitPrice; // price per 40kg (Maund)
+  final double lineTotal; // (weightKg / 40.0) * unitPrice
 
   const InvoiceItem({
+    this.id,
+    this.invoiceId,
+    this.shopId,
     required this.productId,
-    required this.productName,
-    required this.quantity,
-    required this.weightPerUnitKg,
-    required this.pricePerBaseUnit,
-    this.baseUnitKg = 40,
-  });
-
-  /// Product Total = Price per base unit × Quantity × (Weight per unit ÷ base unit)
-  /// (spec section 10 — agricultural weight & pricing logic)
-  double get total =>
-      pricePerBaseUnit * quantity * (weightPerUnitKg / baseUnitKg);
+    this.productName = '',
+    this.quantity = 1,
+    required this.weightKg,
+    required this.unitPrice,
+    double? lineTotal,
+  }) : lineTotal = lineTotal ?? ((weightKg / 40.0) * unitPrice);
 
   factory InvoiceItem.fromMap(Map<String, dynamic> d) => InvoiceItem(
-        productId: d['productId'] as String? ?? '',
-        productName: d['productName'] as String? ?? '',
-        quantity: (d['quantity'] as num?)?.toDouble() ?? 0,
-        weightPerUnitKg: (d['weightPerUnitKg'] as num?)?.toDouble() ?? 0,
-        pricePerBaseUnit: (d['pricePerBaseUnit'] as num?)?.toDouble() ?? 0,
-        baseUnitKg: (d['baseUnitKg'] as num?)?.toDouble() ?? 40,
+        id: d['id'] as String?,
+        invoiceId: d['invoice_id'] as String?,
+        shopId: d['shop_id'] as String?,
+        productId: d['product_id'] as String? ?? '',
+        productName: d['product_name'] as String? ?? '',
+        quantity: (d['quantity'] as num?)?.toDouble() ?? 1,
+        weightKg: (d['weight_kg'] as num?)?.toDouble() ?? 0,
+        unitPrice: (d['unit_price'] as num?)?.toDouble() ?? 0,
+        lineTotal: (d['line_total'] as num?)?.toDouble(),
       );
 
   Map<String, dynamic> toMap() => {
+        if (id != null) 'id': id,
+        if (invoiceId != null) 'invoice_id': invoiceId,
+        if (shopId != null) 'shop_id': shopId,
         'productId': productId,
-        'productName': productName,
+        'product_id': productId,
+        'product_name': productName,
         'quantity': quantity,
-        'weightPerUnitKg': weightPerUnitKg,
-        'pricePerBaseUnit': pricePerBaseUnit,
-        'baseUnitKg': baseUnitKg,
-        'total': total,
+        'weight_kg': weightKg,
+        'weightKg': weightKg,
+        'unit_price': unitPrice,
+        'unitPrice': unitPrice,
+        'line_total': lineTotal,
+        'lineTotal': lineTotal,
+        'changeKg': -weightKg, // Negative for stock deduction
       };
 }
 
 enum PaymentMethod { cash, bankTransfer, jazzCash, easypaisa, other }
 
 extension PaymentMethodX on PaymentMethod {
-  static PaymentMethod fromString(String? s) => PaymentMethod.values
-      .firstWhere((e) => e.name == s, orElse: () => PaymentMethod.cash);
+  static PaymentMethod fromString(String? s) {
+    switch (s) {
+      case 'bank':
+      case 'bankTransfer':
+        return PaymentMethod.bankTransfer;
+      case 'jazzCash':
+        return PaymentMethod.jazzCash;
+      case 'easypaisa':
+        return PaymentMethod.easypaisa;
+      case 'other':
+        return PaymentMethod.other;
+      case 'cash':
+      default:
+        return PaymentMethod.cash;
+    }
+  }
+
+  String toDbString() {
+    switch (this) {
+      case PaymentMethod.bankTransfer:
+        return 'bank';
+      case PaymentMethod.jazzCash:
+        return 'jazzCash';
+      case PaymentMethod.easypaisa:
+        return 'easypaisa';
+      case PaymentMethod.other:
+        return 'other';
+      case PaymentMethod.cash:
+      default:
+        return 'cash';
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case PaymentMethod.bankTransfer:
+        return 'Bank Transfer';
+      case PaymentMethod.jazzCash:
+        return 'JazzCash';
+      case PaymentMethod.easypaisa:
+        return 'Easypaisa';
+      case PaymentMethod.other:
+        return 'Other';
+      case PaymentMethod.cash:
+      default:
+        return 'Cash';
+    }
+  }
 }
 
-/// A sales invoice belonging to exactly one shop. Holds the full
-/// commission-shop calculation breakdown from spec section 11.
+/// A sales invoice belonging to exactly one shop.
 class Invoice {
   final String id;
   final String shopId;
-  final String invoiceNumber;
-  final String customerId;
+  final String? customerId;
   final String customerName;
+  final String invoiceNumber;
   final List<InvoiceItem> items;
 
-  final double commissionPercent;
-  final double fixedCommission;
-  final double laborCharges;
-  final double packingCharges;
-  final double transportCharges;
-  final double otherExpenses;
-
-  final double discountPercent;
-  final double discountFlat;
-  final double gstPercent;
-
+  final double subtotal;
+  final double commission;
+  final double expenses;
+  final double discount;
+  final double total;
   final double receivedAmount;
+  final double pendingAmount;
   final PaymentMethod paymentMethod;
-  final bool isVoided;
+  final String status; // 'unpaid' | 'partial' | 'paid' | 'void'
+  final String? createdBy;
   final DateTime? createdAt;
-  final String createdByUid;
-  final String createdByName;
 
   const Invoice({
     required this.id,
     required this.shopId,
+    this.customerId,
+    this.customerName = '',
     required this.invoiceNumber,
-    required this.customerId,
-    required this.customerName,
     this.items = const [],
-    this.commissionPercent = 0,
-    this.fixedCommission = 0,
-    this.laborCharges = 0,
-    this.packingCharges = 0,
-    this.transportCharges = 0,
-    this.otherExpenses = 0,
-    this.discountPercent = 0,
-    this.discountFlat = 0,
-    this.gstPercent = 0,
+    this.subtotal = 0,
+    this.commission = 0,
+    this.expenses = 0,
+    this.discount = 0,
+    this.total = 0,
     this.receivedAmount = 0,
+    this.pendingAmount = 0,
     this.paymentMethod = PaymentMethod.cash,
-    this.isVoided = false,
+    this.status = 'unpaid',
+    this.createdBy,
     this.createdAt,
-    this.createdByUid = '',
-    this.createdByName = '',
   });
 
-  /// Products Total = sum of every line item's total.
-  double get productsTotal => items.fold(0, (sum, i) => sum + i.total);
+  factory Invoice.fromMap(String id, Map<String, dynamic> d) {
+    final rec = (d['received_amount'] as num?)?.toDouble() ?? 0;
+    final tot = (d['total'] as num?)?.toDouble() ?? 0;
+    final pend = (d['pending_amount'] as num?)?.toDouble() ?? (tot - rec);
 
-  /// Commission = (Products Total × Commission %) ÷ 100 + Fixed Commission
-  double get commission =>
-      (productsTotal * commissionPercent / 100) + fixedCommission;
-
-  double get totalExpenses =>
-      laborCharges + packingCharges + transportCharges + otherExpenses;
-
-  /// Subtotal = Products Total + Commission + Total Expenses
-  double get subtotal => productsTotal + commission + totalExpenses;
-
-  double get discount => discountFlat + (subtotal * discountPercent / 100);
-
-  double get gstAmount => (subtotal - discount) * gstPercent / 100;
-
-  /// Final Amount = Subtotal - Discount + GST
-  double get finalAmount => subtotal - discount + gstAmount;
-
-  /// Pending Amount = Final Amount - Received Amount
-  double get pendingAmount => finalAmount - receivedAmount;
-
-  factory Invoice.fromMap(String id, Map<String, dynamic> d) => Invoice(
-        id: id,
-        shopId: d['shopId'] as String? ?? '',
-        invoiceNumber: d['invoiceNumber'] as String? ?? '',
-        customerId: d['customerId'] as String? ?? '',
-        customerName: d['customerName'] as String? ?? '',
-        items: ((d['items'] as List?) ?? [])
-            .map((e) => InvoiceItem.fromMap(Map<String, dynamic>.from(e)))
-            .toList(),
-        commissionPercent: (d['commissionPercent'] as num?)?.toDouble() ?? 0,
-        fixedCommission: (d['fixedCommission'] as num?)?.toDouble() ?? 0,
-        laborCharges: (d['laborCharges'] as num?)?.toDouble() ?? 0,
-        packingCharges: (d['packingCharges'] as num?)?.toDouble() ?? 0,
-        transportCharges: (d['transportCharges'] as num?)?.toDouble() ?? 0,
-        otherExpenses: (d['otherExpenses'] as num?)?.toDouble() ?? 0,
-        discountPercent: (d['discountPercent'] as num?)?.toDouble() ?? 0,
-        discountFlat: (d['discountFlat'] as num?)?.toDouble() ?? 0,
-        gstPercent: (d['gstPercent'] as num?)?.toDouble() ?? 0,
-        receivedAmount: (d['receivedAmount'] as num?)?.toDouble() ?? 0,
-        paymentMethod:
-            PaymentMethodX.fromString(d['paymentMethod'] as String?),
-        isVoided: d['isVoided'] as bool? ?? false,
-        createdAt: (d['createdAt'] as dynamic)?.toDate(),
-        createdByUid: d['createdByUid'] as String? ?? '',
-        createdByName: d['createdByName'] as String? ?? '',
-      );
+    return Invoice(
+      id: id,
+      shopId: d['shop_id'] as String? ?? '',
+      customerId: d['customer_id'] as String?,
+      customerName: d['customer_name'] as String? ?? '',
+      invoiceNumber: d['invoice_number'] as String? ?? '',
+      items: ((d['items'] as List?) ?? [])
+          .map((e) => InvoiceItem.fromMap(Map<String, dynamic>.from(e)))
+          .toList(),
+      subtotal: (d['subtotal'] as num?)?.toDouble() ?? 0,
+      commission: (d['commission'] as num?)?.toDouble() ?? 0,
+      expenses: (d['expenses'] as num?)?.toDouble() ?? 0,
+      discount: (d['discount'] as num?)?.toDouble() ?? 0,
+      total: tot,
+      receivedAmount: rec,
+      pendingAmount: pend,
+      paymentMethod: PaymentMethodX.fromString(d['payment_method'] as String?),
+      status: d['status'] as String? ?? 'unpaid',
+      createdBy: d['created_by'] as String?,
+      createdAt: d['created_at'] != null
+          ? DateTime.tryParse(d['created_at'].toString())
+          : null,
+    );
+  }
 
   Map<String, dynamic> toMap() => {
         'shopId': shopId,
-        'invoiceNumber': invoiceNumber,
+        'shop_id': shopId,
         'customerId': customerId,
-        'customerName': customerName,
-        'items': items.map((i) => i.toMap()).toList(),
-        'commissionPercent': commissionPercent,
-        'fixedCommission': fixedCommission,
-        'laborCharges': laborCharges,
-        'packingCharges': packingCharges,
-        'transportCharges': transportCharges,
-        'otherExpenses': otherExpenses,
-        'discountPercent': discountPercent,
-        'discountFlat': discountFlat,
-        'gstPercent': gstPercent,
-        'receivedAmount': receivedAmount,
-        'paymentMethod': paymentMethod.name,
-        'isVoided': isVoided,
-        'createdByUid': createdByUid,
-        'createdByName': createdByName,
-        // Denormalized so reports/lists don't need to recompute:
-        'productsTotal': productsTotal,
+        'customer_id': customerId,
+        'invoiceNumber': invoiceNumber,
+        'invoice_number': invoiceNumber,
+        'subtotal': subtotal,
         'commission': commission,
-        'finalAmount': finalAmount,
+        'expenses': expenses,
+        'discount': discount,
+        'total': total,
+        'receivedAmount': receivedAmount,
+        'received_amount': receivedAmount,
         'pendingAmount': pendingAmount,
+        'pending_amount': pendingAmount,
+        'paymentMethod': paymentMethod.toDbString(),
+        'payment_method': paymentMethod.toDbString(),
+        'status': status,
       };
 }
