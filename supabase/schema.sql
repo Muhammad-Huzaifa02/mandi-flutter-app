@@ -547,9 +547,6 @@ alter table public.notifications         enable row level security;
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
 -- lists with names).
--- profiles: read your own; owners can read profiles of people they've
--- invited into one of their shops (needed to show staff/customer/supplier
--- lists with names).
 drop policy if exists "profiles: read own" on public.profiles;
 create policy "profiles: read own" on public.profiles
   for select using (id = auth.uid());
