@@ -97,16 +97,19 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       context: context,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (context, setDialogState) {
+          final qty = double.tryParse(qtyCtrl.text) ?? 1;
           final wKg = double.tryParse(weightKgCtrl.text) ?? 0;
-          final rate = double.tryParse(pricePer40kgCtrl.text) ?? 0;
-          final lineTot = MandiCalculator.calculateTotalAmount(
-              weightKg: wKg, pricePer40kg: rate);
+          final ratePer40kg = double.tryParse(pricePer40kgCtrl.text) ?? 0;
+
+          final manns = MandiCalculator.kgToMann(wKg);
+          final lineTot = manns * ratePer40kg;
 
           return AlertDialog(
             title: const Text('Add Product Item'),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DropdownButtonFormField<Product>(
                     value: selectedProduct,
@@ -132,9 +135,16 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     controller: qtyCtrl,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (v) {
+                      final q = double.tryParse(v) ?? 1;
+                      setDialogState(() {
+                        weightKgCtrl.text = (q * selectedProduct.weightPerUnitKg)
+                            .toStringAsFixed(0);
+                      });
+                    },
                     decoration: const InputDecoration(
                       labelText: 'Bags / Quantity',
-                      hintText: 'e.g. 1',
+                      hintText: 'e.g. 3',
                     ),
                   ),
                   const SizedBox(height: MSpacing.md),
@@ -144,7 +154,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                         const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (_) => setDialogState(() {}),
                     decoration: const InputDecoration(
-                      labelText: 'Total Weight (KG)',
+                      labelText: 'Total Weight (KG) *',
                       suffixText: 'KG',
                     ),
                   ),
@@ -155,18 +165,43 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                         const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (_) => setDialogState(() {}),
                     decoration: const InputDecoration(
-                      labelText: 'Rate per 40 KG / Maund (PKR)',
+                      labelText: 'Rate per 40 KG / Maund (PKR) *',
                       suffixText: 'PKR',
                     ),
                   ),
                   const SizedBox(height: MSpacing.md),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(MSpacing.sm),
-                    color: MColors.background,
-                    child: Text(
-                      'Converted: ${MandiCalculator.kgToMann(wKg).toStringAsFixed(2)} Mann\nTotal: Rs. ${lineTot.toStringAsFixed(0)}',
-                      style: MText.bodySm.copyWith(fontWeight: FontWeight.bold),
+                    padding: const EdgeInsets.all(MSpacing.md),
+                    decoration: BoxDecoration(
+                      color: MColors.primary.withOpacity(0.08),
+                      borderRadius: MRadius.md,
+                      border: Border.all(color: MColors.primary.withOpacity(0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Mandi Math Breakdown:',
+                            style: MText.labelMd),
+                        const SizedBox(height: MSpacing.xs),
+                        Text(
+                          '1. Total Weight: ${wKg.toStringAsFixed(1)} KG',
+                          style: MText.bodySm,
+                        ),
+                        Text(
+                          '2. Weight in Mann: ${wKg.toStringAsFixed(1)} KG ÷ 40 = ${manns.toStringAsFixed(2)} Mann',
+                          style: MText.bodySm,
+                        ),
+                        Text(
+                          '3. Calculation: ${manns.toStringAsFixed(2)} Mann × Rs. ${ratePer40kg.toStringAsFixed(0)}',
+                          style: MText.bodySm,
+                        ),
+                        const Divider(height: MSpacing.sm),
+                        Text(
+                          'Line Total: Rs. ${lineTot.toStringAsFixed(0)}',
+                          style: MText.titleLg.copyWith(color: MColors.primary),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -179,7 +214,6 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               ),
               FilledButton(
                 onPressed: () {
-                  final qty = double.tryParse(qtyCtrl.text) ?? 1;
                   if (wKg <= 0) return;
 
                   setState(() {
@@ -188,13 +222,13 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       productName: selectedProduct.name,
                       quantity: qty,
                       weightKg: wKg,
-                      unitPrice: rate,
+                      unitPrice: ratePer40kg,
                       lineTotal: lineTot,
                     ));
                   });
                   Navigator.pop(dialogCtx);
                 },
-                child: const Text('Add'),
+                child: const Text('Add Item'),
               ),
             ],
           );
