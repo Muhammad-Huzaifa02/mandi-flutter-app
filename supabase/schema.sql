@@ -497,6 +497,10 @@ begin
     auth.uid()
   ) returning id into v_invoice_id;
 
+  update public.shops
+    set invoice_next_number = invoice_next_number + 1, updated_at = now()
+    where id = v_shop_id;
+
   for item in select * from jsonb_array_elements(p_items) loop
     insert into public.invoice_items (
       invoice_id, shop_id, product_id, quantity, weight_kg, unit_price, line_total

@@ -41,7 +41,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     _commissionPercentCtrl.text = defaultComm.toStringAsFixed(1);
 
     final prefix = shop?.invoicePrefix ?? 'INV';
-    final nextNum = shop?.invoiceNextNumber ?? 1;
+    final invoices = context.read<InvoiceProvider>().invoices;
+    final count = invoices.length + 1;
+    final shopNext = shop?.invoiceNextNumber ?? 1;
+    final nextNum = shopNext > count ? shopNext : count;
     _invoiceNumberCtrl.text = '$prefix-${nextNum.toString().padLeft(4, '0')}';
   }
 
@@ -280,8 +283,12 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
+      final raw = e.toString();
+      final msg = raw.contains('23505') || raw.contains('duplicate')
+          ? 'Invoice number "${_invoiceNumberCtrl.text}" already exists. Please use a unique invoice number.'
+          : raw;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: MColors.danger),
+        SnackBar(content: Text(msg), backgroundColor: MColors.danger),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
