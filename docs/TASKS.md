@@ -48,8 +48,9 @@
 - [x] **snake_case pass** on `Product`, `Customer`, `Supplier` & `Invoice` models per RULES.md #8.
 - [x] **Expenses Management screens** on `SupabaseService.expensesStream`
       (Labor, Transport, Rent, Packing, Electricity, Tea/Food, Other).
-- [ ] Reports & Analytics UI (Profit & Loss, Daily Mandi Sales Summary, Ledger Reports).
-- [ ] Notifications & Payment Vouchers UI.
+- [x] **Payments & Settlements screens** on `SupabaseService.paymentsStream`
+      (Customer Receipts & Supplier Payments with automatic running_balance updates).
+- [x] **Reports & Analytics screens** (Profit & Loss, Net Mandi Profit, Sales Volume, Customer Receivables & Supplier Payables summary).
 - [ ] Bring the HTML prototypes' "3D" visual language (layered
       shadows, staggered entrance, glass app bars) into the real
       Flutter theme, if wanted — see DESIGN.md's note on this.

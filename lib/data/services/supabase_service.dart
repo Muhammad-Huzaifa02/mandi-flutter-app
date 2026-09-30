@@ -243,6 +243,47 @@ class SupabaseService {
   static Future<void> addExpense(Map<String, dynamic> data) =>
       _client.from('expenses').insert(data);
 
+  // ── Payments ─────────────────────────────────────────────────────────────
+
+  static Stream<List<Map<String, dynamic>>> paymentsStream(String shopId) =>
+      _client
+          .from('payments')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('created_at', ascending: false);
+
+  static Future<void> addPayment(Map<String, dynamic> data) async {
+    await _client.from('payments').insert(data);
+
+    final partyType = data['party_type'] as String;
+    final partyId = data['party_id'] as String;
+    final amount = (data['amount'] as num).toDouble();
+
+    if (partyType == 'customer') {
+      final customer = await _client
+          .from('customers')
+          .select('running_balance')
+          .eq('id', partyId)
+          .single();
+      final current = (customer['running_balance'] as num?)?.toDouble() ?? 0;
+      await _client
+          .from('customers')
+          .update({'running_balance': current - amount})
+          .eq('id', partyId);
+    } else if (partyType == 'supplier') {
+      final supplier = await _client
+          .from('suppliers')
+          .select('running_balance')
+          .eq('id', partyId)
+          .single();
+      final current = (supplier['running_balance'] as num?)?.toDouble() ?? 0;
+      await _client
+          .from('suppliers')
+          .update({'running_balance': current - amount})
+          .eq('id', partyId);
+    }
+  }
+
   // ── Audit logs ───────────────────────────────────────────────────────────
 
   static Future<void> addAuditLog({

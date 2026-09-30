@@ -9,6 +9,8 @@ import 'package:mandi/modules/suppliers/views/supplier_list_page.dart';
 import 'package:mandi/modules/products/views/product_list_page.dart';
 import 'package:mandi/modules/invoices/views/invoice_list_page.dart';
 import 'package:mandi/modules/expenses/views/expense_list_page.dart';
+import 'package:mandi/modules/payments/views/payment_list_page.dart';
+import 'package:mandi/modules/reports/views/reports_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -103,6 +105,26 @@ class DashboardPage extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ExpenseListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('create_receipt') ||
+                    shopCtx.hasPermission('view_ledger'))
+                  _ManageTile(
+                    icon: Icons.payments_outlined,
+                    label: 'Payments',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PaymentListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('view_reports') ||
+                    shopCtx.hasPermission('view_analytics'))
+                  _ManageTile(
+                    icon: Icons.bar_chart_outlined,
+                    label: 'Reports',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ReportsPage()),
                     ),
                   ),
               ],
