@@ -46,7 +46,10 @@
 - [x] **Invoice creation screen** using the
       `create_invoice_with_stock_deduction` RPC (atomic stock deduction & mandi commission math).
 - [x] **snake_case pass** on `Product`, `Customer`, `Supplier` & `Invoice` models per RULES.md #8.
-- [ ] Expenses, Reports, Notifications UI — schema ready, nothing built.
+- [x] **Expenses Management screens** on `SupabaseService.expensesStream`
+      (Labor, Transport, Rent, Packing, Electricity, Tea/Food, Other).
+- [ ] Reports & Analytics UI (Profit & Loss, Daily Mandi Sales Summary, Ledger Reports).
+- [ ] Notifications & Payment Vouchers UI.
 - [ ] Bring the HTML prototypes' "3D" visual language (layered
       shadows, staggered entrance, glass app bars) into the real
       Flutter theme, if wanted — see DESIGN.md's note on this.

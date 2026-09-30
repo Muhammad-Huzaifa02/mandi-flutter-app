@@ -13,6 +13,7 @@ import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
 import 'package:mandi/modules/products/providers/product_provider.dart';
 import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
+import 'package:mandi/modules/expenses/providers/expense_provider.dart';
 import 'package:mandi/routes/app_root.dart';
 
 Future<void> main() async {
@@ -66,6 +67,11 @@ class MandiApp extends StatelessWidget {
           create: (_) => InvoiceProvider(),
           update: (_, shopCtx, invoiceProvider) =>
               invoiceProvider!..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, ExpenseProvider>(
+          create: (_) => ExpenseProvider(),
+          update: (_, shopCtx, expenseProvider) =>
+              expenseProvider!..updateShop(shopCtx.currentShopId),
         ),
       ],
       child: Consumer<ThemeProvider>(

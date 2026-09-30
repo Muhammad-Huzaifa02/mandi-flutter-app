@@ -8,6 +8,7 @@ import 'package:mandi/modules/customers/views/customer_list_page.dart';
 import 'package:mandi/modules/suppliers/views/supplier_list_page.dart';
 import 'package:mandi/modules/products/views/product_list_page.dart';
 import 'package:mandi/modules/invoices/views/invoice_list_page.dart';
+import 'package:mandi/modules/expenses/views/expense_list_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -93,6 +94,15 @@ class DashboardPage extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const InvoiceListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('manage_expenses'))
+                  _ManageTile(
+                    icon: Icons.account_balance_wallet_outlined,
+                    label: 'Expenses',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ExpenseListPage()),
                     ),
                   ),
               ],
