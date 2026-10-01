@@ -57,6 +57,7 @@ export async function handleCreateAccount(
     // invitation requirement.
     const { data: invited, error: inviteErr } =
       await adminClient.auth.admin.inviteUserByEmail(email, {
+        redirectTo: "https://kznubtwfzvqvynqpbyve.supabase.co/auth/v1/callback",
         data: { full_name: name, invited_to_shop: shop?.name ?? "" },
       });
     if (inviteErr) {
