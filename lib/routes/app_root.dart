@@ -6,18 +6,21 @@ import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/auth/views/splash_page.dart';
 import 'package:mandi/modules/auth/views/welcome_page.dart';
 import 'package:mandi/modules/onboarding/views/no_shop_page.dart';
-import 'package:mandi/modules/home/views/dashboard_page.dart';
+import 'package:mandi/routes/dashboard_router.dart';
 
 /// The single real gate in the app. Replaces the old pattern of scattered
 /// AuthGuard widgets that only checked "is someone logged in" — this one
-/// checks the FULL chain: logged in → belongs to a shop → shop is active.
+/// checks the FULL chain: logged in → belongs to a shop → shop is active
+/// → which dashboard THIS role actually sees.
 ///
 /// States, in order:
 ///  1. Auth not yet resolved            → Splash
 ///  2. Not logged in                    → Welcome (Create Shop / Login)
 ///  3. Logged in, shop context loading  → Splash
 ///  4. Logged in, no active shop        → NoShopPage
-///  5. Logged in, has an active shop    → Dashboard
+///  5. Logged in, has an active shop    → dashboardForRole(currentMember.roleId)
+///     (owner/manager/accountant/sales_staff/inventory_staff → DashboardPage;
+///      customer → CustomerDashboardPage; supplier → SupplierDashboardPage)
 class AppRoot extends StatefulWidget {
   const AppRoot({super.key});
 
@@ -66,6 +69,6 @@ class _AppRootState extends State<AppRoot> {
       return const NoShopPage();
     }
 
-    return const DashboardPage();
+    return dashboardForRole(shopCtx.currentMember?.roleId);
   }
 }
