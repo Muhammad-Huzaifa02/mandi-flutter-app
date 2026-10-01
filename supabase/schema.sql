@@ -391,13 +391,14 @@ declare
   r jsonb;
 begin
   insert into public.shops (
-    name, business_types, phone, whatsapp, email, address, city, district,
+    name, logo_url, business_types, phone, whatsapp, email, address, city, district,
     province, default_weight_unit, default_commission_percent, invoice_prefix,
     invoice_next_number, receipt_prefix, receipt_next_number, currency,
     status, setup_complete, owner_id
   )
   select
     p_shop->>'name',
+    nullif(p_shop->>'logoUrl', ''),
     coalesce((select array_agg(x) from jsonb_array_elements_text(p_shop->'businessTypes') x), '{}'),
     p_shop->>'phone', p_shop->>'whatsapp', p_shop->>'email', p_shop->>'address',
     p_shop->>'city', p_shop->>'district', p_shop->>'province',

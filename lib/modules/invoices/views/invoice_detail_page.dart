@@ -7,6 +7,7 @@ import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/invoice_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
+import 'package:mandi/modules/customers/providers/customer_provider.dart';
 
 class InvoiceDetailPage extends StatelessWidget {
   final Invoice invoice;
@@ -16,6 +17,13 @@ class InvoiceDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shop = context.watch<ShopContextProvider>().currentShop;
+    final customers = context.watch<CustomerProvider>().customers;
+    final customer = invoice.customerId != null
+        ? customers.where((c) => c.id == invoice.customerId).firstOrNull
+        : null;
+
+    final customerPhone = customer?.phone ?? '';
+    final customerEmail = customer?.email ?? '';
 
     return Scaffold(
       appBar: AppBar(
@@ -73,7 +81,7 @@ class InvoiceDetailPage extends StatelessWidget {
                                 : (invoice.status == 'partial'
                                     ? Colors.orange
                                     : MColors.danger))
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                       ),
                     ],
                   ),
@@ -191,7 +199,7 @@ class InvoiceDetailPage extends StatelessWidget {
 
             const SizedBox(height: MSpacing.xl),
 
-            // Print & Share Actions
+            // Print, Email & WhatsApp Share Actions
             Row(
               children: [
                 Expanded(
@@ -208,7 +216,7 @@ class InvoiceDetailPage extends StatelessWidget {
                     label: const Text('PDF / Print'),
                   ),
                 ),
-                const SizedBox(width: MSpacing.md),
+                const SizedBox(width: MSpacing.sm),
                 Expanded(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
@@ -216,16 +224,30 @@ class InvoiceDetailPage extends StatelessWidget {
                     ),
                     onPressed: () {
                       WhatsAppShareService.shareInvoice(
-                        phone: '', // Opens WhatsApp selector
+                        phone: customerPhone,
                         invoice: invoice,
                         shopName: shop?.name ?? 'Mandi Shop',
                       );
                     },
-                    icon: const Icon(Icons.share, color: Colors.white),
-                    label: const Text('Share WhatsApp',
-                        style: TextStyle(color: Colors.white)),
+                    icon: const Icon(Icons.share, color: Colors.white, size: 18),
+                    label: const Text('WhatsApp', style: TextStyle(color: Colors.white)),
                   ),
                 ),
+                if (customerEmail.isNotEmpty) ...[
+                  const SizedBox(width: MSpacing.sm),
+                  IconButton.filled(
+                    style: IconButton.styleFrom(backgroundColor: MColors.primary),
+                    icon: const Icon(Icons.email_outlined, color: Colors.white),
+                    tooltip: 'Email Invoice',
+                    onPressed: () {
+                      WhatsAppShareService.shareInvoiceViaEmail(
+                        email: customerEmail,
+                        invoice: invoice,
+                        shopName: shop?.name ?? 'Mandi Shop',
+                      );
+                    },
+                  ),
+                ],
               ],
             ),
           ],

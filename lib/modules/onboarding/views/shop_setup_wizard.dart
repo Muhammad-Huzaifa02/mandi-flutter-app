@@ -52,6 +52,7 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
 
   // Step 1 — shop info
   final _shopNameCtrl = TextEditingController();
+  final _logoUrlCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
   final _cityCtrl = TextEditingController();
   final _districtCtrl = TextEditingController();
@@ -77,6 +78,7 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
   void dispose() {
     _pageController.dispose();
     _shopNameCtrl.dispose();
+    _logoUrlCtrl.dispose();
     _addressCtrl.dispose();
     _cityCtrl.dispose();
     _districtCtrl.dispose();
@@ -142,6 +144,7 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
     try {
       final shopData = {
         'name': _shopNameCtrl.text.trim(),
+        'logoUrl': _logoUrlCtrl.text.trim(),
         'businessTypes': _businessTypes.toList(),
         'phone': _contactCtrl.text.trim(),
         'whatsapp': _whatsappCtrl.text.trim(),
@@ -357,7 +360,15 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
         children: [
           TextFormField(
             controller: _shopNameCtrl,
-            decoration: const InputDecoration(labelText: 'Shop Name'),
+            decoration: const InputDecoration(labelText: 'Shop Name *'),
+          ),
+          const SizedBox(height: MSpacing.md),
+          TextFormField(
+            controller: _logoUrlCtrl,
+            decoration: const InputDecoration(
+              labelText: 'Shop Logo URL (Optional)',
+              hintText: 'https://example.com/logo.png',
+            ),
           ),
           const SizedBox(height: MSpacing.md),
           const Text('Business Type', style: MText.labelMd),

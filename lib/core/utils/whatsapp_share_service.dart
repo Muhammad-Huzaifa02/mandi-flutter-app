@@ -4,7 +4,7 @@ import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/core/utils/pk_phone.dart';
 import 'package:mandi/data/models/invoice_model.dart';
 
-/// Service to send WhatsApp messages and payment reminders.
+/// Service to send WhatsApp messages, Email invoices, and payment reminders.
 class WhatsAppShareService {
   /// Opens WhatsApp with a pre-filled text message to the target phone number.
   static Future<bool> launchWhatsApp({
@@ -73,6 +73,62 @@ class WhatsAppShareService {
     buffer.writeln('Thank you for your business!');
 
     return launchWhatsApp(phone: phone, message: buffer.toString());
+  }
+
+  /// Opens the device mail app with a pre-filled invoice summary.
+  static Future<bool> shareInvoiceViaEmail({
+    required String email,
+    required Invoice invoice,
+    required String shopName,
+  }) async {
+    final dateStr = invoice.createdAt != null
+        ? '${invoice.createdAt!.day}/${invoice.createdAt!.month}/${invoice.createdAt!.year}'
+        : '';
+
+    final subject = Uri.encodeComponent('$shopName - Sales Invoice #${invoice.invoiceNumber}');
+
+    final buffer = StringBuffer();
+    buffer.writeln(shopName);
+    buffer.writeln('Sales Invoice #: ${invoice.invoiceNumber}');
+    buffer.writeln('Customer: ${invoice.customerName.isNotEmpty ? invoice.customerName : "Walk-in Customer"}');
+    if (dateStr.isNotEmpty) buffer.writeln('Date: $dateStr');
+    buffer.writeln();
+
+    buffer.writeln('Purchased Items:');
+    for (final item in invoice.items) {
+      final manns = MandiCalculator.kgToMann(item.weightKg);
+      buffer.writeln(
+          ' - ${item.productName}: ${item.weightKg} KG (${manns.toStringAsFixed(2)} Mann) @ Rs. ${item.unitPrice.toStringAsFixed(0)} = Rs. ${item.lineTotal.toStringAsFixed(0)}');
+    }
+    buffer.writeln();
+
+    buffer.writeln('Summary:');
+    buffer.writeln('Subtotal: Rs. ${invoice.subtotal.toStringAsFixed(0)}');
+    if (invoice.commission > 0) {
+      buffer.writeln('Mandi Commission: Rs. ${invoice.commission.toStringAsFixed(0)}');
+    }
+    if (invoice.expenses > 0) {
+      buffer.writeln('Expenses: Rs. ${invoice.expenses.toStringAsFixed(0)}');
+    }
+    if (invoice.discount > 0) {
+      buffer.writeln('Discount: -Rs. ${invoice.discount.toStringAsFixed(0)}');
+    }
+    buffer.writeln('Grand Total: Rs. ${invoice.total.toStringAsFixed(0)}');
+    buffer.writeln('Received: Rs. ${invoice.receivedAmount.toStringAsFixed(0)}');
+    if (invoice.pendingAmount > 0) {
+      buffer.writeln('Pending Balance: Rs. ${invoice.pendingAmount.toStringAsFixed(0)}');
+    }
+
+    buffer.writeln();
+    buffer.writeln('Thank you for your business!');
+
+    final body = Uri.encodeComponent(buffer.toString());
+    final mailUrl = Uri.parse('mailto:$email?subject=$subject&body=$body');
+
+    if (await canLaunchUrl(mailUrl)) {
+      return await launchUrl(mailUrl);
+    }
+    return false;
   }
 
   /// Sends a friendly payment balance reminder over WhatsApp.

@@ -15,6 +15,7 @@ class ShopSettingsPage extends StatefulWidget {
 class _ShopSettingsPageState extends State<ShopSettingsPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _name;
+  late final TextEditingController _logoUrl;
   late final TextEditingController _phone;
   late final TextEditingController _whatsapp;
   late final TextEditingController _email;
@@ -30,6 +31,7 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
     super.initState();
     final shop = context.read<ShopContextProvider>().currentShop;
     _name = TextEditingController(text: shop?.name ?? '');
+    _logoUrl = TextEditingController(text: shop?.logoUrl ?? '');
     _phone = TextEditingController(text: shop?.phone ?? '');
     _whatsapp = TextEditingController(text: shop?.whatsapp ?? '');
     _email = TextEditingController(text: shop?.email ?? '');
@@ -43,6 +45,7 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
   @override
   void dispose() {
     _name.dispose();
+    _logoUrl.dispose();
     _phone.dispose();
     _whatsapp.dispose();
     _email.dispose();
@@ -63,6 +66,7 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
     try {
       final updateData = {
         'name': _name.text.trim(),
+        'logo_url': _logoUrl.text.trim(),
         'phone': _phone.text.trim(),
         'whatsapp': _whatsapp.text.trim(),
         'email': _email.text.trim(),
@@ -111,6 +115,14 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
                 ),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Required' : null,
+              ),
+              const SizedBox(height: MSpacing.md),
+              TextFormField(
+                controller: _logoUrl,
+                decoration: const InputDecoration(
+                  labelText: 'Shop Logo URL',
+                  hintText: 'https://example.com/logo.png',
+                ),
               ),
               const SizedBox(height: MSpacing.md),
               Row(
