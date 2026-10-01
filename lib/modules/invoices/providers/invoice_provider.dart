@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import 'package:mandi/core/utils/notification_service.dart';
 import 'package:mandi/data/models/invoice_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 
@@ -65,6 +66,14 @@ class InvoiceProvider extends ChangeNotifier {
       invoiceData: invoiceData,
       items: itemsData,
     );
+
+    try {
+      await NotificationService.showInvoiceCreatedNotification(
+        invoiceNumber: invoice.invoiceNumber,
+        totalAmount: invoice.total,
+      );
+    } catch (_) {}
+
     return id;
   }
 

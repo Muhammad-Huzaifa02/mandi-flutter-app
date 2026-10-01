@@ -6,6 +6,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:mandi/supabase_config.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/theme/theme_provider.dart';
+import 'package:mandi/core/utils/connectivity_service.dart';
+import 'package:mandi/core/utils/notification_service.dart';
+import 'package:mandi/core/widgets/offline_banner.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/employees/providers/employee_provider.dart';
@@ -25,6 +28,8 @@ Future<void> main() async {
     publishableKey: SupabaseConfig.anonKey,
   );
 
+  await NotificationService.initialize();
+
   await SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
@@ -39,11 +44,9 @@ class MandiApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => ConnectivityService()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ShopContextProvider()),
-        // Business-data providers (products, customers, invoices, ...)
-        // register here in later batches, each keyed off
-        // ShopContextProvider.currentShopId via ChangeNotifierProxyProvider.
         ChangeNotifierProxyProvider<ShopContextProvider, EmployeeProvider>(
           create: (_) => EmployeeProvider(),
           update: (_, shopCtx, employeeProvider) =>
@@ -87,7 +90,7 @@ class MandiApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
-          home: const AppRoot(),
+          home: const OfflineBannerWrapper(child: AppRoot()),
         ),
       ),
     );
