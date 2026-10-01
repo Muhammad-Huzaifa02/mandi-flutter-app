@@ -7,6 +7,7 @@ class MColors {
   static const primary = Color(0xFF0F6B3C); // emerald green
   static const primaryLight = Color(0xFF3E9B6B);
   static const primaryDark = Color(0xFF0A4A29);
+  static const emeraldPale = Color(0xFFEAF5EE); // soft emerald tint
   static const gold = Color(0xFFD4A62A);
   static const goldLight = Color(0xFFE8C767);
 
@@ -31,6 +32,38 @@ class MGradient {
     end: Alignment.bottomRight,
     colors: [MColors.primaryDark, MColors.primary],
   );
+
+  static const button = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [MColors.primaryLight, MColors.primary],
+  );
+}
+
+class MShadows {
+  static final soft = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.03),
+      blurRadius: 10,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  static final medium = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.06),
+      blurRadius: 16,
+      offset: const Offset(0, 6),
+    ),
+  ];
+
+  static final floating = [
+    BoxShadow(
+      color: MColors.primaryDark.withValues(alpha: 0.12),
+      blurRadius: 20,
+      offset: const Offset(0, 8),
+    ),
+  ];
 }
 
 class MSpacing {
@@ -87,6 +120,8 @@ class AppTheme {
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: MRadius.md),
+            elevation: 2,
+            shadowColor: MColors.primary.withValues(alpha: 0.3),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
