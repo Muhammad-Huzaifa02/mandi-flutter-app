@@ -27,14 +27,14 @@ class InvoicePdfGenerator {
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
           return pw.Column(
-            cross: pw.CrossAxisAlignment.start,
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               // Header
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
                   pw.Column(
-                    cross: pw.CrossAxisAlignment.start,
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
                         shopName,
@@ -53,7 +53,7 @@ class InvoicePdfGenerator {
                     ],
                   ),
                   pw.Column(
-                    cross: pw.CrossAxisAlignment.end,
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
                       pw.Text(
                         'SALES INVOICE',
