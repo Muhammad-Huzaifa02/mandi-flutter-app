@@ -74,6 +74,55 @@ class Role {
     'send_reminders',
   ];
 
+  static String permissionDisplayName(String permission) {
+    switch (permission) {
+      case 'view_dashboard':
+        return 'View Dashboard';
+      case 'manage_products':
+        return 'Manage Products';
+      case 'manage_inventory':
+        return 'Manage Inventory';
+      case 'manage_customers':
+        return 'Manage Customers';
+      case 'manage_suppliers':
+        return 'Manage Suppliers';
+      case 'create_sale':
+        return 'Create Sales';
+      case 'create_purchase':
+        return 'Create Purchases';
+      case 'create_invoice':
+        return 'Create Invoices';
+      case 'edit_invoice':
+        return 'Edit Invoices';
+      case 'delete_invoice':
+        return 'Delete Invoices';
+      case 'void_invoice':
+        return 'Void Invoices';
+      case 'create_receipt':
+        return 'Create Payment Receipts';
+      case 'manage_expenses':
+        return 'Manage Expenses';
+      case 'view_ledger':
+        return 'View Ledgers';
+      case 'view_analytics':
+        return 'View Analytics';
+      case 'view_reports':
+        return 'View Reports';
+      case 'export_data':
+        return 'Export Data';
+      case 'manage_employees':
+        return 'Manage Employees';
+      case 'manage_roles':
+        return 'Manage Roles & Permissions';
+      case 'manage_settings':
+        return 'Manage Shop Settings';
+      case 'send_reminders':
+        return 'Send Payment Reminders';
+      default:
+        return permission;
+    }
+  }
+
   /// Seed data for a brand-new shop's five default roles. Callers pass the
   /// real shopId once the shop document has been created.
   static List<Role> defaultRolesFor(String shopId) => [

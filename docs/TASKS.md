@@ -50,7 +50,9 @@
       (Labor, Transport, Rent, Packing, Electricity, Tea/Food, Other).
 - [x] **Payments & Settlements screens** on `SupabaseService.paymentsStream`
       (Customer Receipts & Supplier Payments with automatic running_balance updates).
-- [x] **Reports & Analytics screens** (Profit & Loss, Net Mandi Profit, Sales Volume, Customer Receivables & Supplier Payables summary).
+- [x] **Roles & Permissions Management** — customization of permissions per role (Manager, Accountant, Sales Staff, Inventory Staff, Custom).
+- [x] **Audit Logs & Activity Trail** — live stream of shop actions (member activations, invoices, stock changes).
+- [x] **Shop Settings & Profile Management** — shop profile edits, default commission %, invoice prefix.
 - [ ] Bring the HTML prototypes' "3D" visual language (layered
       shadows, staggered entrance, glass app bars) into the real
       Flutter theme, if wanted — see DESIGN.md's note on this.

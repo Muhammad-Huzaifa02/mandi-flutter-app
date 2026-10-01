@@ -11,6 +11,9 @@ import 'package:mandi/modules/invoices/views/invoice_list_page.dart';
 import 'package:mandi/modules/expenses/views/expense_list_page.dart';
 import 'package:mandi/modules/payments/views/payment_list_page.dart';
 import 'package:mandi/modules/reports/views/reports_page.dart';
+import 'package:mandi/modules/roles/views/roles_list_page.dart';
+import 'package:mandi/modules/audit_logs/views/audit_log_list_page.dart';
+import 'package:mandi/modules/settings/views/shop_settings_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -125,6 +128,32 @@ class DashboardPage extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ReportsPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('manage_roles'))
+                  _ManageTile(
+                    icon: Icons.shield_outlined,
+                    label: 'Roles',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RolesListPage()),
+                    ),
+                  ),
+                _ManageTile(
+                  icon: Icons.history_outlined,
+                  label: 'Audit Logs',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AuditLogListPage()),
+                  ),
+                ),
+                if (shopCtx.hasPermission('manage_settings'))
+                  _ManageTile(
+                    icon: Icons.settings_outlined,
+                    label: 'Settings',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ShopSettingsPage()),
                     ),
                   ),
               ],
