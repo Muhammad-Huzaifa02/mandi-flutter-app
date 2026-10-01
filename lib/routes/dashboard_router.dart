@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:mandi/modules/home/views/dashboard_page.dart';
-import 'package:mandi/modules/customer/views/customer_dashboard_page.dart';
-import 'package:mandi/modules/supplier/views/supplier_dashboard_page.dart';
+import 'package:mandi/modules/customers/views/customer_dashboard_page.dart';
+import 'package:mandi/modules/suppliers/views/supplier_dashboard_page.dart';
 
 /// Maps the active shop membership's role to the dashboard that role
 /// actually sees. This is the piece AppRoot was missing — it always

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/module_tile.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
 /// Shown when the signed-in account's role in the active shop is
-/// 'customer' (see lib/routes/dashboard_router.dart). A customer never
-/// sees the owner/staff dashboard's Manage tiles — RLS would refuse the
-/// underlying data anyway (see supabase/schema.sql), but this keeps the
-/// UI honest about what this account actually is.
+/// 'customer' (see lib/routes/dashboard_router.dart).
 class CustomerDashboardPage extends StatelessWidget {
   const CustomerDashboardPage({super.key});
 
@@ -72,8 +70,7 @@ class CustomerDashboardPage extends StatelessWidget {
             const SizedBox(height: MSpacing.xl),
             Text(
               'This is your own view as a customer of ${shop?.name ?? 'this shop'} — '
-              'separate from the owner/staff dashboard. Modules above are planned; '
-              'none are wired to real data yet.',
+              'separate from the owner/staff dashboard.',
               style: MText.bodyMd.copyWith(color: MColors.textSecondary),
             ),
           ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/module_tile.dart';
 import 'package:mandi/providers/auth_provider.dart';
@@ -67,8 +68,7 @@ class SupplierDashboardPage extends StatelessWidget {
             const SizedBox(height: MSpacing.xl),
             Text(
               'This is your own view as a supplier to ${shop?.name ?? 'this shop'} — '
-              'separate from the owner/staff dashboard. Modules above are planned; '
-              'none are wired to real data yet.',
+              'separate from the owner/staff dashboard.',
               style: MText.bodyMd.copyWith(color: MColors.textSecondary),
             ),
           ],
