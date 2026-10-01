@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/customer_model.dart';
+import 'package:mandi/providers/shop_context_provider.dart';
 
 class CustomerDetailPage extends StatelessWidget {
   final Customer customer;
@@ -10,6 +13,8 @@ class CustomerDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shop = context.watch<ShopContextProvider>().currentShop;
+
     return Scaffold(
       appBar: AppBar(title: Text(customer.name)),
       body: SingleChildScrollView(
@@ -113,6 +118,29 @@ class CustomerDetailPage extends StatelessWidget {
               value:
                   customer.address.isNotEmpty ? customer.address : 'Not provided',
             ),
+
+            if (customer.runningBalance > 0 && customer.phone.isNotEmpty) ...[
+              const SizedBox(height: MSpacing.xl),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366),
+                  ),
+                  onPressed: () {
+                    WhatsAppShareService.sharePaymentReminder(
+                      phone: customer.phone,
+                      name: customer.name,
+                      pendingBalance: customer.runningBalance,
+                      shopName: shop?.name ?? 'Mandi Shop',
+                    );
+                  },
+                  icon: const Icon(Icons.send_outlined, color: Colors.white),
+                  label: const Text('Send WhatsApp Payment Reminder',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ],
           ],
         ),
       ),

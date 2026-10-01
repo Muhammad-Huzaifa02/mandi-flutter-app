@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/invoice_pdf_generator.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
+import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/invoice_model.dart';
+import 'package:mandi/providers/shop_context_provider.dart';
 
 class InvoiceDetailPage extends StatelessWidget {
   final Invoice invoice;
@@ -11,8 +15,26 @@ class InvoiceDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shop = context.watch<ShopContextProvider>().currentShop;
+
     return Scaffold(
-      appBar: AppBar(title: Text(invoice.invoiceNumber)),
+      appBar: AppBar(
+        title: Text(invoice.invoiceNumber),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.print_outlined),
+            tooltip: 'Print / Save PDF',
+            onPressed: () {
+              InvoicePdfGenerator.printOrShareInvoice(
+                invoice: invoice,
+                shopName: shop?.name ?? 'Mandi Shop',
+                shopPhone: shop?.phone,
+                shopCity: shop?.city,
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Column(
@@ -56,7 +78,11 @@ class InvoiceDetailPage extends StatelessWidget {
                     ],
                   ),
                   const Divider(height: MSpacing.lg),
-                  _InfoRow(label: 'Customer', value: invoice.customerName.isNotEmpty ? invoice.customerName : 'Walk-in Customer'),
+                  _InfoRow(
+                      label: 'Customer',
+                      value: invoice.customerName.isNotEmpty
+                          ? invoice.customerName
+                          : 'Walk-in Customer'),
                   _InfoRow(
                       label: 'Payment Method',
                       value: invoice.paymentMethod.displayName),
@@ -161,6 +187,46 @@ class InvoiceDetailPage extends StatelessWidget {
                     ),
                 ],
               ),
+            ),
+
+            const SizedBox(height: MSpacing.xl),
+
+            // Print & Share Actions
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      InvoicePdfGenerator.printOrShareInvoice(
+                        invoice: invoice,
+                        shopName: shop?.name ?? 'Mandi Shop',
+                        shopPhone: shop?.phone,
+                        shopCity: shop?.city,
+                      );
+                    },
+                    icon: const Icon(Icons.print_outlined),
+                    label: const Text('PDF / Print'),
+                  ),
+                ),
+                const SizedBox(width: MSpacing.md),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                    ),
+                    onPressed: () {
+                      WhatsAppShareService.shareInvoice(
+                        phone: '', // Opens WhatsApp selector
+                        invoice: invoice,
+                        shopName: shop?.name ?? 'Mandi Shop',
+                      );
+                    },
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    label: const Text('Share WhatsApp',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
