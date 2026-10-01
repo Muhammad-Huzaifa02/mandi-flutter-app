@@ -135,6 +135,21 @@ class ShopContextProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Re-fetches the current active shop row from Supabase to pick up
+  /// settings updates (e.g. shop name, default commission %, invoice prefix).
+  Future<void> refreshShop() async {
+    if (_currentShopId == null) return;
+    final shopRow = await _client
+        .from('shops')
+        .select()
+        .eq('id', _currentShopId!)
+        .maybeSingle();
+    if (shopRow != null) {
+      _currentShop = Shop.fromMap(_currentShopId!, shopRow);
+      notifyListeners();
+    }
+  }
+
   void clear() {
     _currentShopId = null;
     _currentShop = null;
