@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:mandi/core/theme/app_theme.dart';
-import 'package:mandi/core/utils/pk_phone.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/modules/auth/views/forgot_password_phone_page.dart';
 
-/// One login screen for every account type — owner, staff, customer,
+/// Email-based sign-in screen for every account type — owner, staff, customer,
 /// supplier. Nobody picks a role or a shop here; ShopContextProvider
-/// resolves both after AuthProvider confirms who signed in (see
-/// AppRoot). The identifier field accepts either a Pakistani phone
-/// number or an email address — whichever the person has on file.
+/// resolves both after AuthProvider confirms who signed in (see AppRoot).
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -19,27 +17,11 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _identifier = TextEditingController();
+  final _email = TextEditingController();
   final _password = TextEditingController();
   bool _loading = false;
   bool _obscure = true;
   String? _error;
-
-  bool get _looksLikeEmail => _identifier.text.contains('@');
-
-  void _onIdentifierChanged(String v) {
-    // If the input contains letters, '@', or is empty, leave it untouched
-    // so users can type email addresses freely without any characters being erased.
-    if (v.isEmpty || v.contains('@') || !PkPhone.looksLikePhone(v)) return;
-
-    final formatted = PkPhone.formatLocalFull(v);
-    if (formatted != v) {
-      _identifier.value = TextEditingValue(
-        text: formatted,
-        selection: TextSelection.collapsed(offset: formatted.length),
-      );
-    }
-  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -49,15 +31,10 @@ class _LoginPageState extends State<LoginPage> {
     });
     try {
       final auth = context.read<AuthProvider>();
-      if (_looksLikeEmail) {
-        await auth.signInWithEmail(_identifier.text.trim(), _password.text);
-      } else {
-        final e164 = PkPhone.toE164(_identifier.text)!;
-        await auth.signInWithPhone(e164, _password.text);
-      }
+      await auth.signInWithEmail(_email.text.trim(), _password.text);
+
       // AppRoot listens to AuthProvider and will route to the right place
-      // (shop creation, or the right dashboard) once shop context loads —
-      // this screen never decides that itself.
+      // (shop creation, or the right dashboard) once shop context loads.
       if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
     } on Exception catch (e) {
       setState(() => _error = _friendlyError(e.toString()));
@@ -66,12 +43,10 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Matches Supabase Auth (GoTrue) error message text, not Firebase's
-  // error codes.
   String _friendlyError(String raw) {
     final lower = raw.toLowerCase();
     if (lower.contains('invalid login credentials')) {
-      return 'Incorrect phone/email or password.';
+      return 'Incorrect email or password.';
     }
     if (lower.contains('email not confirmed')) {
       return 'Please confirm your email before signing in.';
@@ -84,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _identifier.dispose();
+    _email.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -105,26 +80,24 @@ class _LoginPageState extends State<LoginPage> {
                 const Text('Welcome back', style: MText.titleLg),
                 const SizedBox(height: MSpacing.xs),
                 Text(
-                  'One login for every account — we\'ll take you straight '
+                  'Sign in with your email address — we\'ll take you straight '
                   'to your dashboard.',
                   style: MText.bodyMd.copyWith(color: MColors.textSecondary),
                 ),
                 const SizedBox(height: MSpacing.lg),
                 TextFormField(
-                  controller: _identifier,
+                  controller: _email,
                   keyboardType: TextInputType.emailAddress,
-                  onChanged: _onIdentifierChanged,
                   decoration: const InputDecoration(
-                    labelText: 'Phone Number or Email',
-                    hintText: '0300 1234567 or you@example.com',
-                    prefixText: '',
+                    labelText: 'Email Address',
+                    hintText: 'you@example.com',
                   ),
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Required';
-                    if (v.contains('@')) {
-                      return v.contains('.') ? null : 'Enter a valid email';
+                    if (!v.contains('@') || !v.contains('.')) {
+                      return 'Enter a valid email address';
                     }
-                    return PkPhone.isValid(v) ? null : PkPhone.errorMessage;
+                    return null;
                   },
                 ),
                 const SizedBox(height: MSpacing.md),
