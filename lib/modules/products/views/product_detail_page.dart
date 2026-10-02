@@ -65,7 +65,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 margin: const EdgeInsets.only(bottom: MSpacing.lg),
                 padding: const EdgeInsets.all(MSpacing.md),
                 decoration: BoxDecoration(
-                  color: MColors.danger.withOpacity(0.1),
+                  color: MColors.danger.withValues(alpha: 0.1),
                   borderRadius: MRadius.md,
                   border: Border.all(color: MColors.danger),
                 ),
@@ -108,7 +108,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Text(product.name, style: MText.titleLg),
                       Chip(
                         label: Text(product.category, style: MText.bodySm),
-                        backgroundColor: MColors.primary.withOpacity(0.1),
+                        backgroundColor: MColors.primary.withValues(alpha: 0.1),
                       ),
                     ],
                   ),
@@ -119,7 +119,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Rate per 40 KG (Maund)',
+                          const Text('Rate per 40 KG (Maund)',
                               style: MText.bodySm),
                           const SizedBox(height: MSpacing.xs),
                           Text(
@@ -132,7 +132,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('Current Stock', style: MText.bodySm),
+                          const Text('Current Stock', style: MText.bodySm),
                           const SizedBox(height: MSpacing.xs),
                           Text(
                             MandiCalculator.formatWeightDisplay(
@@ -159,7 +159,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               decoration: BoxDecoration(
                 color: MColors.surface,
                 borderRadius: MRadius.lg,
-                border: Border.all(color: MColors.primary.withOpacity(0.3)),
+                border: Border.all(color: MColors.primary.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

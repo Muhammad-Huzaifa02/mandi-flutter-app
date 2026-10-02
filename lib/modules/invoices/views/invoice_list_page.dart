@@ -112,7 +112,7 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor:
-                                    MColors.primary.withOpacity(0.1),
+                                    MColors.primary.withValues(alpha: 0.1),
                                 child: const Icon(Icons.receipt_long,
                                     color: MColors.primary),
                               ),

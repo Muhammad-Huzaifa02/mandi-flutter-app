@@ -51,7 +51,7 @@ class RolesListPage extends StatelessWidget {
                 ),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: MColors.primary.withOpacity(0.1),
+                    backgroundColor: MColors.primary.withValues(alpha: 0.1),
                     child: const Icon(Icons.admin_panel_settings_outlined,
                         color: MColors.primary),
                   ),

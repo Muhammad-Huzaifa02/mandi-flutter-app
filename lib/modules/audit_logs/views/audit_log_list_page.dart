@@ -108,7 +108,7 @@ class _AuditLogListPageState extends State<AuditLogListPage> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor:
-                                    MColors.primary.withOpacity(0.1),
+                                    MColors.primary.withValues(alpha: 0.1),
                                 child: const Icon(Icons.history_outlined,
                                     color: MColors.primary),
                               ),

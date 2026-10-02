@@ -71,7 +71,7 @@ class _ProductListPageState extends State<ProductListPage> {
                       decoration: BoxDecoration(
                         color: _showLowStockOnly
                             ? MColors.danger
-                            : MColors.danger.withOpacity(0.1),
+                            : MColors.danger.withValues(alpha: 0.1),
                         borderRadius: MRadius.md,
                       ),
                       child: Row(
@@ -165,8 +165,8 @@ class _ProductListPageState extends State<ProductListPage> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: p.isLowStock
-                                    ? MColors.danger.withOpacity(0.1)
-                                    : MColors.primary.withOpacity(0.1),
+                                    ? MColors.danger.withValues(alpha: 0.1)
+                                    : MColors.primary.withValues(alpha: 0.1),
                                 child: Icon(
                                   Icons.grass,
                                   color: p.isLowStock

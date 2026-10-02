@@ -125,7 +125,7 @@ class ReportsPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: MColors.surface,
                       borderRadius: MRadius.md,
-                      border: Border.all(color: MColors.danger.withOpacity(0.3)),
+                      border: Border.all(color: MColors.danger.withValues(alpha: 0.3)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +153,7 @@ class ReportsPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: MColors.surface,
                       borderRadius: MRadius.md,
-                      border: Border.all(color: MColors.primary.withOpacity(0.3)),
+                      border: Border.all(color: MColors.primary.withValues(alpha: 0.3)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

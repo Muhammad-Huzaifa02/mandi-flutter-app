@@ -112,7 +112,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor:
-                                    MColors.primary.withOpacity(0.1),
+                                    MColors.primary.withValues(alpha: 0.1),
                                 child: Text(
                                   c.name.isNotEmpty
                                       ? c.name[0].toUpperCase()

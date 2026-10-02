@@ -83,7 +83,7 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DropdownButtonFormField<Supplier>(
-                value: _selectedSupplier,
+                initialValue: _selectedSupplier,
                 decoration: const InputDecoration(labelText: 'Supplier'),
                 hint: const Text('Select Supplier (Optional)'),
                 items: suppliers
@@ -124,7 +124,7 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
               ),
               const SizedBox(height: MSpacing.md),
               DropdownButtonFormField<String>(
-                value: _status,
+                initialValue: _status,
                 decoration: const InputDecoration(labelText: 'Order Status'),
                 items: const [
                   DropdownMenuItem(value: 'received', child: Text('Received')),

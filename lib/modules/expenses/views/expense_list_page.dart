@@ -178,7 +178,7 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
                             ),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: MColors.danger.withOpacity(0.1),
+                                backgroundColor: MColors.danger.withValues(alpha: 0.1),
                                 child: Icon(e.category.icon,
                                     color: MColors.danger),
                               ),

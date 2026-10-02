@@ -125,7 +125,7 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
 
               if (_partyType == 'customer')
                 DropdownButtonFormField<Customer>(
-                  value: _selectedCustomer,
+                  initialValue: _selectedCustomer,
                   decoration: const InputDecoration(labelText: 'Select Customer *'),
                   items: customers
                       .map((c) => DropdownMenuItem(
@@ -138,7 +138,7 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
                 )
               else
                 DropdownButtonFormField<Supplier>(
-                  value: _selectedSupplier,
+                  initialValue: _selectedSupplier,
                   decoration: const InputDecoration(labelText: 'Select Supplier *'),
                   items: suppliers
                       .map((s) => DropdownMenuItem(
@@ -171,7 +171,7 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
               const SizedBox(height: MSpacing.md),
 
               DropdownButtonFormField<String>(
-                value: _method,
+                initialValue: _method,
                 decoration: const InputDecoration(labelText: 'Payment Method'),
                 items: const [
                   DropdownMenuItem(value: 'cash', child: Text('Cash')),

@@ -100,7 +100,7 @@ class _PurchaseOrderListPageState extends State<PurchaseOrderListPage> {
                                 backgroundColor: (isReceived
                                         ? Colors.green
                                         : MColors.warning)
-                                    .withOpacity(0.1),
+                                    .withValues(alpha: 0.1),
                                 child: Icon(
                                   Icons.assignment_outlined,
                                   color: isReceived

@@ -115,7 +115,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DropdownButtonFormField<Product>(
-                    value: selectedProduct,
+                    initialValue: selectedProduct,
                     decoration: const InputDecoration(labelText: 'Product'),
                     items: products
                         .map((p) => DropdownMenuItem(
@@ -177,9 +177,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(MSpacing.md),
                     decoration: BoxDecoration(
-                      color: MColors.primary.withOpacity(0.08),
+                      color: MColors.primary.withValues(alpha: 0.08),
                       borderRadius: MRadius.md,
-                      border: Border.all(color: MColors.primary.withOpacity(0.2)),
+                      border: Border.all(color: MColors.primary.withValues(alpha: 0.2)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,7 +325,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               ),
               const SizedBox(height: MSpacing.md),
               DropdownButtonFormField<Customer>(
-                value: _selectedCustomer,
+                initialValue: _selectedCustomer,
                 decoration: const InputDecoration(
                   labelText: 'Customer (Optional / Walk-in)',
                 ),
@@ -465,7 +465,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               const Text('Payment Details', style: MText.titleLg),
               const SizedBox(height: MSpacing.sm),
               DropdownButtonFormField<PaymentMethod>(
-                value: _paymentMethod,
+                initialValue: _paymentMethod,
                 decoration: const InputDecoration(labelText: 'Payment Method'),
                 items: PaymentMethod.values
                     .map((m) => DropdownMenuItem(
@@ -497,7 +497,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 decoration: BoxDecoration(
                   color: MColors.surface,
                   borderRadius: MRadius.lg,
-                  border: Border.all(color: MColors.primary.withOpacity(0.3)),
+                  border: Border.all(color: MColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   children: [

@@ -75,7 +75,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DropdownButtonFormField<ExpenseCategory>(
-                value: _category,
+                initialValue: _category,
                 decoration: const InputDecoration(labelText: 'Category *'),
                 items: ExpenseCategory.values
                     .map((cat) => DropdownMenuItem(

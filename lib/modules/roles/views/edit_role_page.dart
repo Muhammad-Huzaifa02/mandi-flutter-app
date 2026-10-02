@@ -71,7 +71,7 @@ class _EditRolePageState extends State<EditRolePage> {
         children: [
           Container(
             padding: const EdgeInsets.all(MSpacing.md),
-            color: MColors.primary.withOpacity(0.08),
+            color: MColors.primary.withValues(alpha: 0.08),
             child: Row(
               children: [
                 const Icon(Icons.shield_outlined, color: MColors.primary),

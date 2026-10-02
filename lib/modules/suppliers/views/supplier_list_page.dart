@@ -97,7 +97,7 @@ class _SupplierListPageState extends State<SupplierListPage> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor:
-                                    MColors.primary.withOpacity(0.1),
+                                    MColors.primary.withValues(alpha: 0.1),
                                 child: Text(
                                   s.name.isNotEmpty
                                       ? s.name[0].toUpperCase()
