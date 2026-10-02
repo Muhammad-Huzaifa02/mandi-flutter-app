@@ -1,6 +1,5 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:excel/excel.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:mandi/data/models/customer_model.dart';
@@ -112,12 +111,15 @@ class ExcelExportService {
 
   static Future<void> _saveAndShareExcel(
       List<int> bytes, String fileName) async {
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/$fileName');
-    await file.writeAsBytes(bytes);
+    final xFile = XFile.fromData(
+      Uint8List.fromList(bytes),
+      name: fileName,
+      mimeType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
 
     await Share.shareXFiles(
-      [XFile(file.path)],
+      [xFile],
       subject: 'Mandi Excel Report - $fileName',
     );
   }
