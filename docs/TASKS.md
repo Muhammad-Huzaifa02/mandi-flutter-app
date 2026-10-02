@@ -52,8 +52,8 @@
       (Customer Receipts & Supplier Payments with automatic running_balance updates).
 - [x] **Roles & Permissions Management** — customization of permissions per role (Manager, Accountant, Sales Staff, Inventory Staff, Custom).
 - [x] **Audit Logs & Activity Trail** — live stream of shop actions (member activations, invoices, stock changes).
-- [x] **WhatsApp Invoice Sharing & PDF Printing** — formatted WhatsApp invoice text & A4 PDF receipt generation.
-- [x] **WhatsApp Payment Reminders** — one-tap automated balance reminder messages for customers and suppliers over WhatsApp.
+- [x] **Purchase Orders & Supplier Procurement** — purchase order management (`purchase_orders` table) with status tracking (`received`, `pending`, `cancelled`).
+- [x] **Excel / CSV Report Exporting** — one-tap `.xlsx` report export for Invoices, Expenses, and Customer Ledgers.
 - [ ] Bring the HTML prototypes' "3D" visual language (layered
       shadows, staggered entrance, glass app bars) into the real
       Flutter theme, if wanted — see DESIGN.md's note on this.

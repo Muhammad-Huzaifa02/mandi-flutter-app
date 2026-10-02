@@ -2,20 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
-import 'package:mandi/core/utils/excel_export_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
-import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
-import 'package:mandi/modules/invoices/views/create_invoice_page.dart';
-import 'package:mandi/modules/invoices/views/invoice_detail_page.dart';
+import 'package:mandi/modules/purchase_orders/providers/purchase_order_provider.dart';
+import 'package:mandi/modules/purchase_orders/views/add_purchase_order_page.dart';
 
-class InvoiceListPage extends StatefulWidget {
-  const InvoiceListPage({super.key});
+class PurchaseOrderListPage extends StatefulWidget {
+  const PurchaseOrderListPage({super.key});
 
   @override
-  State<InvoiceListPage> createState() => _InvoiceListPageState();
+  State<PurchaseOrderListPage> createState() => _PurchaseOrderListPageState();
 }
 
-class _InvoiceListPageState extends State<InvoiceListPage> {
+class _PurchaseOrderListPageState extends State<PurchaseOrderListPage> {
   final _searchCtrl = TextEditingController();
 
   @override
@@ -27,41 +25,27 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
   @override
   Widget build(BuildContext context) {
     final shopCtx = context.watch<ShopContextProvider>();
-    final canCreate = shopCtx.hasPermission('create_invoice');
+    final canCreate = shopCtx.hasPermission('create_purchase');
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sales Invoices'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.file_download_outlined),
-            tooltip: 'Export Excel Report',
-            onPressed: () {
-              final invoices = context.read<InvoiceProvider>().invoices;
-              if (invoices.isNotEmpty) {
-                ExcelExportService.exportInvoices(invoices);
-              }
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Purchase Orders')),
       floatingActionButton: canCreate
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CreateInvoicePage()),
+                MaterialPageRoute(builder: (_) => const AddPurchaseOrderPage()),
               ),
-              icon: const Icon(Icons.add_shopping_cart_outlined),
-              label: const Text('New Invoice'),
+              icon: const Icon(Icons.add),
+              label: const Text('New Purchase'),
             )
           : null,
-      body: Consumer<InvoiceProvider>(
+      body: Consumer<PurchaseOrderProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final invoices = provider.search(_searchCtrl.text);
+          final orders = provider.search(_searchCtrl.text);
 
           return Column(
             children: [
@@ -71,7 +55,7 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
                   controller: _searchCtrl,
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
-                    hintText: 'Search by invoice # or customer name...',
+                    hintText: 'Search by supplier name or status...',
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchCtrl.text.isNotEmpty
                         ? IconButton(
@@ -86,23 +70,25 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
                 ),
               ),
               Expanded(
-                child: invoices.isEmpty
+                child: orders.isEmpty
                     ? Center(
                         child: Text(
                           _searchCtrl.text.isEmpty
-                              ? 'No invoices created yet.'
-                              : 'No invoices match your search.',
+                              ? 'No purchase orders recorded yet.'
+                              : 'No purchase orders match your search.',
                           style: MText.bodyMd
                               .copyWith(color: MColors.textSecondary),
                         ),
                       )
                     : ListView.separated(
                         padding: const EdgeInsets.all(MSpacing.md),
-                        itemCount: invoices.length,
+                        itemCount: orders.length,
                         separatorBuilder: (_, __) =>
                             const SizedBox(height: MSpacing.sm),
                         itemBuilder: (context, i) {
-                          final inv = invoices[i];
+                          final po = orders[i];
+                          final isReceived = po.status == 'received';
+
                           return Card(
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -111,17 +97,21 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
                             ),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor:
-                                    MColors.primary.withOpacity(0.1),
-                                child: const Icon(Icons.receipt_long,
-                                    color: MColors.primary),
+                                backgroundColor: (isReceived
+                                        ? Colors.green
+                                        : MColors.warning)
+                                    .withOpacity(0.1),
+                                child: Icon(
+                                  Icons.assignment_outlined,
+                                  color: isReceived
+                                      ? Colors.green
+                                      : MColors.warning,
+                                ),
                               ),
-                              title: Text(inv.invoiceNumber,
+                              title: Text(po.supplierName,
                                   style: MText.titleLg),
                               subtitle: Text(
-                                inv.customerName.isNotEmpty
-                                    ? inv.customerName
-                                    : 'Walk-in Customer',
+                                'Status: ${po.status.toUpperCase()} ${po.createdAt != null ? '• ${po.createdAt!.day}/${po.createdAt!.month}/${po.createdAt!.year}' : ''}',
                                 style: MText.bodySm
                                     .copyWith(color: MColors.textSecondary),
                               ),
@@ -130,29 +120,22 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    'Rs. ${inv.total.toStringAsFixed(0)}',
+                                    'Rs. ${po.total.toStringAsFixed(0)}',
                                     style: MText.titleLg
                                         .copyWith(color: MColors.primary),
                                   ),
                                   Text(
-                                    inv.pendingAmount > 0
-                                        ? 'Pending: Rs. ${inv.pendingAmount.toStringAsFixed(0)}'
+                                    po.pendingAmount > 0
+                                        ? 'Pending: Rs. ${po.pendingAmount.toStringAsFixed(0)}'
                                         : 'PAID',
                                     style: MText.bodySm.copyWith(
-                                      color: inv.pendingAmount > 0
+                                      color: po.pendingAmount > 0
                                           ? MColors.danger
                                           : Colors.green,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
-                              ),
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      InvoiceDetailPage(invoice: inv),
-                                ),
                               ),
                             ),
                           );

@@ -209,6 +209,36 @@ class SupabaseService {
   static Future<void> addSupplier(Map<String, dynamic> data) =>
       _client.from('suppliers').insert(data);
 
+  // ── Purchase Orders ──────────────────────────────────────────────────────
+
+  static Stream<List<Map<String, dynamic>>> purchaseOrdersStream(
+          String shopId) =>
+      _client
+          .from('purchase_orders')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('created_at', ascending: false);
+
+  static Future<void> addPurchaseOrder(Map<String, dynamic> data) async {
+    await _client.from('purchase_orders').insert(data);
+
+    final supplierId = data['supplier_id'] as String?;
+    final pendingAmount = (data['pending_amount'] as num?)?.toDouble() ?? 0;
+
+    if (supplierId != null && supplierId.isNotEmpty && pendingAmount > 0) {
+      final supplier = await _client
+          .from('suppliers')
+          .select('running_balance')
+          .eq('id', supplierId)
+          .single();
+      final current = (supplier['running_balance'] as num?)?.toDouble() ?? 0;
+      await _client
+          .from('suppliers')
+          .update({'running_balance': current + pendingAmount})
+          .eq('id', supplierId);
+    }
+  }
+
   // ── Invoices ─────────────────────────────────────────────────────────────
 
   static Stream<List<Map<String, dynamic>>> invoicesStream(String shopId) =>

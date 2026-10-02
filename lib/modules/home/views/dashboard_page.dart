@@ -14,6 +14,7 @@ import 'package:mandi/modules/reports/views/reports_page.dart';
 import 'package:mandi/modules/roles/views/roles_list_page.dart';
 import 'package:mandi/modules/audit_logs/views/audit_log_list_page.dart';
 import 'package:mandi/modules/settings/views/shop_settings_page.dart';
+import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -79,6 +80,17 @@ class DashboardPage extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const SupplierListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('create_purchase') ||
+                    shopCtx.hasPermission('manage_suppliers'))
+                  _ManageTile(
+                    icon: Icons.assignment_outlined,
+                    label: 'Purchases',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const PurchaseOrderListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_products') ||

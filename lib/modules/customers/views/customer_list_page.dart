@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/excel_export_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/customers/views/add_customer_page.dart';
@@ -29,7 +30,21 @@ class _CustomerListPageState extends State<CustomerListPage> {
     final canAdd = shopCtx.hasPermission('manage_customers');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Customers')),
+      appBar: AppBar(
+        title: const Text('Customers'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: 'Export Excel Ledger',
+            onPressed: () {
+              final customers = context.read<CustomerProvider>().customers;
+              if (customers.isNotEmpty) {
+                ExcelExportService.exportCustomers(customers);
+              }
+            },
+          ),
+        ],
+      ),
       floatingActionButton: canAdd
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.push(

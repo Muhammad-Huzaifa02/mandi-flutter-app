@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/excel_export_service.dart';
 import 'package:mandi/data/models/expense_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/expenses/providers/expense_provider.dart';
@@ -30,7 +31,21 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
     final canLog = shopCtx.hasPermission('manage_expenses');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Shop Expenses')),
+      appBar: AppBar(
+        title: const Text('Shop Expenses'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: 'Export Excel Report',
+            onPressed: () {
+              final expenses = context.read<ExpenseProvider>().expenses;
+              if (expenses.isNotEmpty) {
+                ExcelExportService.exportExpenses(expenses);
+              }
+            },
+          ),
+        ],
+      ),
       floatingActionButton: canLog
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.push(
