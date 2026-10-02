@@ -9,6 +9,7 @@ class AuthProvider extends ChangeNotifier {
 
   User? _user;
   bool _initialized = false;
+  bool _needsPasswordSetup = false;
 
   AuthProvider() {
     // authStateChanges doesn't exist on supabase_flutter — it exposes a
@@ -19,6 +20,11 @@ class AuthProvider extends ChangeNotifier {
     _client.auth.onAuthStateChange.listen((state) {
       _user = state.session?.user;
       _initialized = true;
+
+      if (state.event == AuthChangeEvent.passwordRecovery) {
+        _needsPasswordSetup = true;
+      }
+
       notifyListeners();
     });
   }
@@ -26,7 +32,13 @@ class AuthProvider extends ChangeNotifier {
   User? get user => _user;
   bool get isLoggedIn => _user != null;
   bool get initialized => _initialized;
+  bool get needsPasswordSetup => _needsPasswordSetup;
   String? get uid => _user?.id;
+
+  void clearNeedsPasswordSetup() {
+    _needsPasswordSetup = false;
+    notifyListeners();
+  }
 
   Future<AuthResponse> signInWithEmail(String email, String password) =>
       _client.auth.signInWithPassword(email: email, password: password);

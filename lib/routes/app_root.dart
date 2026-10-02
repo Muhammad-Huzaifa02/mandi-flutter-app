@@ -5,6 +5,7 @@ import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/auth/views/splash_page.dart';
 import 'package:mandi/modules/auth/views/welcome_page.dart';
+import 'package:mandi/modules/auth/views/set_password_page.dart';
 import 'package:mandi/modules/onboarding/views/no_shop_page.dart';
 import 'package:mandi/routes/dashboard_router.dart';
 
@@ -50,6 +51,10 @@ class _AppRootState extends State<AppRoot> {
         });
       }
       return const WelcomePage();
+    }
+
+    if (auth.needsPasswordSetup) {
+      return const SetPasswordPage();
     }
 
     // Logged in — kick off shop-context loading exactly once per uid.
