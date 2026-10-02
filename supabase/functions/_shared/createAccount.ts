@@ -57,7 +57,7 @@ export async function handleCreateAccount(
     // invitation requirement.
     const { data: invited, error: inviteErr } =
       await adminClient.auth.admin.inviteUserByEmail(email, {
-        redirectTo: "http://localhost:3000/reset_password.html",
+        redirectTo: "mandi://auth-callback",
         data: { full_name: name, invited_to_shop: shop?.name ?? "" },
       });
     if (inviteErr) {

@@ -23,6 +23,11 @@ class AuthProvider extends ChangeNotifier {
 
       if (state.event == AuthChangeEvent.passwordRecovery) {
         _needsPasswordSetup = true;
+      } else if (state.event == AuthChangeEvent.signedIn) {
+        final meta = _user?.userMetadata;
+        if (meta != null && meta.containsKey('invited_to_shop')) {
+          _needsPasswordSetup = true;
+        }
       }
 
       notifyListeners();
