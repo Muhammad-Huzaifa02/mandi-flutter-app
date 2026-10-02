@@ -606,6 +606,10 @@ create policy "memberships: manage_employees can write" on public.shop_membershi
   for update using (public.has_permission(shop_id, 'manage_employees'))
   with check (public.has_permission(shop_id, 'manage_employees'));
 
+drop policy if exists "memberships: update own" on public.shop_memberships;
+create policy "memberships: update own" on public.shop_memberships
+  for update using (user_id = auth.uid());
+
 -- Inserts for staff/customer/supplier go through Edge Functions using the
 -- service role (bypasses RLS by design — see supabase/functions/). The one
 -- client-side insert allowed here is the OWNER's own membership, created

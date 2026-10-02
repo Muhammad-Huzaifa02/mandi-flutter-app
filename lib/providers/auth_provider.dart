@@ -59,6 +59,21 @@ class AuthProvider extends ChangeNotifier {
         'account_activated': true,
       },
     ));
+
+    if (_user?.id != null) {
+      final updateMap = <String, dynamic>{
+        'status': 'active',
+        'updated_at': DateTime.now().toIso8601String(),
+        if (fullName != null && fullName.isNotEmpty) 'name': fullName,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+      };
+
+      await _client
+          .from('shop_memberships')
+          .update(updateMap)
+          .eq('user_id', _user!.id);
+    }
+
     _needsPasswordSetup = false;
     notifyListeners();
   }
