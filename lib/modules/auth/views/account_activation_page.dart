@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/providers/auth_provider.dart';
+import 'package:mandi/providers/shop_context_provider.dart';
 
 /// Dedicated mobile account activation page for staff, customers, and suppliers
 /// accepting an email invitation.
@@ -53,11 +54,19 @@ class _AccountActivationPageState extends State<AccountActivationPage> {
 
     try {
       final auth = context.read<AuthProvider>();
+      final shopCtx = context.read<ShopContextProvider>();
 
-      // Update password in Supabase Auth
-      await auth.updatePassword(_password.text);
+      // Complete account activation in Supabase Auth
+      await auth.completeAccountActivation(
+        _password.text,
+        fullName: _name.text.trim(),
+        phone: _phone.text.trim(),
+      );
 
-      auth.clearNeedsPasswordSetup();
+      // Load shop context for the activated user
+      if (auth.uid != null) {
+        await shopCtx.loadForUser(auth.uid!);
+      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

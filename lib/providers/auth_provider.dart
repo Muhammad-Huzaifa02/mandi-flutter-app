@@ -25,7 +25,10 @@ class AuthProvider extends ChangeNotifier {
         _needsPasswordSetup = true;
       } else if (state.event == AuthChangeEvent.signedIn) {
         final meta = _user?.userMetadata;
-        if (meta != null && meta.containsKey('invited_to_shop')) {
+        if (meta != null &&
+            meta.containsKey('invited_to_shop') &&
+            meta['invited_to_shop'] != null &&
+            meta['account_activated'] != true) {
           _needsPasswordSetup = true;
         }
       }
@@ -41,6 +44,21 @@ class AuthProvider extends ChangeNotifier {
   String? get uid => _user?.id;
 
   void clearNeedsPasswordSetup() {
+    _needsPasswordSetup = false;
+    notifyListeners();
+  }
+
+  Future<void> completeAccountActivation(String newPassword,
+      {String? fullName, String? phone}) async {
+    await _client.auth.updateUser(UserAttributes(
+      password: newPassword,
+      data: {
+        if (fullName != null && fullName.isNotEmpty) 'full_name': fullName,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        'invited_to_shop': null,
+        'account_activated': true,
+      },
+    ));
     _needsPasswordSetup = false;
     notifyListeners();
   }

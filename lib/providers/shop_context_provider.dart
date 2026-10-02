@@ -58,11 +58,21 @@ class ShopContextProvider extends ChangeNotifier {
     final rows = await _client
         .from('shop_memberships')
         .select()
+        .eq('user_id', uid);
+
+    // Auto-activate invited memberships once the user has signed in
+    await _client
+        .from('shop_memberships')
+        .update({'status': 'active'})
         .eq('user_id', uid)
-        .eq('status', 'active');
+        .eq('status', 'invited');
+
+    final activeRows = (rows as List)
+        .where((r) => r['status'] == 'active' || r['status'] == 'invited')
+        .toList();
 
     _memberships =
-        (rows as List).map((r) => ShopMember.fromMap(r['id'] as String, r)).toList();
+        activeRows.map((r) => ShopMember.fromMap(r['id'] as String, r)).toList();
 
     if (_memberships.isEmpty) {
       _currentShopId = null;
