@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
@@ -210,6 +211,31 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: MSpacing.lg),
+              const Text('App Language (زبان)', style: MText.titleLg),
+              const SizedBox(height: MSpacing.sm),
+              Consumer<LocaleProvider>(
+                builder: (context, localeProvider, _) {
+                  return SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(
+                        value: 'en',
+                        label: Text('English'),
+                        icon: Icon(Icons.language),
+                      ),
+                      ButtonSegment(
+                        value: 'ur',
+                        label: Text('اردو (Urdu)'),
+                        icon: Icon(Icons.translate),
+                      ),
+                    ],
+                    selected: {localeProvider.isUrdu ? 'ur' : 'en'},
+                    onSelectionChanged: (set) {
+                      localeProvider.setLocale(Locale(set.first));
+                    },
+                  );
+                },
               ),
               const SizedBox(height: MSpacing.xl),
               ElevatedButton(

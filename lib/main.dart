@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:mandi/supabase_config.dart';
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/core/theme/theme_provider.dart';
 import 'package:mandi/core/utils/connectivity_service.dart';
 import 'package:mandi/core/utils/notification_service.dart';
@@ -45,6 +46,7 @@ class MandiApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => ConnectivityService()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ShopContextProvider()),
@@ -89,13 +91,14 @@ class MandiApp extends StatelessWidget {
               purchaseOrderProvider!..updateShop(shopCtx.currentShopId),
         ),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (_, themeProvider, __) => MaterialApp(
+      child: Consumer2<ThemeProvider, LocaleProvider>(
+        builder: (_, themeProvider, localeProvider, __) => MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Mandi',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
+          locale: localeProvider.locale,
           home: const OfflineBannerWrapper(child: AppRoot()),
         ),
       ),
