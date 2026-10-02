@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/ledger_pdf_generator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/customer_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -16,7 +17,23 @@ class CustomerDetailPage extends StatelessWidget {
     final shop = context.watch<ShopContextProvider>().currentShop;
 
     return Scaffold(
-      appBar: AppBar(title: Text(customer.name)),
+      appBar: AppBar(
+        title: Text(customer.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.print_outlined),
+            tooltip: 'Print Ledger Statement PDF',
+            onPressed: () {
+              LedgerPdfGenerator.printCustomerLedger(
+                customer: customer,
+                shopName: shop?.name ?? 'Mandi Shop',
+                shopPhone: shop?.phone,
+                shopCity: shop?.city,
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Column(
@@ -34,7 +51,7 @@ class CustomerDetailPage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: MColors.primary.withOpacity(0.1),
+                    backgroundColor: MColors.primary.withValues(alpha: 0.1),
                     child: Text(
                       customer.name.isNotEmpty
                           ? customer.name[0].toUpperCase()

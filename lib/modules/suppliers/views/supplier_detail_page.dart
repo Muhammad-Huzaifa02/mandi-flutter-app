@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/ledger_pdf_generator.dart';
+import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/supplier_model.dart';
+import 'package:mandi/providers/shop_context_provider.dart';
 
 class SupplierDetailPage extends StatelessWidget {
   final Supplier supplier;
@@ -10,8 +14,26 @@ class SupplierDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shop = context.watch<ShopContextProvider>().currentShop;
+
     return Scaffold(
-      appBar: AppBar(title: Text(supplier.name)),
+      appBar: AppBar(
+        title: Text(supplier.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.print_outlined),
+            tooltip: 'Print Ledger Statement PDF',
+            onPressed: () {
+              LedgerPdfGenerator.printSupplierLedger(
+                supplier: supplier,
+                shopName: shop?.name ?? 'Mandi Shop',
+                shopPhone: shop?.phone,
+                shopCity: shop?.city,
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Column(
@@ -29,7 +51,7 @@ class SupplierDetailPage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: MColors.primary.withOpacity(0.1),
+                    backgroundColor: MColors.primary.withValues(alpha: 0.1),
                     child: Text(
                       supplier.name.isNotEmpty
                           ? supplier.name[0].toUpperCase()
@@ -117,6 +139,29 @@ class SupplierDetailPage extends StatelessWidget {
                   ? supplier.productsSupplied
                   : 'Not specified',
             ),
+
+            if (supplier.runningBalance > 0 && supplier.phone.isNotEmpty) ...[
+              const SizedBox(height: MSpacing.xl),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF25D366),
+                  ),
+                  onPressed: () {
+                    WhatsAppShareService.sharePaymentReminder(
+                      phone: supplier.phone,
+                      name: supplier.name,
+                      pendingBalance: supplier.runningBalance,
+                      shopName: shop?.name ?? 'Mandi Shop',
+                    );
+                  },
+                  icon: const Icon(Icons.send_outlined, color: Colors.white),
+                  label: const Text('Send WhatsApp Payment Reminder',
+                      style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ],
           ],
         ),
       ),
