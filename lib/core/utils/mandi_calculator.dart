@@ -30,6 +30,21 @@ class MandiCalculator {
     return manns * pricePer40kg;
   }
 
+  static double calculateLineTotal(double weightKg, double pricePer40kg) =>
+      calculateTotalAmount(weightKg: weightKg, pricePer40kg: pricePer40kg);
+
+  static double calculateCommissionAmount(
+          double subtotal, double commissionPercent) =>
+      (subtotal * commissionPercent) / 100.0;
+
+  static double calculateInvoiceTotal({
+    required double subtotal,
+    required double commissionAmount,
+    required double expensesAmount,
+    required double discountAmount,
+  }) =>
+      subtotal + commissionAmount + expensesAmount - discountAmount;
+
   /// Formats weight in both KG and Manns for UI display.
   /// e.g. "120 KG (3.00 Mann)" or "50 KG (1.25 Mann)"
   static String formatWeightDisplay(double weightKg) {

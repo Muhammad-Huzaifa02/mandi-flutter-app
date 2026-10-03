@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/data/models/customer_model.dart';
-import 'package:mandi/data/models/invoice_model.dart';
+import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/data/models/product_model.dart';
+import 'package:mandi/data/models/invoice_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
+import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
 import 'package:mandi/modules/products/providers/product_provider.dart';
 import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
 
@@ -22,6 +25,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   final _formKey = GlobalKey<FormState>();
 
   Customer? _selectedCustomer;
+  Supplier? _selectedSupplier;
   final List<InvoiceItem> _items = [];
 
   final _invoiceNumberCtrl = TextEditingController();
@@ -59,12 +63,13 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   }
 
   double get _productsSubtotal =>
-      _items.fold(0, (sum, item) => sum + item.lineTotal);
+      _items.fold(0.0, (sum, item) => sum + item.lineTotal);
 
-  double get _commissionAmount {
-    final percent = double.tryParse(_commissionPercentCtrl.text.trim()) ?? 0;
-    return _productsSubtotal * (percent / 100.0);
-  }
+  double get _commissionPercent =>
+      double.tryParse(_commissionPercentCtrl.text.trim()) ?? 0;
+
+  double get _commissionAmount =>
+      MandiCalculator.calculateCommissionAmount(_productsSubtotal, _commissionPercent);
 
   double get _expensesAmount =>
       double.tryParse(_expensesCtrl.text.trim()) ?? 0;
@@ -72,40 +77,46 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   double get _discountAmount =>
       double.tryParse(_discountCtrl.text.trim()) ?? 0;
 
-  double get _grandTotal =>
-      _productsSubtotal + _commissionAmount + _expensesAmount - _discountAmount;
+  double get _grandTotal => MandiCalculator.calculateInvoiceTotal(
+        subtotal: _productsSubtotal,
+        commissionAmount: _commissionAmount,
+        expensesAmount: _expensesAmount,
+        discountAmount: _discountAmount,
+      );
 
   double get _receivedAmount =>
       double.tryParse(_receivedAmountCtrl.text.trim()) ?? _grandTotal;
 
-  double get _pendingAmount => _grandTotal - _receivedAmount;
+  double get _pendingAmount =>
+      (_grandTotal - _receivedAmount) > 0 ? (_grandTotal - _receivedAmount) : 0;
+
+  double get _netSupplierPayout =>
+      (_productsSubtotal - _commissionAmount - _expensesAmount) > 0
+          ? (_productsSubtotal - _commissionAmount - _expensesAmount)
+          : 0;
 
   void _addItemDialog() {
     final products = context.read<ProductProvider>().products;
     if (products.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please add at least one product first.')),
+        const SnackBar(content: Text('Please add products first.')),
       );
       return;
     }
 
-    Product selectedProduct = products.first;
-    final qtyCtrl = TextEditingController(text: '1');
-    final weightKgCtrl = TextEditingController(text: '40');
-    final pricePer40kgCtrl = TextEditingController(
-        text: selectedProduct.sellingPrice.toStringAsFixed(0));
+    Product? selectedProduct = products.first;
+    final weightCtrl = TextEditingController();
+    final priceCtrl =
+        TextEditingController(text: selectedProduct.sellingPrice.toStringAsFixed(0));
+    final quantityCtrl = TextEditingController(text: '1');
 
     showDialog(
       context: context,
       builder: (dialogCtx) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final qty = double.tryParse(qtyCtrl.text) ?? 1;
-          final wKg = double.tryParse(weightKgCtrl.text) ?? 0;
-          final ratePer40kg = double.tryParse(pricePer40kgCtrl.text) ?? 0;
-
-          final manns = MandiCalculator.kgToMann(wKg);
-          final lineTot = manns * ratePer40kg;
+        builder: (ctx, setDialogState) {
+          final w = double.tryParse(weightCtrl.text.trim()) ?? 0;
+          final p = double.tryParse(priceCtrl.text.trim()) ?? 0;
+          final calcTotal = MandiCalculator.calculateLineTotal(w, p);
 
           return AlertDialog(
             title: const Text('Add Product Item'),
@@ -118,57 +129,58 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     initialValue: selectedProduct,
                     decoration: const InputDecoration(labelText: 'Product'),
                     items: products
-                        .map((p) => DropdownMenuItem(
-                              value: p,
-                              child: Text('${p.name} (Stock: ${p.currentStock}kg)'),
+                        .map((prod) => DropdownMenuItem(
+                              value: prod,
+                              child: Text('${prod.name} (Stock: ${prod.currentStock}kg)'),
                             ))
                         .toList(),
                     onChanged: (p) {
                       if (p != null) {
                         setDialogState(() {
                           selectedProduct = p;
-                          pricePer40kgCtrl.text =
-                              p.sellingPrice.toStringAsFixed(0);
+                          priceCtrl.text = p.sellingPrice.toStringAsFixed(0);
                         });
                       }
                     },
                   ),
-                  const SizedBox(height: MSpacing.md),
-                  TextField(
-                    controller: qtyCtrl,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (v) {
-                      final q = double.tryParse(v) ?? 1;
-                      setDialogState(() {
-                        weightKgCtrl.text = (q * selectedProduct.weightPerUnitKg)
-                            .toStringAsFixed(0);
-                      });
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Bags / Quantity',
-                      hintText: 'e.g. 3',
-                    ),
+                  const SizedBox(height: MSpacing.sm),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: weightCtrl,
+                          keyboardType:
+                              const TextInputType.numberWithOptions(decimal: true),
+                          onChanged: (_) => setDialogState(() {}),
+                          decoration: const InputDecoration(
+                            labelText: 'Weight (KG) *',
+                            hintText: 'e.g. 200',
+                            suffixText: 'KG',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: MSpacing.sm),
+                      Expanded(
+                        child: TextFormField(
+                          controller: quantityCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Bags/Bori',
+                            hintText: 'e.g. 5',
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: MSpacing.md),
-                  TextField(
-                    controller: weightKgCtrl,
+                  const SizedBox(height: MSpacing.sm),
+                  TextFormField(
+                    controller: priceCtrl,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (_) => setDialogState(() {}),
                     decoration: const InputDecoration(
-                      labelText: 'Total Weight (KG) *',
-                      suffixText: 'KG',
-                    ),
-                  ),
-                  const SizedBox(height: MSpacing.md),
-                  TextField(
-                    controller: pricePer40kgCtrl,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (_) => setDialogState(() {}),
-                    decoration: const InputDecoration(
-                      labelText: 'Rate per 40 KG / Maund (PKR) *',
+                      labelText: 'Rate per 40 KG (Maund) *',
+                      hintText: 'e.g. 4000',
                       suffixText: 'PKR',
                     ),
                   ),
@@ -186,23 +198,19 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       children: [
                         const Text('Mandi Math Breakdown:',
                             style: MText.labelMd),
-                        const SizedBox(height: MSpacing.xs),
+                        const SizedBox(height: 2),
                         Text(
-                          '1. Total Weight: ${wKg.toStringAsFixed(1)} KG',
-                          style: MText.bodySm,
-                        ),
-                        Text(
-                          '2. Weight in Mann: ${wKg.toStringAsFixed(1)} KG ÷ 40 = ${manns.toStringAsFixed(2)} Mann',
-                          style: MText.bodySm,
-                        ),
-                        Text(
-                          '3. Calculation: ${manns.toStringAsFixed(2)} Mann × Rs. ${ratePer40kg.toStringAsFixed(0)}',
+                          MandiCalculator.formatCalculationBreakdown(
+                            weightKg: w,
+                            pricePer40kg: p,
+                          ),
                           style: MText.bodySm,
                         ),
                         const Divider(height: MSpacing.sm),
                         Text(
-                          'Line Total: Rs. ${lineTot.toStringAsFixed(0)}',
-                          style: MText.titleLg.copyWith(color: MColors.primary),
+                          'Line Total: Rs. ${calcTotal.toStringAsFixed(0)}',
+                          style:
+                              MText.titleLg.copyWith(color: MColors.primary),
                         ),
                       ],
                     ),
@@ -215,18 +223,27 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 onPressed: () => Navigator.pop(dialogCtx),
                 child: const Text('Cancel'),
               ),
-              FilledButton(
+              ElevatedButton(
                 onPressed: () {
-                  if (wKg <= 0) return;
+                  final w = double.tryParse(weightCtrl.text.trim()) ?? 0;
+                  final p = double.tryParse(priceCtrl.text.trim()) ?? 0;
+                  final q = double.tryParse(quantityCtrl.text.trim()) ?? 1;
+
+                  if (w <= 0 || p <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Please enter valid weight and price.')),
+                    );
+                    return;
+                  }
 
                   setState(() {
                     _items.add(InvoiceItem(
-                      productId: selectedProduct.id,
-                      productName: selectedProduct.name,
-                      quantity: qty,
-                      weightKg: wKg,
-                      unitPrice: ratePer40kg,
-                      lineTotal: lineTot,
+                      productId: selectedProduct!.id,
+                      productName: selectedProduct!.name,
+                      quantity: q,
+                      weightKg: w,
+                      unitPrice: p,
                     ));
                   });
                   Navigator.pop(dialogCtx);
@@ -259,6 +276,8 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         shopId: shopId,
         customerId: _selectedCustomer?.id,
         customerName: _selectedCustomer?.name ?? 'Walk-in Customer',
+        supplierId: _selectedSupplier?.id,
+        supplierName: _selectedSupplier?.name ?? '',
         invoiceNumber: _invoiceNumberCtrl.text.trim(),
         subtotal: _productsSubtotal,
         commission: _commissionAmount,
@@ -268,27 +287,41 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         receivedAmount: _receivedAmount,
         pendingAmount: _pendingAmount,
         paymentMethod: _paymentMethod,
-        status: _pendingAmount <= 0 ? 'paid' : (_receivedAmount > 0 ? 'partial' : 'unpaid'),
       );
 
-      await provider.createInvoice(
+      final id = await provider.createInvoice(
         invoice: invoice,
         items: _items,
       );
 
+      // If supplier is selected (Option A: Consignment Sale), credit net payout to supplier running balance
+      if (_selectedSupplier != null) {
+        final netPayout = _netSupplierPayout;
+        if (netPayout > 0) {
+          final client = Supabase.instance.client;
+          final current = (await client
+              .from('suppliers')
+              .select('running_balance')
+              .eq('id', _selectedSupplier!.id)
+              .single())['running_balance'] as num? ?? 0;
+
+          await client
+              .from('suppliers')
+              .update({'running_balance': current.toDouble() + netPayout})
+              .eq('id', _selectedSupplier!.id);
+        }
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invoice created & stock updated.')),
+        SnackBar(
+            content: Text('Invoice $id created & stock deducted successfully.')),
       );
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      final raw = e.toString();
-      final msg = raw.contains('23505') || raw.contains('duplicate')
-          ? 'Invoice number "${_invoiceNumberCtrl.text}" already exists. Please use a unique invoice number.'
-          : raw;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: MColors.danger),
+        SnackBar(content: Text(e.toString()), backgroundColor: MColors.danger),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -298,9 +331,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   @override
   Widget build(BuildContext context) {
     final customers = context.watch<CustomerProvider>().customers;
+    final suppliers = context.watch<SupplierProvider>().suppliers;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('New Sales Invoice')),
+      appBar: AppBar(title: const Text('Create Sales Invoice')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Form(
@@ -308,7 +342,6 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Invoice Number & Customer Picker
               Row(
                 children: [
                   Expanded(
@@ -327,7 +360,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               DropdownButtonFormField<Customer>(
                 initialValue: _selectedCustomer,
                 decoration: const InputDecoration(
-                  labelText: 'Customer (Optional / Walk-in)',
+                  labelText: 'Customer (Buyer / Walk-in)',
                 ),
                 hint: const Text('Select Customer'),
                 items: customers
@@ -337,6 +370,21 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                         ))
                     .toList(),
                 onChanged: (c) => setState(() => _selectedCustomer = c),
+              ),
+              const SizedBox(height: MSpacing.md),
+              DropdownButtonFormField<Supplier>(
+                initialValue: _selectedSupplier,
+                decoration: const InputDecoration(
+                  labelText: 'Supplier / Farmer (Aawak - Consignment)',
+                ),
+                hint: const Text('Select Supplier / Farmer (Optional)'),
+                items: suppliers
+                    .map((s) => DropdownMenuItem(
+                          value: s,
+                          child: Text('${s.name} (${s.phone})'),
+                        ))
+                    .toList(),
+                onChanged: (s) => setState(() => _selectedSupplier = s),
               ),
 
               const SizedBox(height: MSpacing.lg),
@@ -358,29 +406,28 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               // Line Items List
               if (_items.isEmpty)
                 Container(
-                  padding: const EdgeInsets.all(MSpacing.lg),
+                  padding: const EdgeInsets.all(MSpacing.xl),
                   decoration: BoxDecoration(
                     color: MColors.surface,
                     borderRadius: MRadius.md,
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Center(
-                    child: Text(
-                      'No items added yet. Tap "Add Item" above.',
-                      style: MText.bodyMd.copyWith(color: MColors.textSecondary),
-                    ),
+                    child: Text('No items added yet. Click "+ Add Item".',
+                        style: MText.bodyMd
+                            .copyWith(color: MColors.textSecondary)),
                   ),
                 )
               else
-                ListView.builder(
+                ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _items.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: MSpacing.xs),
                   itemBuilder: (context, i) {
                     final item = _items[i];
                     return Card(
                       elevation: 0,
-                      margin: const EdgeInsets.only(bottom: MSpacing.xs),
                       shape: RoundedRectangleBorder(
                         borderRadius: MRadius.md,
                         side: BorderSide(color: Colors.grey.shade200),
@@ -388,20 +435,24 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       child: ListTile(
                         title: Text(item.productName, style: MText.titleLg),
                         subtitle: Text(
-                          '${item.weightKg} KG (${MandiCalculator.kgToMann(item.weightKg).toStringAsFixed(2)} Mann) @ Rs. ${item.unitPrice.toStringAsFixed(0)}/40kg',
-                          style: MText.bodySm.copyWith(color: MColors.textSecondary),
+                          MandiCalculator.formatCalculationBreakdown(
+                            weightKg: item.weightKg,
+                            pricePer40kg: item.unitPrice,
+                          ),
+                          style: MText.bodySm
+                              .copyWith(color: MColors.textSecondary),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'Rs. ${item.lineTotal.toStringAsFixed(0)}',
-                              style: MText.titleLg.copyWith(color: MColors.primary),
-                            ),
+                            Text('Rs. ${item.lineTotal.toStringAsFixed(0)}',
+                                style: MText.titleLg
+                                    .copyWith(color: MColors.primary)),
                             IconButton(
                               icon: const Icon(Icons.delete_outline,
-                                  color: MColors.danger, size: 20),
-                              onPressed: () => setState(() => _items.removeAt(i)),
+                                  color: MColors.danger),
+                              onPressed: () =>
+                                  setState(() => _items.removeAt(i)),
                             ),
                           ],
                         ),
@@ -412,15 +463,16 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
               const SizedBox(height: MSpacing.lg),
 
-              // Commission & Charges
-              const Text('Commission & Charges', style: MText.titleLg),
+              // Mandi Calculations
+              const Text('Mandi Commission & Expenses', style: MText.titleLg),
               const SizedBox(height: MSpacing.sm),
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _commissionPercentCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       onChanged: (_) => setState(() {}),
                       decoration: const InputDecoration(
                         labelText: 'Commission %',
@@ -432,10 +484,11 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                   Expanded(
                     child: TextFormField(
                       controller: _expensesCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       onChanged: (_) => setState(() {}),
                       decoration: const InputDecoration(
-                        labelText: 'Labor / Transport',
+                        labelText: 'Mazdoori / Kiraya (Expenses)',
                         suffixText: 'PKR',
                       ),
                     ),
@@ -443,20 +496,15 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 ],
               ),
               const SizedBox(height: MSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _discountCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
-                        labelText: 'Discount',
-                        suffixText: 'PKR',
-                      ),
-                    ),
-                  ),
-                ],
+              TextFormField(
+                controller: _discountCtrl,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Discount (PKR)',
+                  suffixText: 'PKR',
+                ),
               ),
 
               const SizedBox(height: MSpacing.lg),
@@ -480,7 +528,8 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               const SizedBox(height: MSpacing.md),
               TextFormField(
                 controller: _receivedAmountCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: 'Received Amount (PKR)',
@@ -505,34 +554,32 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                         label: 'Products Subtotal:',
                         value: 'Rs. ${_productsSubtotal.toStringAsFixed(0)}'),
                     _SummaryRow(
-                        label: 'Mandi Commission:',
-                        value: '+ Rs. ${_commissionAmount.toStringAsFixed(0)}'),
-                    if (_expensesAmount > 0)
-                      _SummaryRow(
-                          label: 'Labor/Expenses:',
-                          value: '+ Rs. ${_expensesAmount.toStringAsFixed(0)}'),
+                        label: 'Commission ($_commissionPercent%):',
+                        value:
+                            '+ Rs. ${_commissionAmount.toStringAsFixed(0)}'),
+                    _SummaryRow(
+                        label: 'Mazdoori / Kiraya:',
+                        value: '+ Rs. ${_expensesAmount.toStringAsFixed(0)}'),
                     if (_discountAmount > 0)
                       _SummaryRow(
                           label: 'Discount:',
-                          value: '- Rs. ${_discountAmount.toStringAsFixed(0)}'),
+                          value:
+                              '- Rs. ${_discountAmount.toStringAsFixed(0)}'),
                     const Divider(height: MSpacing.md),
                     _SummaryRow(
                       label: 'Grand Total:',
                       value: 'Rs. ${_grandTotal.toStringAsFixed(0)}',
                       isBold: true,
                     ),
-                    _SummaryRow(
-                      label: 'Received:',
-                      value: 'Rs. ${_receivedAmount.toStringAsFixed(0)}',
-                      color: Colors.green,
-                    ),
-                    if (_pendingAmount > 0)
+                    if (_selectedSupplier != null) ...[
+                      const Divider(height: MSpacing.md),
                       _SummaryRow(
-                        label: 'Pending Balance:',
-                        value: 'Rs. ${_pendingAmount.toStringAsFixed(0)}',
-                        color: MColors.danger,
+                        label: 'Net Payout to Supplier:',
+                        value: 'Rs. ${_netSupplierPayout.toStringAsFixed(0)}',
+                        color: Colors.green,
                         isBold: true,
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -546,9 +593,11 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
-                    : const Text('Create & Save Invoice'),
+                    : const Text('Issue Sales Invoice'),
               ),
             ],
           ),

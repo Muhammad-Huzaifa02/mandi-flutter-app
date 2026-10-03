@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/data/models/purchase_order_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -19,6 +20,8 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
   final _formKey = GlobalKey<FormState>();
   Supplier? _selectedSupplier;
 
+  final _weightCtrl = TextEditingController();
+  final _ratePer40kgCtrl = TextEditingController();
   final _totalCtrl = TextEditingController();
   final _paidAmountCtrl = TextEditingController(text: '0');
   String _status = 'received'; // 'pending' | 'received' | 'cancelled'
@@ -26,9 +29,20 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
 
   @override
   void dispose() {
+    _weightCtrl.dispose();
+    _ratePer40kgCtrl.dispose();
     _totalCtrl.dispose();
     _paidAmountCtrl.dispose();
     super.dispose();
+  }
+
+  void _calculateTotal() {
+    final w = double.tryParse(_weightCtrl.text.trim()) ?? 0;
+    final r = double.tryParse(_ratePer40kgCtrl.text.trim()) ?? 0;
+    if (w > 0 && r > 0) {
+      final calcTotal = MandiCalculator.calculateLineTotal(w, r);
+      _totalCtrl.text = calcTotal.toStringAsFixed(0);
+    }
   }
 
   Future<void> _submit() async {
@@ -72,6 +86,8 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
   @override
   Widget build(BuildContext context) {
     final suppliers = context.watch<SupplierProvider>().suppliers;
+    final w = double.tryParse(_weightCtrl.text.trim()) ?? 0;
+    final r = double.tryParse(_ratePer40kgCtrl.text.trim()) ?? 0;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Record Purchase Order')),
@@ -94,6 +110,57 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
                     .toList(),
                 onChanged: (s) => setState(() => _selectedSupplier = s),
               ),
+              const SizedBox(height: MSpacing.md),
+
+              // Option B: Rate per 40 KG Mandi Calculator
+              const Text('Direct Purchase Calculation (Option B)', style: MText.titleLg),
+              const SizedBox(height: MSpacing.xs),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _weightCtrl,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (_) {
+                        _calculateTotal();
+                        setState(() {});
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Weight (KG)',
+                        hintText: 'e.g. 200',
+                        suffixText: 'KG',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.md),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _ratePer40kgCtrl,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (_) {
+                        _calculateTotal();
+                        setState(() {});
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Rate / 40 KG (Maund)',
+                        hintText: 'e.g. 4000',
+                        suffixText: 'PKR',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (w > 0 && r > 0) ...[
+                const SizedBox(height: MSpacing.xs),
+                Text(
+                  MandiCalculator.formatCalculationBreakdown(
+                      weightKg: w, pricePer40kg: r),
+                  style: MText.bodySm.copyWith(color: MColors.textSecondary),
+                ),
+              ],
+
               const SizedBox(height: MSpacing.md),
               TextFormField(
                 controller: _totalCtrl,
