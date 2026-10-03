@@ -109,6 +109,8 @@ class Invoice {
   final String shopId;
   final String? customerId;
   final String customerName;
+  final String? supplierId;
+  final String supplierName;
   final String invoiceNumber;
   final List<InvoiceItem> items;
 
@@ -129,6 +131,8 @@ class Invoice {
     required this.shopId,
     this.customerId,
     this.customerName = '',
+    this.supplierId,
+    this.supplierName = '',
     required this.invoiceNumber,
     this.items = const [],
     this.subtotal = 0,
@@ -154,6 +158,8 @@ class Invoice {
       shopId: d['shop_id'] as String? ?? '',
       customerId: d['customer_id'] as String?,
       customerName: d['customer_name'] as String? ?? '',
+      supplierId: d['supplier_id'] as String?,
+      supplierName: d['supplier_name'] as String? ?? '',
       invoiceNumber: d['invoice_number'] as String? ?? '',
       items: ((d['items'] as List?) ?? [])
           .map((e) => InvoiceItem.fromMap(Map<String, dynamic>.from(e)))
@@ -179,6 +185,9 @@ class Invoice {
         'shop_id': shopId,
         'customerId': customerId,
         'customer_id': customerId,
+        'supplierId': supplierId,
+        'supplier_id': supplierId,
+        'supplier_name': supplierName,
         'invoiceNumber': invoiceNumber,
         'invoice_number': invoiceNumber,
         'subtotal': subtotal,

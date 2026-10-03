@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -62,7 +63,7 @@ class SupplierDashboardPage extends StatelessWidget {
                 style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
             const SizedBox(height: MSpacing.xl),
 
-            // Balance Card
+            // Balance Card with WhatsApp Reminder
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(MSpacing.lg),
@@ -74,7 +75,7 @@ class SupplierDashboardPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('My Outstanding Payable Balance',
+                  Text('Money Owed to Me by ${shop?.name ?? "Shop"}',
                       style: MText.labelMd),
                   const SizedBox(height: MSpacing.xs),
                   Text(
@@ -85,6 +86,45 @@ class SupplierDashboardPage extends StatelessWidget {
                           : Colors.green,
                     ),
                   ),
+                  if (mySupplier.runningBalance > 0 &&
+                      (shop?.phone.isNotEmpty == true ||
+                          shop?.whatsapp.isNotEmpty == true)) ...[
+                    const SizedBox(height: MSpacing.md),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF25D366),
+                        ),
+                        onPressed: () {
+                          final targetPhone = shop!.whatsapp.isNotEmpty
+                              ? shop.whatsapp
+                              : shop.phone;
+                          final msg = '''
+Assalam-o-Alaikum,
+
+This is a friendly payment reminder from *${mySupplier.name}* (Supplier).
+
+My outstanding balance payable by *${shop.name}* is: *Rs. ${mySupplier.runningBalance.toStringAsFixed(0)}*.
+
+Kindly process the payment at your earliest convenience.
+
+Thank you!
+''';
+                          WhatsAppShareService.launchWhatsApp(
+                            phone: targetPhone,
+                            message: msg,
+                          );
+                        },
+                        icon:
+                            const Icon(Icons.send_outlined, color: Colors.white),
+                        label: const Text(
+                          'Send Payment Reminder to Shop Owner',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
