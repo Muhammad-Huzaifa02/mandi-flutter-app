@@ -32,10 +32,38 @@ class SupplierProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _sub = SupabaseService.suppliersStream(shopId).listen((rows) {
-      _suppliers = rows
+    _sub = SupabaseService.suppliersStream(shopId).listen((rows) async {
+      final supplierList = rows
           .map((r) => Supplier.fromMap(r['id'] as String, r))
-          .toList()
+          .toList();
+
+      final memberRows = await SupabaseService.shopMembersForShop(shopId);
+      final supplierMembers = memberRows
+          .where((m) => m['role_id'] == 'supplier')
+          .map((m) => Supplier(
+                id: m['id'] as String? ?? '',
+                shopId: shopId,
+                userId: m['user_id'] as String?,
+                name: (m['name'] as String?)?.isNotEmpty == true
+                    ? m['name'] as String
+                    : 'Supplier',
+                phone: m['phone'] as String? ?? '',
+                email: m['email'] as String? ?? '',
+              ));
+
+      final existingIds = supplierList.map((s) => s.id).toSet();
+      final existingUserIds = supplierList.map((s) => s.userId).where((u) => u != null).toSet();
+      final existingPhones = supplierList.map((s) => s.phone).where((p) => p.isNotEmpty).toSet();
+
+      for (final sm in supplierMembers) {
+        if (!existingIds.contains(sm.id) &&
+            !existingUserIds.contains(sm.userId) &&
+            (sm.phone.isEmpty || !existingPhones.contains(sm.phone))) {
+          supplierList.add(sm);
+        }
+      }
+
+      _suppliers = supplierList
         ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       _isLoading = false;
       notifyListeners();

@@ -598,8 +598,13 @@ create policy "memberships: read own" on public.shop_memberships
   for select using (user_id = auth.uid());
 
 drop policy if exists "memberships: manage_employees can read the roster" on public.shop_memberships;
-create policy "memberships: manage_employees can read the roster" on public.shop_memberships
-  for select using (public.has_permission(shop_id, 'manage_employees'));
+drop policy if exists "memberships: shop staff can read roster" on public.shop_memberships;
+create policy "memberships: shop staff can read roster" on public.shop_memberships
+  for select using (
+    public.has_permission(shop_id, 'manage_employees') or
+    public.has_permission(shop_id, 'manage_customers') or
+    public.has_permission(shop_id, 'manage_suppliers')
+  );
 
 drop policy if exists "memberships: manage_employees can write" on public.shop_memberships;
 create policy "memberships: manage_employees can write" on public.shop_memberships

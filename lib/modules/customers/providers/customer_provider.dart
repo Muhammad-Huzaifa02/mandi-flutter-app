@@ -32,10 +32,38 @@ class CustomerProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _sub = SupabaseService.customersStream(shopId).listen((rows) {
-      _customers = rows
+    _sub = SupabaseService.customersStream(shopId).listen((rows) async {
+      final customerList = rows
           .map((r) => Customer.fromMap(r['id'] as String, r))
-          .toList()
+          .toList();
+
+      final memberRows = await SupabaseService.shopMembersForShop(shopId);
+      final customerMembers = memberRows
+          .where((m) => m['role_id'] == 'customer')
+          .map((m) => Customer(
+                id: m['id'] as String? ?? '',
+                shopId: shopId,
+                userId: m['user_id'] as String?,
+                name: (m['name'] as String?)?.isNotEmpty == true
+                    ? m['name'] as String
+                    : 'Customer',
+                phone: m['phone'] as String? ?? '',
+                email: m['email'] as String? ?? '',
+              ));
+
+      final existingIds = customerList.map((c) => c.id).toSet();
+      final existingUserIds = customerList.map((c) => c.userId).where((u) => u != null).toSet();
+      final existingPhones = customerList.map((c) => c.phone).where((p) => p.isNotEmpty).toSet();
+
+      for (final cm in customerMembers) {
+        if (!existingIds.contains(cm.id) &&
+            !existingUserIds.contains(cm.userId) &&
+            (cm.phone.isEmpty || !existingPhones.contains(cm.phone))) {
+          customerList.add(cm);
+        }
+      }
+
+      _customers = customerList
         ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       _isLoading = false;
       notifyListeners();

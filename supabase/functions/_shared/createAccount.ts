@@ -102,6 +102,25 @@ export async function handleCreateAccount(
       status: "sent",
     });
 
+    if (config.entityType === "customer") {
+      await adminClient.from("customers").insert({
+        shop_id: shopId,
+        user_id: newUserId,
+        name,
+        phone: body.phone ?? "",
+        email,
+      });
+    } else if (config.entityType === "supplier") {
+      await adminClient.from("suppliers").insert({
+        shop_id: shopId,
+        user_id: newUserId,
+        name,
+        phone: body.phone ?? "",
+        email,
+        products_supplied: (body.extra?.productsSupplied as string) ?? "",
+      });
+    }
+
     await adminClient.from("audit_logs").insert({
       shop_id: shopId,
       actor_id: callerId,
