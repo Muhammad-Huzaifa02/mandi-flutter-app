@@ -677,7 +677,13 @@ create policy "suppliers: self read" on public.suppliers
 
 drop policy if exists "invoices: members can read" on public.invoices;
 create policy "invoices: members can read" on public.invoices
-  for select using (public.is_shop_member(shop_id));
+  for select using (
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'manage_employees') or
+    customer_id in (select id from public.customers where user_id = auth.uid()) or
+    customer_id in (select id from public.shop_memberships where user_id = auth.uid())
+  );
 
 drop policy if exists "invoices: create_invoice can write" on public.invoices;
 create policy "invoices: create_invoice can write" on public.invoices
@@ -695,7 +701,13 @@ create policy "invoice_items: create_invoice can write" on public.invoice_items
 
 drop policy if exists "purchase_orders: members can read" on public.purchase_orders;
 create policy "purchase_orders: members can read" on public.purchase_orders
-  for select using (public.is_shop_member(shop_id));
+  for select using (
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'manage_suppliers') or
+    public.has_permission(shop_id, 'manage_employees') or
+    supplier_id in (select id from public.suppliers where user_id = auth.uid()) or
+    supplier_id in (select id from public.shop_memberships where user_id = auth.uid())
+  );
 
 drop policy if exists "purchase_orders: create_purchase can write" on public.purchase_orders;
 create policy "purchase_orders: create_purchase can write" on public.purchase_orders
@@ -722,7 +734,14 @@ create policy "expenses: manage_expenses can write" on public.expenses
 
 drop policy if exists "payments: members can read" on public.payments;
 create policy "payments: members can read" on public.payments
-  for select using (public.is_shop_member(shop_id));
+  for select using (
+    public.has_permission(shop_id, 'create_receipt') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'manage_employees') or
+    party_id in (select id from public.customers where user_id = auth.uid()) or
+    party_id in (select id from public.suppliers where user_id = auth.uid()) or
+    party_id in (select id from public.shop_memberships where user_id = auth.uid())
+  );
 
 drop policy if exists "payments: create_receipt can write" on public.payments;
 create policy "payments: create_receipt can write" on public.payments
