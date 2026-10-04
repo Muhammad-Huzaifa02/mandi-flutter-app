@@ -106,18 +106,29 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     }
 
     Product? selectedProduct = products.first;
-    final weightCtrl = TextEditingController();
+    String bagType = '50 KG Bag'; // '50 KG Bag' | '100 KG Bag' | 'Custom Weight'
+    final noOfBagsCtrl = TextEditingController(text: '1');
+    final customBagWeightCtrl = TextEditingController(text: '50');
     final priceCtrl =
         TextEditingController(text: selectedProduct.sellingPrice.toStringAsFixed(0));
-    final quantityCtrl = TextEditingController(text: '1');
 
     showDialog(
       context: context,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          final w = double.tryParse(weightCtrl.text.trim()) ?? 0;
-          final p = double.tryParse(priceCtrl.text.trim()) ?? 0;
-          final calcTotal = MandiCalculator.calculateLineTotal(w, p);
+          final bags = double.tryParse(noOfBagsCtrl.text.trim()) ?? 1;
+
+          double weightPerBag = 50;
+          if (bagType == '100 KG Bag') {
+            weightPerBag = 100;
+          } else if (bagType == 'Custom Weight') {
+            weightPerBag = double.tryParse(customBagWeightCtrl.text.trim()) ?? 50;
+          }
+
+          final totalWeightKg = bags * weightPerBag;
+          final rate = double.tryParse(priceCtrl.text.trim()) ?? 0;
+          final manns = MandiCalculator.kgToMann(totalWeightKg);
+          final calcTotal = MandiCalculator.calculateLineTotal(totalWeightKg, rate);
 
           return AlertDialog(
             title: const Text('Add Product Item'),
@@ -128,7 +139,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 children: [
                   DropdownButtonFormField<Product>(
                     initialValue: selectedProduct,
-                    decoration: const InputDecoration(labelText: 'Product'),
+                    decoration: const InputDecoration(labelText: 'Select Product *'),
                     items: products
                         .map((prod) => DropdownMenuItem(
                               value: prod,
@@ -145,35 +156,57 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     },
                   ),
                   const SizedBox(height: MSpacing.sm),
+
+                  DropdownButtonFormField<String>(
+                    initialValue: bagType,
+                    decoration: const InputDecoration(labelText: 'Bag Weight Type'),
+                    items: const [
+                      DropdownMenuItem(value: '50 KG Bag', child: Text('50 KG Bag / Bori')),
+                      DropdownMenuItem(value: '100 KG Bag', child: Text('100 KG Bag / Bori')),
+                      DropdownMenuItem(value: 'Custom Weight', child: Text('Custom Weight per Bag')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setDialogState(() => bagType = val);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: MSpacing.sm),
+
                   Row(
                     children: [
                       Expanded(
                         child: TextFormField(
-                          controller: weightCtrl,
+                          controller: noOfBagsCtrl,
                           keyboardType:
                               const TextInputType.numberWithOptions(decimal: true),
                           onChanged: (_) => setDialogState(() {}),
                           decoration: const InputDecoration(
-                            labelText: 'Weight (KG) *',
-                            hintText: 'e.g. 200',
-                            suffixText: 'KG',
+                            labelText: 'No. of Bags / Bori *',
+                            hintText: 'e.g. 10',
                           ),
                         ),
                       ),
-                      const SizedBox(width: MSpacing.sm),
-                      Expanded(
-                        child: TextFormField(
-                          controller: quantityCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Bags/Bori',
-                            hintText: 'e.g. 5',
+                      if (bagType == 'Custom Weight') ...[
+                        const SizedBox(width: MSpacing.sm),
+                        Expanded(
+                          child: TextFormField(
+                            controller: customBagWeightCtrl,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(decimal: true),
+                            onChanged: (_) => setDialogState(() {}),
+                            decoration: const InputDecoration(
+                              labelText: 'KG per Bag *',
+                              hintText: 'e.g. 70',
+                              suffixText: 'KG',
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: MSpacing.sm),
+
                   TextFormField(
                     controller: priceCtrl,
                     keyboardType:
@@ -185,7 +218,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       suffixText: 'PKR',
                     ),
                   ),
+
                   const SizedBox(height: MSpacing.md),
+
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(MSpacing.md),
@@ -197,21 +232,20 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Mandi Math Breakdown:',
-                            style: MText.labelMd),
+                        const Text('Mandi Maund Breakdown:', style: MText.labelMd),
                         const SizedBox(height: 2),
                         Text(
-                          MandiCalculator.formatCalculationBreakdown(
-                            weightKg: w,
-                            pricePer40kg: p,
-                          ),
+                          '${bags.toStringAsFixed(0)} Bags × ${weightPerBag.toStringAsFixed(0)} KG = ${totalWeightKg.toStringAsFixed(0)} KG (${manns.toStringAsFixed(2)} Manns)',
+                          style: MText.bodySm.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '${manns.toStringAsFixed(2)} Manns @ Rs. ${rate.toStringAsFixed(0)} / 40kg',
                           style: MText.bodySm,
                         ),
                         const Divider(height: MSpacing.sm),
                         Text(
                           'Line Total: Rs. ${calcTotal.toStringAsFixed(0)}',
-                          style:
-                              MText.titleLg.copyWith(color: MColors.primary),
+                          style: MText.titleLg.copyWith(color: MColors.primary),
                         ),
                       ],
                     ),
@@ -226,14 +260,21 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  final w = double.tryParse(weightCtrl.text.trim()) ?? 0;
-                  final p = double.tryParse(priceCtrl.text.trim()) ?? 0;
-                  final q = double.tryParse(quantityCtrl.text.trim()) ?? 1;
+                  final bags = double.tryParse(noOfBagsCtrl.text.trim()) ?? 1;
+                  double wPerBag = 50;
+                  if (bagType == '100 KG Bag') {
+                    wPerBag = 100;
+                  } else if (bagType == 'Custom Weight') {
+                    wPerBag = double.tryParse(customBagWeightCtrl.text.trim()) ?? 50;
+                  }
 
-                  if (w <= 0 || p <= 0) {
+                  final totalWeight = bags * wPerBag;
+                  final rateVal = double.tryParse(priceCtrl.text.trim()) ?? 0;
+
+                  if (totalWeight <= 0 || rateVal <= 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text('Please enter valid weight and price.')),
+                          content: Text('Please enter valid bags and price.')),
                     );
                     return;
                   }
@@ -242,9 +283,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     _items.add(InvoiceItem(
                       productId: selectedProduct!.id,
                       productName: selectedProduct!.name,
-                      quantity: q,
-                      weightKg: w,
-                      unitPrice: p,
+                      quantity: bags,
+                      weightKg: totalWeight,
+                      unitPrice: rateVal,
                     ));
                   });
                   Navigator.pop(dialogCtx);
@@ -382,6 +423,8 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 ],
               ),
               const SizedBox(height: MSpacing.md),
+
+              // Party Selection
               DropdownButtonFormField<Customer>(
                 initialValue: _selectedCustomer,
                 decoration: const InputDecoration(
