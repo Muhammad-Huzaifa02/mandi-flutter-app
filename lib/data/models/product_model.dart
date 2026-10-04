@@ -2,6 +2,8 @@
 class Product {
   final String id;
   final String shopId;
+  final String? supplierId;
+  final String supplierName;
   final String name;
   final String category;
   final String sku;
@@ -19,6 +21,8 @@ class Product {
   const Product({
     required this.id,
     required this.shopId,
+    this.supplierId,
+    this.supplierName = '',
     required this.name,
     this.category = 'Grains',
     this.sku = '',
@@ -39,6 +43,8 @@ class Product {
   factory Product.fromMap(String id, Map<String, dynamic> d) => Product(
         id: id,
         shopId: d['shop_id'] as String? ?? '',
+        supplierId: d['supplier_id'] as String?,
+        supplierName: d['supplier_name'] as String? ?? '',
         name: d['name'] as String? ?? '',
         category: d['category'] as String? ?? 'Grains',
         sku: d['sku'] as String? ?? '',
@@ -58,6 +64,8 @@ class Product {
 
   Map<String, dynamic> toMap() => {
         'shop_id': shopId,
+        'supplier_id': supplierId,
+        'supplier_name': supplierName,
         'name': name,
         'category': category,
         'sku': sku,

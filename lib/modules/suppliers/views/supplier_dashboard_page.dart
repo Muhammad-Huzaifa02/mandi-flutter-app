@@ -9,6 +9,7 @@ import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
 import 'package:mandi/modules/suppliers/views/supplier_detail_page.dart';
 import 'package:mandi/modules/products/views/product_list_page.dart';
+import 'package:mandi/modules/products/views/add_edit_supplier_product_page.dart';
 import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dart';
 import 'package:mandi/modules/payments/views/payment_list_page.dart';
 
@@ -136,6 +137,17 @@ Thank you!
               spacing: MSpacing.sm,
               runSpacing: MSpacing.sm,
               children: [
+                _SupplierTile(
+                  icon: Icons.add_business_outlined,
+                  label: 'Offer Product',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          AddEditSupplierProductPage(supplier: mySupplier),
+                    ),
+                  ),
+                ),
                 _SupplierTile(
                   icon: Icons.assignment_outlined,
                   label: 'Purchase Orders',
