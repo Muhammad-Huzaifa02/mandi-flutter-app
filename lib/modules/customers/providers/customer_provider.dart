@@ -80,6 +80,7 @@ class CustomerProvider extends ChangeNotifier {
         .where((c) =>
             c.name.toLowerCase().contains(q) ||
             c.phone.contains(q) ||
+            c.email.toLowerCase().contains(q) ||
             c.city.toLowerCase().contains(q))
         .toList();
   }

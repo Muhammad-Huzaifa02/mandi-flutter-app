@@ -5,27 +5,148 @@ import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/ledger_pdf_generator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/supplier_model.dart';
+import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
+import 'package:mandi/modules/purchase_orders/providers/purchase_order_provider.dart';
+import 'package:mandi/modules/payments/views/add_payment_page.dart';
 
-class SupplierDetailPage extends StatelessWidget {
+class SupplierDetailPage extends StatefulWidget {
   final Supplier supplier;
 
   const SupplierDetailPage({super.key, required this.supplier});
 
   @override
+  State<SupplierDetailPage> createState() => _SupplierDetailPageState();
+}
+
+class _SupplierDetailPageState extends State<SupplierDetailPage> {
+  late Supplier _supplier;
+
+  @override
+  void initState() {
+    super.initState();
+    _supplier = widget.supplier;
+  }
+
+  void _editProfileDialog() {
+    final nameCtrl = TextEditingController(text: _supplier.name);
+    final phoneCtrl = TextEditingController(text: _supplier.phone);
+    final emailCtrl = TextEditingController(text: _supplier.email);
+    final productsCtrl = TextEditingController(text: _supplier.productsSupplied);
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Edit Supplier Profile'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'Supplier Name *'),
+              ),
+              const SizedBox(height: MSpacing.sm),
+              TextFormField(
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Phone Number'),
+              ),
+              const SizedBox(height: MSpacing.sm),
+              TextFormField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(labelText: 'Email Address'),
+              ),
+              const SizedBox(height: MSpacing.sm),
+              TextFormField(
+                controller: productsCtrl,
+                decoration: const InputDecoration(
+                    labelText: 'Products Supplied (e.g. Wheat, Rice)'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.trim().isEmpty) return;
+
+              final updateData = {
+                'name': nameCtrl.text.trim(),
+                'phone': phoneCtrl.text.trim(),
+                'email': emailCtrl.text.trim(),
+                'products_supplied': productsCtrl.text.trim(),
+              };
+
+              if (_supplier.id.isNotEmpty) {
+                await SupabaseService.updateShopMember(
+                  membershipId: _supplier.id,
+                  shopId: _supplier.shopId,
+                  data: updateData,
+                  actorUid: context.read<ShopContextProvider>().currentMember?.id ?? '',
+                  actorName: context.read<ShopContextProvider>().currentMember?.name ?? '',
+                );
+              }
+
+              setState(() {
+                _supplier = _supplier.copyWith(
+                  name: nameCtrl.text.trim(),
+                  phone: phoneCtrl.text.trim(),
+                  email: emailCtrl.text.trim(),
+                  productsSupplied: productsCtrl.text.trim(),
+                );
+              });
+
+              if (!mounted) return;
+              Navigator.pop(dialogCtx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Supplier profile updated.')),
+              );
+            },
+            child: const Text('Save Changes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final shop = context.watch<ShopContextProvider>().currentShop;
+    final shopCtx = context.watch<ShopContextProvider>();
+    final shop = shopCtx.currentShop;
+    final canEdit = shopCtx.hasPermission('manage_suppliers');
+
+    final purchaseOrders =
+        context.watch<PurchaseOrderProvider>().purchaseOrders;
+    final myOrders = purchaseOrders
+        .where((po) =>
+            po.supplierId == _supplier.id ||
+            (po.supplierName.isNotEmpty &&
+                po.supplierName.toLowerCase() ==
+                    _supplier.name.toLowerCase()))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(supplier.name),
+        title: Text(_supplier.name),
         actions: [
+          if (canEdit)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Edit Profile',
+              onPressed: _editProfileDialog,
+            ),
           IconButton(
             icon: const Icon(Icons.print_outlined),
             tooltip: 'Print Ledger Statement PDF',
             onPressed: () {
               LedgerPdfGenerator.printSupplierLedger(
-                supplier: supplier,
+                supplier: _supplier,
                 shopName: shop?.name ?? 'Mandi Shop',
                 shopPhone: shop?.phone,
                 shopCity: shop?.city,
@@ -53,8 +174,8 @@ class SupplierDetailPage extends StatelessWidget {
                     radius: 28,
                     backgroundColor: MColors.primary.withValues(alpha: 0.1),
                     child: Text(
-                      supplier.name.isNotEmpty
-                          ? supplier.name[0].toUpperCase()
+                      _supplier.name.isNotEmpty
+                          ? _supplier.name[0].toUpperCase()
                           : 'S',
                       style: MText.titleLg.copyWith(color: MColors.primary),
                     ),
@@ -64,12 +185,12 @@ class SupplierDetailPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(supplier.name, style: MText.titleLg),
-                        if (supplier.productsSupplied.isNotEmpty)
+                        Text(_supplier.name, style: MText.titleLg),
+                        if (_supplier.productsSupplied.isNotEmpty)
                           Text(
-                            'Supplies: ${supplier.productsSupplied}',
-                            style: MText.bodyMd.copyWith(
-                                color: MColors.textSecondary),
+                            'Supplies: ${_supplier.productsSupplied}',
+                            style: MText.bodyMd
+                                .copyWith(color: MColors.textSecondary),
                           ),
                       ],
                     ),
@@ -91,24 +212,23 @@ class SupplierDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Outstanding Payable Balance',
-                      style: MText.labelMd),
+                  const Text('Outstanding Payable Balance', style: MText.labelMd),
                   const SizedBox(height: MSpacing.xs),
                   Text(
-                    'Rs. ${supplier.runningBalance.toStringAsFixed(0)}',
+                    'Rs. ${_supplier.runningBalance.toStringAsFixed(0)}',
                     style: MText.titleLg.copyWith(
-                      color: supplier.runningBalance > 0
+                      color: _supplier.runningBalance > 0
                           ? MColors.danger
-                          : (supplier.runningBalance < 0
+                          : (_supplier.runningBalance < 0
                               ? Colors.green
                               : MColors.textPrimary),
                     ),
                   ),
                   const SizedBox(height: MSpacing.xs),
                   Text(
-                    supplier.runningBalance > 0
+                    _supplier.runningBalance > 0
                         ? 'Payable to supplier'
-                        : (supplier.runningBalance < 0
+                        : (_supplier.runningBalance < 0
                             ? 'Advance paid to supplier'
                             : 'Settled'),
                     style:
@@ -119,49 +239,160 @@ class SupplierDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: MSpacing.lg),
 
-            // Contact Information
-            const Text('Contact Information', style: MText.titleLg),
-            const SizedBox(height: MSpacing.sm),
+            // Contact & Details Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Contact Information', style: MText.titleLg),
+                if (canEdit)
+                  TextButton.icon(
+                    onPressed: _editProfileDialog,
+                    icon: const Icon(Icons.edit, size: 16),
+                    label: const Text('Edit Details'),
+                  ),
+              ],
+            ),
+            const SizedBox(height: MSpacing.xs),
             _DetailTile(
               icon: Icons.phone_outlined,
               label: 'Phone',
-              value: supplier.phone.isNotEmpty ? supplier.phone : 'Not provided',
+              value: _supplier.phone.isNotEmpty ? _supplier.phone : 'Not provided',
             ),
             _DetailTile(
               icon: Icons.email_outlined,
               label: 'Email',
-              value: supplier.email.isNotEmpty ? supplier.email : 'Not provided',
+              value: _supplier.email.isNotEmpty ? _supplier.email : 'Not provided',
             ),
             _DetailTile(
               icon: Icons.shopping_bag_outlined,
               label: 'Products Supplied',
-              value: supplier.productsSupplied.isNotEmpty
-                  ? supplier.productsSupplied
+              value: _supplier.productsSupplied.isNotEmpty
+                  ? _supplier.productsSupplied
                   : 'Not specified',
             ),
 
-            if (supplier.runningBalance > 0 && supplier.phone.isNotEmpty) ...[
-              const SizedBox(height: MSpacing.xl),
-              SizedBox(
+            const SizedBox(height: MSpacing.xl),
+
+            // Purchase Orders History Section
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Purchase Orders', style: MText.titleLg),
+                Text('${myOrders.length} Orders',
+                    style: MText.bodySm.copyWith(color: MColors.textSecondary)),
+              ],
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            if (myOrders.isEmpty)
+              Container(
                 width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF25D366),
-                  ),
-                  onPressed: () {
-                    WhatsAppShareService.sharePaymentReminder(
-                      phone: supplier.phone,
-                      name: supplier.name,
-                      pendingBalance: supplier.runningBalance,
-                      shopName: shop?.name ?? 'Mandi Shop',
-                    );
-                  },
-                  icon: const Icon(Icons.send_outlined, color: Colors.white),
-                  label: const Text('Send WhatsApp Payment Reminder',
-                      style: TextStyle(color: Colors.white)),
+                padding: const EdgeInsets.all(MSpacing.xl),
+                decoration: BoxDecoration(
+                  color: MColors.surface,
+                  borderRadius: MRadius.md,
+                  border: Border.all(color: Colors.grey.shade200),
                 ),
+                child: Center(
+                  child: Text('No purchase orders recorded for this supplier.',
+                      style:
+                          MText.bodyMd.copyWith(color: MColors.textSecondary)),
+                ),
+              )
+            else
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: myOrders.length,
+                separatorBuilder: (_, __) => const SizedBox(height: MSpacing.xs),
+                itemBuilder: (context, i) {
+                  final po = myOrders[i];
+                  return Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: MRadius.md,
+                      side: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: MColors.primary.withValues(alpha: 0.1),
+                        child: const Icon(Icons.assignment_outlined,
+                            color: MColors.primary),
+                      ),
+                      title: Text(po.supplierName, style: MText.titleLg),
+                      subtitle: Text(
+                        'Status: ${po.status.toUpperCase()} ${po.createdAt != null ? '• ${po.createdAt!.day}/${po.createdAt!.month}/${po.createdAt!.year}' : ''}',
+                        style: MText.bodySm
+                            .copyWith(color: MColors.textSecondary),
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Rs. ${po.total.toStringAsFixed(0)}',
+                            style: MText.titleLg
+                                .copyWith(color: MColors.primary),
+                          ),
+                          Text(
+                            po.pendingAmount > 0
+                                ? 'Pending: Rs. ${po.pendingAmount.toStringAsFixed(0)}'
+                                : 'PAID',
+                            style: MText.bodySm.copyWith(
+                              color: po.pendingAmount > 0
+                                  ? MColors.danger
+                                  : Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-            ],
+
+            const SizedBox(height: MSpacing.xl),
+
+            // Actions
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AddPaymentPage()),
+                    ),
+                    icon: const Icon(Icons.payment_outlined),
+                    label: const Text('Pay Supplier'),
+                  ),
+                ),
+                if (_supplier.runningBalance > 0 &&
+                    _supplier.phone.isNotEmpty) ...[
+                  const SizedBox(width: MSpacing.md),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF25D366),
+                      ),
+                      onPressed: () {
+                        WhatsAppShareService.sharePaymentReminder(
+                          phone: _supplier.phone,
+                          name: _supplier.name,
+                          pendingBalance: _supplier.runningBalance,
+                          shopName: shop?.name ?? 'Mandi Shop',
+                        );
+                      },
+                      icon: const Icon(Icons.send_outlined,
+                          color: Colors.white, size: 18),
+                      label: const Text('WhatsApp',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
       ),

@@ -80,6 +80,7 @@ class SupplierProvider extends ChangeNotifier {
         .where((s) =>
             s.name.toLowerCase().contains(q) ||
             s.phone.contains(q) ||
+            s.email.toLowerCase().contains(q) ||
             s.productsSupplied.toLowerCase().contains(q))
         .toList();
   }
