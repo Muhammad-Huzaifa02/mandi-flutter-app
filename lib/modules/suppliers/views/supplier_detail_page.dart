@@ -186,12 +186,18 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(_supplier.name, style: MText.titleLg),
+                        if (_supplier.phone.isNotEmpty)
+                          Text('Phone: ${_supplier.phone}',
+                              style: MText.bodySm
+                                  .copyWith(color: MColors.textSecondary)),
+                        if (_supplier.email.isNotEmpty)
+                          Text('Email: ${_supplier.email}',
+                              style: MText.bodySm
+                                  .copyWith(color: MColors.textSecondary)),
                         if (_supplier.productsSupplied.isNotEmpty)
-                          Text(
-                            'Supplies: ${_supplier.productsSupplied}',
-                            style: MText.bodyMd
-                                .copyWith(color: MColors.textSecondary),
-                          ),
+                          Text('Supplies: ${_supplier.productsSupplied}',
+                              style: MText.bodySm
+                                  .copyWith(color: MColors.textSecondary)),
                       ],
                     ),
                   ),
@@ -236,39 +242,6 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: MSpacing.lg),
-
-            // Contact & Details Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Contact Information', style: MText.titleLg),
-                if (canEdit)
-                  TextButton.icon(
-                    onPressed: _editProfileDialog,
-                    icon: const Icon(Icons.edit, size: 16),
-                    label: const Text('Edit Details'),
-                  ),
-              ],
-            ),
-            const SizedBox(height: MSpacing.xs),
-            _DetailTile(
-              icon: Icons.phone_outlined,
-              label: 'Phone',
-              value: _supplier.phone.isNotEmpty ? _supplier.phone : 'Not provided',
-            ),
-            _DetailTile(
-              icon: Icons.email_outlined,
-              label: 'Email',
-              value: _supplier.email.isNotEmpty ? _supplier.email : 'Not provided',
-            ),
-            _DetailTile(
-              icon: Icons.shopping_bag_outlined,
-              label: 'Products Supplied',
-              value: _supplier.productsSupplied.isNotEmpty
-                  ? _supplier.productsSupplied
-                  : 'Not specified',
             ),
 
             const SizedBox(height: MSpacing.xl),
@@ -395,39 +368,6 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _DetailTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _DetailTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: MSpacing.xs),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: MColors.textSecondary),
-          const SizedBox(width: MSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label,
-                  style: MText.bodySm.copyWith(color: MColors.textSecondary)),
-              Text(value, style: MText.bodyMd),
-            ],
-          ),
-        ],
       ),
     );
   }

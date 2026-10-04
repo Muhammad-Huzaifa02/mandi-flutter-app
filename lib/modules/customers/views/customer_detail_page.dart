@@ -138,6 +138,10 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
         myInvoices.fold(0.0, (sum, inv) => sum + inv.total);
     final loyaltyPoints = (totalSpent / 1000).floor();
 
+    final locationStr = [_customer.address, _customer.city]
+        .where((s) => s.trim().isNotEmpty)
+        .join(', ');
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_customer.name),
@@ -175,41 +179,54 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                 borderRadius: MRadius.lg,
                 border: Border.all(color: Colors.grey.shade200),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: MColors.primary.withValues(alpha: 0.1),
-                    child: Text(
-                      _customer.name.isNotEmpty
-                          ? _customer.name[0].toUpperCase()
-                          : 'C',
-                      style: MText.titleLg.copyWith(color: MColors.primary),
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_customer.name, style: MText.titleLg),
-                        if (_customer.city.isNotEmpty)
-                          Text(_customer.city,
-                              style: MText.bodyMd
-                                  .copyWith(color: MColors.textSecondary)),
-                        const SizedBox(height: MSpacing.xs),
-                        Chip(
-                          avatar: const Icon(Icons.stars,
-                              color: Colors.amber, size: 18),
-                          label: Text(
-                            '$loyaltyPoints Loyalty Points (Rs. ${totalSpent.toStringAsFixed(0)} spent)',
-                            style: const TextStyle(
-                                fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
-                          backgroundColor: Colors.amber.withValues(alpha: 0.15),
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: MColors.primary.withValues(alpha: 0.1),
+                        child: Text(
+                          _customer.name.isNotEmpty
+                              ? _customer.name[0].toUpperCase()
+                              : 'C',
+                          style: MText.titleLg.copyWith(color: MColors.primary),
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: MSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_customer.name, style: MText.titleLg),
+                            if (_customer.phone.isNotEmpty)
+                              Text('Phone: ${_customer.phone}',
+                                  style: MText.bodySm
+                                      .copyWith(color: MColors.textSecondary)),
+                            if (_customer.email.isNotEmpty)
+                              Text('Email: ${_customer.email}',
+                                  style: MText.bodySm
+                                      .copyWith(color: MColors.textSecondary)),
+                            if (locationStr.isNotEmpty)
+                              Text('Address: $locationStr',
+                                  style: MText.bodySm
+                                      .copyWith(color: MColors.textSecondary)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: MSpacing.md),
+                  Chip(
+                    avatar: const Icon(Icons.stars,
+                        color: Colors.amber, size: 18),
+                    label: Text(
+                      '$loyaltyPoints Loyalty Points (Rs. ${totalSpent.toStringAsFixed(0)} spent)',
+                      style: const TextStyle(
+                          fontSize: 11, fontWeight: FontWeight.bold),
                     ),
+                    backgroundColor: Colors.amber.withValues(alpha: 0.15),
                   ),
                 ],
               ),
@@ -253,40 +270,6 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                   ),
                 ],
               ),
-            ),
-
-            const SizedBox(height: MSpacing.lg),
-
-            // Contact & Personal Details Card
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Contact Information', style: MText.titleLg),
-                if (canEdit)
-                  TextButton.icon(
-                    onPressed: _editProfileDialog,
-                    icon: const Icon(Icons.edit, size: 16),
-                    label: const Text('Edit Details'),
-                  ),
-              ],
-            ),
-            const SizedBox(height: MSpacing.xs),
-            _DetailTile(
-              icon: Icons.phone_outlined,
-              label: 'Phone',
-              value: _customer.phone.isNotEmpty ? _customer.phone : 'Not provided',
-            ),
-            _DetailTile(
-              icon: Icons.email_outlined,
-              label: 'Email',
-              value: _customer.email.isNotEmpty ? _customer.email : 'Not provided',
-            ),
-            _DetailTile(
-              icon: Icons.location_on_outlined,
-              label: 'Address',
-              value: _customer.address.isNotEmpty
-                  ? _customer.address
-                  : 'Not provided',
             ),
 
             const SizedBox(height: MSpacing.xl),
@@ -421,39 +404,6 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _DetailTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _DetailTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: MSpacing.xs),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: MColors.textSecondary),
-          const SizedBox(width: MSpacing.md),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label,
-                  style: MText.bodySm.copyWith(color: MColors.textSecondary)),
-              Text(value, style: MText.bodyMd),
-            ],
-          ),
-        ],
       ),
     );
   }
