@@ -335,7 +335,11 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const AddPaymentPage()),
+                        builder: (_) => AddPaymentPage(
+                          initialSupplier: _supplier,
+                          initialPartyType: 'supplier',
+                        ),
+                      ),
                     ),
                     icon: const Icon(Icons.payment_outlined),
                     label: const Text('Pay Supplier'),

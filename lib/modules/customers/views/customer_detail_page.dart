@@ -371,7 +371,11 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const AddPaymentPage()),
+                        builder: (_) => AddPaymentPage(
+                          initialCustomer: _customer,
+                          initialPartyType: 'customer',
+                        ),
+                      ),
                     ),
                     icon: const Icon(Icons.payment_outlined),
                     label: const Text('Record Receipt'),

@@ -12,7 +12,16 @@ import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
 import 'package:mandi/modules/payments/providers/payment_provider.dart';
 
 class AddPaymentPage extends StatefulWidget {
-  const AddPaymentPage({super.key});
+  final Customer? initialCustomer;
+  final Supplier? initialSupplier;
+  final String? initialPartyType; // 'customer' or 'supplier'
+
+  const AddPaymentPage({
+    super.key,
+    this.initialCustomer,
+    this.initialSupplier,
+    this.initialPartyType,
+  });
 
   @override
   State<AddPaymentPage> createState() => _AddPaymentPageState();
@@ -21,7 +30,7 @@ class AddPaymentPage extends StatefulWidget {
 class _AddPaymentPageState extends State<AddPaymentPage> {
   final _formKey = GlobalKey<FormState>();
 
-  String _partyType = 'customer'; // 'customer' or 'supplier'
+  late String _partyType;
   Customer? _selectedCustomer;
   Supplier? _selectedSupplier;
 
@@ -29,6 +38,15 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
   final _referenceCtrl = TextEditingController();
   String _method = 'cash';
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _partyType = widget.initialPartyType ??
+        (widget.initialSupplier != null ? 'supplier' : 'customer');
+    _selectedCustomer = widget.initialCustomer;
+    _selectedSupplier = widget.initialSupplier;
+  }
 
   @override
   void dispose() {
@@ -92,7 +110,10 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment voucher recorded.')),
+        SnackBar(
+            content: Text(_partyType == 'customer'
+                ? 'Customer receipt recorded.'
+                : 'Supplier payment recorded.')),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -109,9 +130,16 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
   Widget build(BuildContext context) {
     final customers = context.watch<CustomerProvider>().customers;
     final suppliers = context.watch<SupplierProvider>().suppliers;
+    final isLockedParty = widget.initialPartyType != null ||
+        widget.initialCustomer != null ||
+        widget.initialSupplier != null;
+
+    final appBarTitle = _partyType == 'customer'
+        ? 'Record Customer Receipt'
+        : 'Record Supplier Payment';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Record Payment Voucher')),
+      appBar: AppBar(title: Text(appBarTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Form(
@@ -119,64 +147,72 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Party Type Selector
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(
-                    value: 'customer',
-                    label: Text('Customer Receipt'),
-                    icon: Icon(Icons.download_outlined),
-                  ),
-                  ButtonSegment(
-                    value: 'supplier',
-                    label: Text('Supplier Payment'),
-                    icon: Icon(Icons.upload_outlined),
-                  ),
-                ],
-                selected: {_partyType},
-                onSelectionChanged: (set) {
-                  setState(() {
-                    _partyType = set.first;
-                    _selectedCustomer = null;
-                    _selectedSupplier = null;
-                  });
-                },
-              ),
-
-              const SizedBox(height: MSpacing.lg),
+              // Party Type Selector (hidden if opened from Customer/Supplier profile)
+              if (!isLockedParty) ...[
+                SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(
+                      value: 'customer',
+                      label: Text('Customer Receipt'),
+                      icon: Icon(Icons.download_outlined),
+                    ),
+                    ButtonSegment(
+                      value: 'supplier',
+                      label: Text('Supplier Payment'),
+                      icon: Icon(Icons.upload_outlined),
+                    ),
+                  ],
+                  selected: {_partyType},
+                  onSelectionChanged: (set) {
+                    setState(() {
+                      _partyType = set.first;
+                      _selectedCustomer = null;
+                      _selectedSupplier = null;
+                    });
+                  },
+                ),
+                const SizedBox(height: MSpacing.lg),
+              ],
 
               if (_partyType == 'customer')
                 DropdownButtonFormField<Customer>(
                   initialValue: _selectedCustomer,
-                  decoration: const InputDecoration(labelText: 'Select Customer *'),
+                  decoration:
+                      const InputDecoration(labelText: 'Select Customer *'),
                   items: customers
                       .map((c) => DropdownMenuItem(
                             value: c,
-                            child: Text('${c.name} (Balance: Rs. ${c.runningBalance.toStringAsFixed(0)})'),
+                            child: Text(
+                                '${c.name} (Balance: Rs. ${c.runningBalance.toStringAsFixed(0)})'),
                           ))
                       .toList(),
                   onChanged: (c) => setState(() => _selectedCustomer = c),
-                  validator: (v) => v == null ? 'Please select a customer' : null,
+                  validator: (v) =>
+                      v == null ? 'Please select a customer' : null,
                 )
               else
                 DropdownButtonFormField<Supplier>(
                   initialValue: _selectedSupplier,
-                  decoration: const InputDecoration(labelText: 'Select Supplier *'),
+                  decoration:
+                      const InputDecoration(labelText: 'Select Supplier *'),
                   items: suppliers
                       .map((s) => DropdownMenuItem(
                             value: s,
-                            child: Text('${s.name} (Payable: Rs. ${s.runningBalance.toStringAsFixed(0)})'),
+                            child: Text(
+                                '${s.name} (Payable: Rs. ${s.runningBalance.toStringAsFixed(0)})'),
                           ))
                       .toList(),
                   onChanged: (s) => setState(() => _selectedSupplier = s),
-                  validator: (v) => v == null ? 'Please select a supplier' : null,
+                  validator: (v) =>
+                      v == null ? 'Please select a supplier' : null,
                 ),
 
               const SizedBox(height: MSpacing.md),
 
               TextFormField(
                 controller: _amountCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'Payment Amount (PKR) *',
                   hintText: 'e.g. 10000',
