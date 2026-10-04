@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Every method here that touches business data takes a shopId and filters
@@ -21,6 +22,26 @@ class SupabaseService {
 
   static Future<void> updateShop(String shopId, Map<String, dynamic> data) =>
       _client.from('shops').update(data).eq('id', shopId);
+
+  /// Uploads a shop logo image byte array to Supabase Storage `shop-assets` bucket.
+  /// Returns the public URL of the uploaded image.
+  static Future<String> uploadShopLogo({
+    required String shopId,
+    required Uint8List bytes,
+    required String fileName,
+  }) async {
+    final ext = fileName.contains('.') ? fileName.split('.').last : 'png';
+    final path = '$shopId/logo_${DateTime.now().millisecondsSinceEpoch}.$ext';
+
+    await _client.storage.from('shop-assets').uploadBinary(
+          path,
+          bytes,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
+    final publicUrl = _client.storage.from('shop-assets').getPublicUrl(path);
+    return publicUrl;
+  }
 
   /// All active shop_memberships rows for one Supabase Auth user, across
   /// every shop they belong to. Used by ShopContextProvider on login.

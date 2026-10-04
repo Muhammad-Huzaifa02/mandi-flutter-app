@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
@@ -26,6 +27,7 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
   late final TextEditingController _invoicePrefix;
 
   bool _saving = false;
+  bool _uploadingLogo = false;
 
   @override
   void initState() {
@@ -55,6 +57,45 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
     _commission.dispose();
     _invoicePrefix.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAndUploadLogo() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+
+    final shopCtx = context.read<ShopContextProvider>();
+    final shopId = shopCtx.currentShopId;
+    if (shopId == null) return;
+
+    setState(() => _uploadingLogo = true);
+
+    try {
+      final bytes = await pickedFile.readAsBytes();
+      final publicUrl = await SupabaseService.uploadShopLogo(
+        shopId: shopId,
+        bytes: bytes,
+        fileName: pickedFile.name,
+      );
+
+      setState(() {
+        _logoUrl.text = publicUrl;
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Shop logo uploaded successfully!')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Failed to upload logo: $e'),
+            backgroundColor: MColors.danger),
+      );
+    } finally {
+      if (mounted) setState(() => _uploadingLogo = false);
+    }
   }
 
   Future<void> _submit() async {
@@ -108,6 +149,55 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Logo Avatar Picker
+              Center(
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    CircleAvatar(
+                      radius: 44,
+                      backgroundColor: MColors.primary.withValues(alpha: 0.1),
+                      backgroundImage: _logoUrl.text.isNotEmpty
+                          ? NetworkImage(_logoUrl.text)
+                          : null,
+                      child: _logoUrl.text.isEmpty
+                          ? const Icon(Icons.storefront_outlined,
+                              size: 40, color: MColors.primary)
+                          : null,
+                    ),
+                    IconButton.filled(
+                      style: IconButton.styleFrom(
+                        backgroundColor: MColors.primary,
+                        padding: const EdgeInsets.all(8),
+                      ),
+                      icon: _uploadingLogo
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.camera_alt,
+                              size: 18, color: Colors.white),
+                      tooltip: 'Upload Logo from Gallery',
+                      onPressed: _uploadingLogo ? null : _pickAndUploadLogo,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: MSpacing.xs),
+              Center(
+                child: TextButton.icon(
+                  onPressed: _uploadingLogo ? null : _pickAndUploadLogo,
+                  icon: const Icon(Icons.upload_file, size: 18),
+                  label: const Text('Change Shop Logo Image'),
+                ),
+              ),
+
+              const SizedBox(height: MSpacing.md),
+
               TextFormField(
                 controller: _name,
                 decoration: const InputDecoration(
@@ -117,15 +207,9 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
+
               const SizedBox(height: MSpacing.md),
-              TextFormField(
-                controller: _logoUrl,
-                decoration: const InputDecoration(
-                  labelText: 'Shop Logo URL',
-                  hintText: 'https://example.com/logo.png',
-                ),
-              ),
-              const SizedBox(height: MSpacing.md),
+
               Row(
                 children: [
                   Expanded(

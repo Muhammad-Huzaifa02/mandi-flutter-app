@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:mandi/core/theme/app_theme.dart';
@@ -363,12 +364,35 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
             decoration: const InputDecoration(labelText: 'Shop Name *'),
           ),
           const SizedBox(height: MSpacing.md),
-          TextFormField(
-            controller: _logoUrlCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Shop Logo URL (Optional)',
-              hintText: 'https://example.com/logo.png',
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _logoUrlCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Shop Logo (Optional)',
+                    hintText: 'https://example.com/logo.png',
+                  ),
+                ),
+              ),
+              const SizedBox(width: MSpacing.sm),
+              IconButton.filled(
+                style: IconButton.styleFrom(backgroundColor: MColors.primary),
+                icon: const Icon(Icons.photo_library_outlined, color: Colors.white),
+                tooltip: 'Pick Logo from Device',
+                onPressed: () async {
+                  final picker = ImagePicker();
+                  final picked = await picker.pickImage(source: ImageSource.gallery);
+                  if (picked != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Logo selected. Upload will complete when shop is created.')),
+                    );
+                  }
+                },
+              ),
+            ],
           ),
           const SizedBox(height: MSpacing.md),
           const Text('Business Type', style: MText.labelMd),
