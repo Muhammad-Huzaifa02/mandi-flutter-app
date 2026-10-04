@@ -5,6 +5,7 @@ import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/customer_model.dart';
 import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/data/models/payment_model.dart';
+import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
@@ -56,11 +57,32 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
     setState(() => _saving = true);
 
     try {
+      String validPartyId = partyId;
+      if (_partyType == 'customer' && _selectedCustomer != null) {
+        validPartyId = await SupabaseService.ensureCustomerRow(
+          shopId: shopId,
+          customerId: _selectedCustomer!.id,
+          userId: _selectedCustomer!.userId,
+          name: _selectedCustomer!.name,
+          phone: _selectedCustomer!.phone,
+          email: _selectedCustomer!.email,
+        );
+      } else if (_partyType == 'supplier' && _selectedSupplier != null) {
+        validPartyId = await SupabaseService.ensureSupplierRow(
+          shopId: shopId,
+          supplierId: _selectedSupplier!.id,
+          userId: _selectedSupplier!.userId,
+          name: _selectedSupplier!.name,
+          phone: _selectedSupplier!.phone,
+          email: _selectedSupplier!.email,
+        );
+      }
+
       final payment = Payment(
         id: '',
         shopId: shopId,
         partyType: _partyType,
-        partyId: partyId,
+        partyId: validPartyId,
         amount: double.parse(_amountCtrl.text.trim()),
         method: _method,
         reference: _referenceCtrl.text.trim(),

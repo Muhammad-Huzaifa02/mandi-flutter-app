@@ -294,8 +294,8 @@ class SupabaseService {
           .from('customers')
           .select('running_balance')
           .eq('id', partyId)
-          .single();
-      final current = (customer['running_balance'] as num?)?.toDouble() ?? 0;
+          .maybeSingle();
+      final current = (customer?['running_balance'] as num?)?.toDouble() ?? 0;
       await _client
           .from('customers')
           .update({'running_balance': current - amount})
@@ -305,13 +305,121 @@ class SupabaseService {
           .from('suppliers')
           .select('running_balance')
           .eq('id', partyId)
-          .single();
-      final current = (supplier['running_balance'] as num?)?.toDouble() ?? 0;
+          .maybeSingle();
+      final current = (supplier?['running_balance'] as num?)?.toDouble() ?? 0;
       await _client
           .from('suppliers')
           .update({'running_balance': current - amount})
           .eq('id', partyId);
     }
+  }
+
+  static Future<String> ensureCustomerRow({
+    required String shopId,
+    String? customerId,
+    String? userId,
+    required String name,
+    String phone = '',
+    String email = '',
+  }) async {
+    if (customerId != null && customerId.isNotEmpty) {
+      final match = await _client
+          .from('customers')
+          .select('id')
+          .eq('id', customerId)
+          .maybeSingle();
+      if (match != null) return match['id'] as String;
+    }
+
+    if (userId != null && userId.isNotEmpty) {
+      final match = await _client
+          .from('customers')
+          .select('id')
+          .eq('shop_id', shopId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (match != null) return match['id'] as String;
+    }
+
+    if (email.isNotEmpty) {
+      final match = await _client
+          .from('customers')
+          .select('id')
+          .eq('shop_id', shopId)
+          .eq('email', email)
+          .maybeSingle();
+      if (match != null) return match['id'] as String;
+    }
+
+    final newRow = await _client
+        .from('customers')
+        .insert({
+          'shop_id': shopId,
+          'user_id': userId,
+          'name': name,
+          'phone': phone,
+          'email': email,
+          'opening_balance': 0,
+          'running_balance': 0,
+        })
+        .select('id')
+        .single();
+
+    return newRow['id'] as String;
+  }
+
+  static Future<String> ensureSupplierRow({
+    required String shopId,
+    String? supplierId,
+    String? userId,
+    required String name,
+    String phone = '',
+    String email = '',
+  }) async {
+    if (supplierId != null && supplierId.isNotEmpty) {
+      final match = await _client
+          .from('suppliers')
+          .select('id')
+          .eq('id', supplierId)
+          .maybeSingle();
+      if (match != null) return match['id'] as String;
+    }
+
+    if (userId != null && userId.isNotEmpty) {
+      final match = await _client
+          .from('suppliers')
+          .select('id')
+          .eq('shop_id', shopId)
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (match != null) return match['id'] as String;
+    }
+
+    if (email.isNotEmpty) {
+      final match = await _client
+          .from('suppliers')
+          .select('id')
+          .eq('shop_id', shopId)
+          .eq('email', email)
+          .maybeSingle();
+      if (match != null) return match['id'] as String;
+    }
+
+    final newRow = await _client
+        .from('suppliers')
+        .insert({
+          'shop_id': shopId,
+          'user_id': userId,
+          'name': name,
+          'phone': phone,
+          'email': email,
+          'opening_balance': 0,
+          'running_balance': 0,
+        })
+        .select('id')
+        .single();
+
+    return newRow['id'] as String;
   }
 
   // ── Audit logs ───────────────────────────────────────────────────────────

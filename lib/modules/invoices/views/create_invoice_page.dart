@@ -8,6 +8,7 @@ import 'package:mandi/data/models/customer_model.dart';
 import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/data/models/product_model.dart';
 import 'package:mandi/data/models/invoice_model.dart';
+import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
@@ -271,12 +272,36 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     setState(() => _saving = true);
 
     try {
+      String? validCustomerId;
+      if (_selectedCustomer != null) {
+        validCustomerId = await SupabaseService.ensureCustomerRow(
+          shopId: shopId,
+          customerId: _selectedCustomer!.id,
+          userId: _selectedCustomer!.userId,
+          name: _selectedCustomer!.name,
+          phone: _selectedCustomer!.phone,
+          email: _selectedCustomer!.email,
+        );
+      }
+
+      String? validSupplierId;
+      if (_selectedSupplier != null) {
+        validSupplierId = await SupabaseService.ensureSupplierRow(
+          shopId: shopId,
+          supplierId: _selectedSupplier!.id,
+          userId: _selectedSupplier!.userId,
+          name: _selectedSupplier!.name,
+          phone: _selectedSupplier!.phone,
+          email: _selectedSupplier!.email,
+        );
+      }
+
       final invoice = Invoice(
         id: '',
         shopId: shopId,
-        customerId: _selectedCustomer?.id,
+        customerId: validCustomerId,
         customerName: _selectedCustomer?.name ?? 'Walk-in Customer',
-        supplierId: _selectedSupplier?.id,
+        supplierId: validSupplierId,
         supplierName: _selectedSupplier?.name ?? '',
         invoiceNumber: _invoiceNumberCtrl.text.trim(),
         subtotal: _productsSubtotal,
