@@ -16,7 +16,12 @@ import 'package:mandi/modules/products/providers/product_provider.dart';
 import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
 
 class CreateInvoicePage extends StatefulWidget {
-  const CreateInvoicePage({super.key});
+  final String targetParty; // 'customer' or 'supplier'
+
+  const CreateInvoicePage({
+    super.key,
+    this.targetParty = 'customer',
+  });
 
   @override
   State<CreateInvoicePage> createState() => _CreateInvoicePageState();
@@ -25,6 +30,7 @@ class CreateInvoicePage extends StatefulWidget {
 class _CreateInvoicePageState extends State<CreateInvoicePage> {
   final _formKey = GlobalKey<FormState>();
 
+  late String _invoiceType; // 'customer' or 'supplier'
   Customer? _selectedCustomer;
   Supplier? _selectedSupplier;
   final List<InvoiceItem> _items = [];
@@ -41,6 +47,8 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   @override
   void initState() {
     super.initState();
+    _invoiceType = widget.targetParty;
+
     final shop = context.read<ShopContextProvider>().currentShop;
     final defaultComm = shop?.defaultCommissionPercent ?? 0;
     _commissionPercentCtrl.text = defaultComm.toStringAsFixed(1);
@@ -314,7 +322,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
     try {
       String? validCustomerId;
-      if (_selectedCustomer != null) {
+      if (_invoiceType == 'customer' && _selectedCustomer != null) {
         validCustomerId = await SupabaseService.ensureCustomerRow(
           shopId: shopId,
           customerId: _selectedCustomer!.id,
@@ -326,7 +334,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       }
 
       String? validSupplierId;
-      if (_selectedSupplier != null) {
+      if (_invoiceType == 'supplier' && _selectedSupplier != null) {
         validSupplierId = await SupabaseService.ensureSupplierRow(
           shopId: shopId,
           supplierId: _selectedSupplier!.id,
@@ -341,7 +349,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         id: '',
         shopId: shopId,
         customerId: validCustomerId,
-        customerName: _selectedCustomer?.name ?? 'Walk-in Customer',
+        customerName: _selectedCustomer?.name ?? (_invoiceType == 'customer' ? 'Walk-in Customer' : ''),
         supplierId: validSupplierId,
         supplierName: _selectedSupplier?.name ?? '',
         invoiceNumber: _invoiceNumberCtrl.text.trim(),
@@ -361,7 +369,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       );
 
       // If supplier is selected (Option A: Consignment Sale), credit net payout to supplier running balance
-      if (_selectedSupplier != null) {
+      if (_invoiceType == 'supplier' && _selectedSupplier != null) {
         final netPayout = _netSupplierPayout;
         if (netPayout > 0) {
           final client = Supabase.instance.client;
@@ -399,8 +407,12 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     final customers = context.watch<CustomerProvider>().customers;
     final suppliers = context.watch<SupplierProvider>().suppliers;
 
+    final titleStr = _invoiceType == 'customer'
+        ? 'Create Customer Sales Invoice'
+        : 'Create Supplier Consignment Invoice';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Sales Invoice')),
+      appBar: AppBar(title: Text(titleStr)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Form(
@@ -408,6 +420,30 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Segmented Button to switch Customer vs Supplier Invoice
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(
+                    value: 'customer',
+                    label: Text('For Customer (Buyer)'),
+                    icon: Icon(Icons.person_outlined),
+                  ),
+                  ButtonSegment(
+                    value: 'supplier',
+                    label: Text('For Supplier (Aawak)'),
+                    icon: Icon(Icons.local_shipping_outlined),
+                  ),
+                ],
+                selected: {_invoiceType},
+                onSelectionChanged: (set) {
+                  setState(() {
+                    _invoiceType = set.first;
+                  });
+                },
+              ),
+
+              const SizedBox(height: MSpacing.lg),
+
               Row(
                 children: [
                   Expanded(
@@ -424,36 +460,38 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               ),
               const SizedBox(height: MSpacing.md),
 
-              // Party Selection
-              DropdownButtonFormField<Customer>(
-                initialValue: _selectedCustomer,
-                decoration: const InputDecoration(
-                  labelText: 'Customer (Buyer / Walk-in)',
+              if (_invoiceType == 'customer')
+                DropdownButtonFormField<Customer>(
+                  initialValue: _selectedCustomer,
+                  decoration: const InputDecoration(
+                    labelText: 'Customer (Buyer / Walk-in)',
+                  ),
+                  hint: const Text('Select Customer'),
+                  items: customers
+                      .map((c) => DropdownMenuItem(
+                            value: c,
+                            child: Text('${c.name} (${c.phone})'),
+                          ))
+                      .toList(),
+                  onChanged: (c) => setState(() => _selectedCustomer = c),
+                )
+              else
+                DropdownButtonFormField<Supplier>(
+                  initialValue: _selectedSupplier,
+                  decoration: const InputDecoration(
+                    labelText: 'Supplier / Farmer (Aawak Consignment) *',
+                  ),
+                  hint: const Text('Select Supplier / Farmer'),
+                  items: suppliers
+                      .map((s) => DropdownMenuItem(
+                            value: s,
+                            child: Text('${s.name} (${s.phone})'),
+                          ))
+                      .toList(),
+                  onChanged: (s) => setState(() => _selectedSupplier = s),
+                  validator: (v) =>
+                      v == null ? 'Please select a supplier' : null,
                 ),
-                hint: const Text('Select Customer'),
-                items: customers
-                    .map((c) => DropdownMenuItem(
-                          value: c,
-                          child: Text('${c.name} (${c.phone})'),
-                        ))
-                    .toList(),
-                onChanged: (c) => setState(() => _selectedCustomer = c),
-              ),
-              const SizedBox(height: MSpacing.md),
-              DropdownButtonFormField<Supplier>(
-                initialValue: _selectedSupplier,
-                decoration: const InputDecoration(
-                  labelText: 'Supplier / Farmer (Aawak - Consignment)',
-                ),
-                hint: const Text('Select Supplier / Farmer (Optional)'),
-                items: suppliers
-                    .map((s) => DropdownMenuItem(
-                          value: s,
-                          child: Text('${s.name} (${s.phone})'),
-                        ))
-                    .toList(),
-                onChanged: (s) => setState(() => _selectedSupplier = s),
-              ),
 
               const SizedBox(height: MSpacing.lg),
 
@@ -639,7 +677,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       value: 'Rs. ${_grandTotal.toStringAsFixed(0)}',
                       isBold: true,
                     ),
-                    if (_selectedSupplier != null) ...[
+                    if (_invoiceType == 'supplier' && _selectedSupplier != null) ...[
                       const Divider(height: MSpacing.md),
                       _SummaryRow(
                         label: 'Net Payout to Supplier:',
@@ -665,7 +703,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Issue Sales Invoice'),
+                    : Text(_invoiceType == 'customer'
+                        ? 'Issue Customer Sales Invoice'
+                        : 'Issue Supplier Consignment Invoice'),
               ),
             ],
           ),

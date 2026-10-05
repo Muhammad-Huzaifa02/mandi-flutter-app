@@ -24,6 +24,47 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
     super.dispose();
   }
 
+  void _showInvoiceTypeDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Create New Invoice'),
+        content: const Text('Who is this invoice being created for?'),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
+        actions: [
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(dialogCtx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const CreateInvoicePage(targetParty: 'supplier'),
+                ),
+              );
+            },
+            icon: const Icon(Icons.local_shipping_outlined),
+            label: const Text('For Supplier (Aawak)'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(dialogCtx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const CreateInvoicePage(targetParty: 'customer'),
+                ),
+              );
+            },
+            icon: const Icon(Icons.person_outlined),
+            label: const Text('For Customer (Buyer)'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final shopCtx = context.watch<ShopContextProvider>();
@@ -47,10 +88,7 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
       ),
       floatingActionButton: canCreate
           ? FloatingActionButton.extended(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const CreateInvoicePage()),
-              ),
+              onPressed: _showInvoiceTypeDialog,
               icon: const Icon(Icons.add_shopping_cart_outlined),
               label: const Text('New Invoice'),
             )
@@ -121,7 +159,9 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
                               subtitle: Text(
                                 inv.customerName.isNotEmpty
                                     ? inv.customerName
-                                    : 'Walk-in Customer',
+                                    : (inv.supplierName.isNotEmpty
+                                        ? 'Supplier: ${inv.supplierName}'
+                                        : 'Walk-in Customer'),
                                 style: MText.bodySm
                                     .copyWith(color: MColors.textSecondary),
                               ),
