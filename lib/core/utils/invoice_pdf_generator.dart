@@ -5,6 +5,7 @@ import 'package:printing/printing.dart';
 
 import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/data/models/invoice_model.dart';
+import 'package:mandi/data/services/supabase_service.dart';
 
 /// PDF Generation utility for Mandi Sales Receipts.
 class InvoicePdfGenerator {
@@ -195,9 +196,16 @@ class InvoicePdfGenerator {
     String? shopPhone,
     String? shopCity,
   }) async {
+    var fullInvoice = invoice;
+    if (fullInvoice.items.isEmpty && fullInvoice.id.isNotEmpty) {
+      final fetchedItems =
+          await SupabaseService.getInvoiceItems(fullInvoice.id);
+      fullInvoice = fullInvoice.copyWith(items: fetchedItems);
+    }
+
     await Printing.layoutPdf(
       onLayout: (_) => generatePdf(
-        invoice: invoice,
+        invoice: fullInvoice,
         shopName: shopName,
         shopPhone: shopPhone,
         shopCity: shopCity,

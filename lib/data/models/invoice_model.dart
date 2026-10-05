@@ -203,4 +203,32 @@ class Invoice {
         'payment_method': paymentMethod.toDbString(),
         'status': status,
       };
+
+  Invoice copyWith({
+    List<InvoiceItem>? items,
+    String? customerName,
+    String? supplierName,
+    String? status,
+  }) =>
+      Invoice(
+        id: id,
+        shopId: shopId,
+        customerId: customerId,
+        customerName: customerName ?? this.customerName,
+        supplierId: supplierId,
+        supplierName: supplierName ?? this.supplierName,
+        invoiceNumber: invoiceNumber,
+        items: items ?? this.items,
+        subtotal: subtotal,
+        commission: commission,
+        expenses: expenses,
+        discount: discount,
+        total: total,
+        receivedAmount: receivedAmount,
+        pendingAmount: pendingAmount,
+        paymentMethod: paymentMethod,
+        status: status ?? this.status,
+        createdBy: createdBy,
+        createdAt: createdAt,
+      );
 }

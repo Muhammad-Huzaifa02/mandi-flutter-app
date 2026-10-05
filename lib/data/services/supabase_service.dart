@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:mandi/data/models/invoice_model.dart';
 
 /// Every method here that touches business data takes a shopId and filters
 /// by it. There is no "singleton shop" fallback in this app — a query
@@ -268,6 +269,21 @@ class SupabaseService {
           .stream(primaryKey: ['id'])
           .eq('shop_id', shopId)
           .order('created_at', ascending: false);
+
+  /// Retrieves line items for an invoice from invoice_items table, joining product names.
+  static Future<List<InvoiceItem>> getInvoiceItems(String invoiceId) async {
+    final rows = await _client
+        .from('invoice_items')
+        .select('*, products(name)')
+        .eq('invoice_id', invoiceId);
+
+    return (rows as List).map((r) {
+      final map = Map<String, dynamic>.from(r);
+      final prodName = r['products']?['name'] as String? ?? '';
+      map['product_name'] = prodName;
+      return InvoiceItem.fromMap(map);
+    }).toList();
+  }
 
   /// Creates an invoice + line items and deducts stock atomically via the
   /// create_invoice_with_stock_deduction Postgres function (see

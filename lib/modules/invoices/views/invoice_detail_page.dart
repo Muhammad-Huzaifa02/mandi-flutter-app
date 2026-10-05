@@ -6,20 +6,53 @@ import 'package:mandi/core/utils/invoice_pdf_generator.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/invoice_model.dart';
+import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
 
-class InvoiceDetailPage extends StatelessWidget {
+class InvoiceDetailPage extends StatefulWidget {
   final Invoice invoice;
 
   const InvoiceDetailPage({super.key, required this.invoice});
 
   @override
+  State<InvoiceDetailPage> createState() => _InvoiceDetailPageState();
+}
+
+class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
+  late Invoice _invoice;
+  bool _loadingItems = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _invoice = widget.invoice;
+    if (_invoice.items.isEmpty && _invoice.id.isNotEmpty) {
+      _loadItems();
+    }
+  }
+
+  Future<void> _loadItems() async {
+    setState(() => _loadingItems = true);
+    try {
+      final items = await SupabaseService.getInvoiceItems(_invoice.id);
+      if (mounted) {
+        setState(() {
+          _invoice = _invoice.copyWith(items: items);
+          _loadingItems = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loadingItems = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final shop = context.watch<ShopContextProvider>().currentShop;
     final customers = context.watch<CustomerProvider>().customers;
-    final customer = invoice.customerId != null
-        ? customers.where((c) => c.id == invoice.customerId).firstOrNull
+    final customer = _invoice.customerId != null
+        ? customers.where((c) => c.id == _invoice.customerId).firstOrNull
         : null;
 
     final customerPhone = customer?.phone ?? '';
@@ -27,14 +60,14 @@ class InvoiceDetailPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(invoice.invoiceNumber),
+        title: Text(_invoice.invoiceNumber),
         actions: [
           IconButton(
             icon: const Icon(Icons.print_outlined),
             tooltip: 'Print / Save PDF',
             onPressed: () {
               InvoicePdfGenerator.printOrShareInvoice(
-                invoice: invoice,
+                invoice: _invoice,
                 shopName: shop?.name ?? 'Mandi Shop',
                 shopPhone: shop?.phone,
                 shopCity: shop?.city,
@@ -62,23 +95,23 @@ class InvoiceDetailPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(invoice.invoiceNumber, style: MText.titleLg),
+                      Text(_invoice.invoiceNumber, style: MText.titleLg),
                       Chip(
                         label: Text(
-                          invoice.status.toUpperCase(),
+                          _invoice.status.toUpperCase(),
                           style: TextStyle(
-                            color: invoice.status == 'paid'
+                            color: _invoice.status == 'paid'
                                 ? Colors.green
-                                : (invoice.status == 'partial'
+                                : (_invoice.status == 'partial'
                                     ? Colors.orange
                                     : MColors.danger),
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
                         ),
-                        backgroundColor: (invoice.status == 'paid'
+                        backgroundColor: (_invoice.status == 'paid'
                                 ? Colors.green
-                                : (invoice.status == 'partial'
+                                : (_invoice.status == 'partial'
                                     ? Colors.orange
                                     : MColors.danger))
                             .withValues(alpha: 0.1),
@@ -87,18 +120,22 @@ class InvoiceDetailPage extends StatelessWidget {
                   ),
                   const Divider(height: MSpacing.lg),
                   _InfoRow(
-                      label: 'Customer',
-                      value: invoice.customerName.isNotEmpty
-                          ? invoice.customerName
+                      label: 'Customer / Buyer',
+                      value: _invoice.customerName.isNotEmpty
+                          ? _invoice.customerName
                           : 'Walk-in Customer'),
+                  if (_invoice.supplierName.isNotEmpty)
+                    _InfoRow(
+                        label: 'Supplier / Farmer',
+                        value: _invoice.supplierName),
                   _InfoRow(
                       label: 'Payment Method',
-                      value: invoice.paymentMethod.displayName),
-                  if (invoice.createdAt != null)
+                      value: _invoice.paymentMethod.displayName),
+                  if (_invoice.createdAt != null)
                     _InfoRow(
                       label: 'Date',
                       value:
-                          '${invoice.createdAt!.day}/${invoice.createdAt!.month}/${invoice.createdAt!.year}',
+                          '${_invoice.createdAt!.day}/${_invoice.createdAt!.month}/${_invoice.createdAt!.year}',
                     ),
                 ],
               ),
@@ -106,20 +143,28 @@ class InvoiceDetailPage extends StatelessWidget {
 
             const SizedBox(height: MSpacing.lg),
 
-            // Line Items
+            // Line Items Section
             const Text('Purchased Items', style: MText.titleLg),
             const SizedBox(height: MSpacing.sm),
-            if (invoice.items.isEmpty)
+
+            if (_loadingItems)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(MSpacing.md),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_invoice.items.isEmpty)
               Text('No item details available.',
                   style: MText.bodyMd.copyWith(color: MColors.textSecondary))
             else
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: invoice.items.length,
+                itemCount: _invoice.items.length,
                 separatorBuilder: (_, __) => const SizedBox(height: MSpacing.xs),
                 itemBuilder: (context, i) {
-                  final item = invoice.items[i];
+                  final item = _invoice.items[i];
                   return Card(
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -163,33 +208,33 @@ class InvoiceDetailPage extends StatelessWidget {
                 children: [
                   _SummaryRow(
                       label: 'Subtotal:',
-                      value: 'Rs. ${invoice.subtotal.toStringAsFixed(0)}'),
+                      value: 'Rs. ${_invoice.subtotal.toStringAsFixed(0)}'),
                   _SummaryRow(
                       label: 'Mandi Commission:',
-                      value: '+ Rs. ${invoice.commission.toStringAsFixed(0)}'),
-                  if (invoice.expenses > 0)
+                      value: '+ Rs. ${_invoice.commission.toStringAsFixed(0)}'),
+                  if (_invoice.expenses > 0)
                     _SummaryRow(
                         label: 'Expenses:',
-                        value: '+ Rs. ${invoice.expenses.toStringAsFixed(0)}'),
-                  if (invoice.discount > 0)
+                        value: '+ Rs. ${_invoice.expenses.toStringAsFixed(0)}'),
+                  if (_invoice.discount > 0)
                     _SummaryRow(
                         label: 'Discount:',
-                        value: '- Rs. ${invoice.discount.toStringAsFixed(0)}'),
+                        value: '- Rs. ${_invoice.discount.toStringAsFixed(0)}'),
                   const Divider(height: MSpacing.md),
                   _SummaryRow(
                     label: 'Grand Total:',
-                    value: 'Rs. ${invoice.total.toStringAsFixed(0)}',
+                    value: 'Rs. ${_invoice.total.toStringAsFixed(0)}',
                     isBold: true,
                   ),
                   _SummaryRow(
                     label: 'Received Amount:',
-                    value: 'Rs. ${invoice.receivedAmount.toStringAsFixed(0)}',
+                    value: 'Rs. ${_invoice.receivedAmount.toStringAsFixed(0)}',
                     color: Colors.green,
                   ),
-                  if (invoice.pendingAmount > 0)
+                  if (_invoice.pendingAmount > 0)
                     _SummaryRow(
                       label: 'Pending Balance:',
-                      value: 'Rs. ${invoice.pendingAmount.toStringAsFixed(0)}',
+                      value: 'Rs. ${_invoice.pendingAmount.toStringAsFixed(0)}',
                       color: MColors.danger,
                       isBold: true,
                     ),
@@ -206,7 +251,7 @@ class InvoiceDetailPage extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       InvoicePdfGenerator.printOrShareInvoice(
-                        invoice: invoice,
+                        invoice: _invoice,
                         shopName: shop?.name ?? 'Mandi Shop',
                         shopPhone: shop?.phone,
                         shopCity: shop?.city,
@@ -220,12 +265,12 @@ class InvoiceDetailPage extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                      backgroundColor: const Color(0xFF25D366),
                     ),
                     onPressed: () {
                       WhatsAppShareService.shareInvoice(
                         phone: customerPhone,
-                        invoice: invoice,
+                        invoice: _invoice,
                         shopName: shop?.name ?? 'Mandi Shop',
                       );
                     },
@@ -242,7 +287,7 @@ class InvoiceDetailPage extends StatelessWidget {
                     onPressed: () {
                       WhatsAppShareService.shareInvoiceViaEmail(
                         email: customerEmail,
-                        invoice: invoice,
+                        invoice: _invoice,
                         shopName: shop?.name ?? 'Mandi Shop',
                       );
                     },
