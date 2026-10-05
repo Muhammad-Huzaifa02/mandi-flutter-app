@@ -383,7 +383,7 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
                 onPressed: () async {
                   final picker = ImagePicker();
                   final picked = await picker.pickImage(source: ImageSource.gallery);
-                  if (picked != null) {
+                  if (picked != null && mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text(

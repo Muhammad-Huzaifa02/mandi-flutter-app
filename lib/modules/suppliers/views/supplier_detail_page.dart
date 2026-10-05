@@ -76,37 +76,46 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
             onPressed: () async {
               if (nameCtrl.text.trim().isEmpty) return;
 
-              final updateData = {
-                'name': nameCtrl.text.trim(),
-                'phone': phoneCtrl.text.trim(),
-                'email': emailCtrl.text.trim(),
-                'products_supplied': productsCtrl.text.trim(),
-              };
+              final newName = nameCtrl.text.trim();
+              final newPhone = phoneCtrl.text.trim();
+              final newEmail = emailCtrl.text.trim();
+              final newProducts = productsCtrl.text.trim();
+
+              final shopCtx = context.read<ShopContextProvider>();
+              final actorUid = shopCtx.currentMember?.id ?? '';
+              final actorName = shopCtx.currentMember?.name ?? '';
+
+              Navigator.pop(dialogCtx);
+
+              setState(() {
+                _supplier = _supplier.copyWith(
+                  name: newName,
+                  phone: newPhone,
+                  email: newEmail,
+                  productsSupplied: newProducts,
+                );
+              });
 
               if (_supplier.id.isNotEmpty) {
                 await SupabaseService.updateShopMember(
                   membershipId: _supplier.id,
                   shopId: _supplier.shopId,
-                  data: updateData,
-                  actorUid: context.read<ShopContextProvider>().currentMember?.id ?? '',
-                  actorName: context.read<ShopContextProvider>().currentMember?.name ?? '',
+                  data: {
+                    'name': newName,
+                    'phone': newPhone,
+                    'email': newEmail,
+                    'products_supplied': newProducts,
+                  },
+                  actorUid: actorUid,
+                  actorName: actorName,
                 );
               }
 
-              setState(() {
-                _supplier = _supplier.copyWith(
-                  name: nameCtrl.text.trim(),
-                  phone: phoneCtrl.text.trim(),
-                  email: emailCtrl.text.trim(),
-                  productsSupplied: productsCtrl.text.trim(),
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Supplier profile updated.')),
                 );
-              });
-
-              if (!mounted) return;
-              Navigator.pop(dialogCtx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Supplier profile updated.')),
-              );
+              }
             },
             child: const Text('Save Changes'),
           ),

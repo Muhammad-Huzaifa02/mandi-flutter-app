@@ -62,7 +62,7 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
   Future<void> _pickAndUploadLogo() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile == null) return;
+    if (pickedFile == null || !mounted) return;
 
     final shopCtx = context.read<ShopContextProvider>();
     final shopId = shopCtx.currentShopId;

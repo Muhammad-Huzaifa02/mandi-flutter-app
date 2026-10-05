@@ -82,33 +82,39 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             onPressed: () async {
               if (nameCtrl.text.trim().isEmpty) return;
 
-              final updateData = {
-                'name': nameCtrl.text.trim(),
-                'phone': phoneCtrl.text.trim(),
-                'email': emailCtrl.text.trim(),
-                'city': cityCtrl.text.trim(),
-                'address': addressCtrl.text.trim(),
-              };
+              final newName = nameCtrl.text.trim();
+              final newPhone = phoneCtrl.text.trim();
+              final newEmail = emailCtrl.text.trim();
+              final newCity = cityCtrl.text.trim();
+              final newAddress = addressCtrl.text.trim();
 
-              if (_customer.id.isNotEmpty) {
-                await SupabaseService.updateCustomer(_customer.id, updateData);
-              }
+              Navigator.pop(dialogCtx);
 
               setState(() {
                 _customer = _customer.copyWith(
-                  name: nameCtrl.text.trim(),
-                  phone: phoneCtrl.text.trim(),
-                  email: emailCtrl.text.trim(),
-                  city: cityCtrl.text.trim(),
-                  address: addressCtrl.text.trim(),
+                  name: newName,
+                  phone: newPhone,
+                  email: newEmail,
+                  city: newCity,
+                  address: newAddress,
                 );
               });
 
-              if (!mounted) return;
-              Navigator.pop(dialogCtx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Customer profile updated.')),
-              );
+              if (_customer.id.isNotEmpty) {
+                await SupabaseService.updateCustomer(_customer.id, {
+                  'name': newName,
+                  'phone': newPhone,
+                  'email': newEmail,
+                  'city': newCity,
+                  'address': newAddress,
+                });
+              }
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Customer profile updated.')),
+                );
+              }
             },
             child: const Text('Save Changes'),
           ),
