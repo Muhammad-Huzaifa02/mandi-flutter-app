@@ -91,7 +91,7 @@ class GlassContainer extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
         borderRadius: radius,
-        shadows: shadows,
+        boxShadow: shadows,
       ),
       child: content,
     );
