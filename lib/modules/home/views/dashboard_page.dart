@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/employees/views/employee_list_page.dart';
@@ -38,19 +40,47 @@ class DashboardPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, ${shopCtx.currentMember?.name ?? ''}',
-                style: MText.titleLg),
-            const SizedBox(height: MSpacing.xs),
-            Text('Role: ${shopCtx.currentRole?.name ?? '—'}',
-                style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.lg),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: MColors.primary.withValues(alpha: 0.1),
+                    child: Text(
+                      shopCtx.currentMember?.name.isNotEmpty == true
+                          ? shopCtx.currentMember!.name[0].toUpperCase()
+                          : 'M',
+                      style: MText.titleLg.copyWith(color: MColors.primary),
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Welcome, ${shopCtx.currentMember?.name ?? ''}',
+                            style: MText.titleLg),
+                        const SizedBox(height: 2),
+                        Text('Role: ${shopCtx.currentRole?.name ?? '—'}',
+                            style: MText.bodySm
+                                .copyWith(color: MColors.textSecondary)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: MSpacing.xl),
             const Text('Manage', style: MText.titleLg),
             const SizedBox(height: MSpacing.sm),
+
             Wrap(
               spacing: MSpacing.sm,
               runSpacing: MSpacing.sm,
@@ -61,7 +91,8 @@ class DashboardPage extends StatelessWidget {
                     label: 'Employees',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const EmployeeListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const EmployeeListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_customers'))
@@ -70,7 +101,8 @@ class DashboardPage extends StatelessWidget {
                     label: 'Customers',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const CustomerListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const CustomerListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_suppliers'))
@@ -79,7 +111,8 @@ class DashboardPage extends StatelessWidget {
                     label: 'Suppliers',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const SupplierListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const SupplierListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('create_purchase') ||
@@ -100,7 +133,8 @@ class DashboardPage extends StatelessWidget {
                     label: 'Products',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ProductListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const ProductListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('create_invoice') ||
@@ -110,7 +144,8 @@ class DashboardPage extends StatelessWidget {
                     label: 'Invoices',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const InvoiceListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const InvoiceListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_expenses'))
@@ -119,7 +154,8 @@ class DashboardPage extends StatelessWidget {
                     label: 'Expenses',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ExpenseListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const ExpenseListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('create_receipt') ||
@@ -129,7 +165,8 @@ class DashboardPage extends StatelessWidget {
                     label: 'Payments',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const PaymentListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const PaymentListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('view_reports') ||
@@ -148,7 +185,8 @@ class DashboardPage extends StatelessWidget {
                     label: 'Roles',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const RolesListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const RolesListPage()),
                     ),
                   ),
                 _ManageTile(
@@ -156,7 +194,8 @@ class DashboardPage extends StatelessWidget {
                   label: 'Audit Logs',
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const AuditLogListPage()),
+                    MaterialPageRoute(
+                        builder: (_) => const AuditLogListPage()),
                   ),
                 ),
                 if (shopCtx.hasPermission('manage_settings'))
@@ -165,18 +204,11 @@ class DashboardPage extends StatelessWidget {
                     label: 'Settings',
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ShopSettingsPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const ShopSettingsPage()),
                     ),
                   ),
               ],
-            ),
-            const SizedBox(height: MSpacing.xl),
-            Text(
-              'Products, inventory, customers, suppliers, invoices, '
-              'purchases, expenses and reports plug in here next — the shop '
-              'context, auth gate and shop-scoped data layer underneath are '
-              'now live.',
-              style: MText.bodyMd.copyWith(color: MColors.textSecondary),
             ),
           ],
         ),
@@ -189,24 +221,25 @@ class _ManageTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  const _ManageTile({required this.icon, required this.label, required this.onTap});
+
+  const _ManageTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GlassCard(
       onTap: onTap,
-      borderRadius: MRadius.md,
-      child: Container(
-        width: 96,
-        padding: const EdgeInsets.symmetric(vertical: MSpacing.md),
-        decoration: BoxDecoration(
-          color: MColors.surface,
-          borderRadius: MRadius.md,
-          border: Border.all(color: Colors.grey.shade200),
-        ),
+      borderRadius: 18,
+      padding: const EdgeInsets.symmetric(
+          vertical: MSpacing.md, horizontal: MSpacing.xs),
+      child: SizedBox(
+        width: 76,
         child: Column(
           children: [
-            Icon(icon, color: MColors.primary),
+            Icon(icon, color: MColors.primary, size: 26),
             const SizedBox(height: MSpacing.xs),
             Text(label, style: MText.labelMd, textAlign: TextAlign.center),
           ],

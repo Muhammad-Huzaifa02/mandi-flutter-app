@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 /// Mandi's default brand palette — emerald green + gold, per spec.
-/// Each shop can eventually override its own accent color (spec §19);
-/// this is the platform default a fresh shop starts with.
 class MColors {
   static const primary = Color(0xFF0F6B3C); // emerald green
   static const primaryLight = Color(0xFF3E9B6B);
@@ -11,7 +9,7 @@ class MColors {
   static const gold = Color(0xFFD4A62A);
   static const goldLight = Color(0xFFE8C767);
 
-  static const background = Color(0xFFF7F8F6);
+  static const background = Color(0xFFF3F6F4);
   static const surface = Colors.white;
   static const surfaceDark = Color(0xFF14231C);
   static const backgroundDark = Color(0xFF0E1712);
@@ -38,6 +36,24 @@ class MGradient {
     end: Alignment.bottomCenter,
     colors: [MColors.primaryLight, MColors.primary],
   );
+
+  static final liquidGlass = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Colors.white.withValues(alpha: 0.85),
+      Colors.white.withValues(alpha: 0.55),
+    ],
+  );
+
+  static final liquidGlassDark = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Colors.white.withValues(alpha: 0.12),
+      Colors.white.withValues(alpha: 0.05),
+    ],
+  );
 }
 
 class MShadows {
@@ -57,11 +73,18 @@ class MShadows {
     ),
   ];
 
-  static final floating = [
+  static final floating3D = [
     BoxShadow(
-      color: MColors.primaryDark.withValues(alpha: 0.12),
+      color: MColors.primary.withValues(alpha: 0.18),
       blurRadius: 20,
+      spreadRadius: 0,
       offset: const Offset(0, 8),
+    ),
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.05),
+      blurRadius: 6,
+      spreadRadius: 0,
+      offset: const Offset(0, 2),
     ),
   ];
 }
@@ -102,40 +125,59 @@ class AppTheme {
   static ThemeData get lightTheme => ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        scaffoldBackgroundColor: MColors.background,
+        scaffoldBackgroundColor: const Color(0xFFF3F6F4),
         colorScheme: ColorScheme.fromSeed(
           seedColor: MColors.primary,
           brightness: Brightness.light,
           secondary: MColors.gold,
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: MColors.surface,
+          backgroundColor: Colors.transparent,
           foregroundColor: MColors.textPrimary,
           elevation: 0,
           centerTitle: true,
+          scrolledUnderElevation: 0,
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: MColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 6,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: MColors.primary,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: MRadius.md),
-            elevation: 2,
-            shadowColor: MColors.primary.withValues(alpha: 0.3),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 4,
+            shadowColor: MColors.primary.withValues(alpha: 0.35),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: Colors.white.withValues(alpha: 0.85),
           border: OutlineInputBorder(
-            borderRadius: MRadius.md,
-            borderSide: BorderSide(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.7), width: 1.2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.grey.shade300, width: 1.2),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: MColors.primary, width: 1.8),
           ),
         ),
         cardTheme: CardThemeData(
-          elevation: 0,
-          color: MColors.surface,
-          shape: RoundedRectangleBorder(borderRadius: MRadius.lg),
+          elevation: 4,
+          shadowColor: MColors.primary.withValues(alpha: 0.08),
+          color: Colors.white.withValues(alpha: 0.85),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.7), width: 1.2),
+          ),
         ),
       );
 
@@ -149,15 +191,52 @@ class AppTheme {
           secondary: MColors.gold,
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: MColors.surfaceDark,
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
+          scrolledUnderElevation: 0,
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: MColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 6,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: MColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 4,
+            shadowColor: Colors.black.withValues(alpha: 0.4),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white.withValues(alpha: 0.08),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1.2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1.2),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: MColors.primary, width: 1.8),
+          ),
         ),
         cardTheme: CardThemeData(
-          elevation: 0,
-          color: MColors.surfaceDark,
-          shape: RoundedRectangleBorder(borderRadius: MRadius.lg),
+          elevation: 4,
+          shadowColor: Colors.black.withValues(alpha: 0.3),
+          color: Colors.white.withValues(alpha: 0.08),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1.2),
+          ),
         ),
       );
 }
