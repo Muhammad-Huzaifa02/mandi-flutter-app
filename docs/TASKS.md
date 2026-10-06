@@ -6,6 +6,8 @@
 - [x] **Postgres Schema & RLS**: 100% idempotent schema (`supabase/schema.sql`) with `drop policy if exists` and server-side row-level security.
 - [x] **Serverless Edge Functions**: `create-staff`, `create-customer`, `create-supplier` deployed on Supabase project `kznubtwfzvqvynqpbyve`.
 - [x] **Cross-Platform Account Activation**: Mobile deep-linking (`mandi://auth-callback`) and web activation page (`web/reset_password.html`).
+- [x] **3D Liquid Glassmorphism Design System**: iOS-style floating glass containers (`GlassCard` / `GlassContainer`) with frosted backdrop blur, layered 3D shadows, and glossy inputs.
+- [x] **Device Image Upload for Shop Logos**: Native device gallery image picker (`image_picker`) and Supabase Storage binary upload (`shop-assets` bucket).
 - [x] **Employee (Staff) Management**: List, invite via Edge Function, detail, activate/deactivate, per-member audit log.
 - [x] **Customer Management & Portal**: Customer list, invite, ledger balances, and dedicated Customer Portal dashboard.
 - [x] **Supplier Management & Portal**: Supplier list, invite, ledger balances, procurement orders, and dedicated Supplier Portal dashboard.
