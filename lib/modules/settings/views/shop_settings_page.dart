@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/theme/locale_provider.dart';
+import 'package:mandi/core/theme/theme_provider.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
@@ -296,6 +297,35 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
                   ),
                 ],
               ),
+              const SizedBox(height: MSpacing.lg),
+              const Text('Shop Brand Color Theme', style: MText.titleLg),
+              const SizedBox(height: MSpacing.sm),
+              Consumer<ThemeProvider>(
+                builder: (context, themeProvider, _) {
+                  return Wrap(
+                    spacing: MSpacing.sm,
+                    runSpacing: MSpacing.sm,
+                    children: AppTheme.brandColorOptions.map((opt) {
+                      final name = opt['name'] as String;
+                      final color = opt['color'] as Color;
+                      final isSelected = themeProvider.primaryBrandColor == color;
+
+                      return ChoiceChip(
+                        avatar: CircleAvatar(
+                          backgroundColor: color,
+                          radius: 10,
+                        ),
+                        label: Text(name),
+                        selected: isSelected,
+                        onSelected: (_) {
+                          themeProvider.setBrandColor(color);
+                        },
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+
               const SizedBox(height: MSpacing.lg),
               const Text('App Language (زبان)', style: MText.titleLg),
               const SizedBox(height: MSpacing.sm),

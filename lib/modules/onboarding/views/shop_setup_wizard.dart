@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/theme/theme_provider.dart';
 import 'package:mandi/data/models/product_model.dart';
 import 'package:mandi/data/models/role_model.dart';
 import 'package:mandi/data/models/shop_member_model.dart';
@@ -393,6 +394,34 @@ class _ShopSetupWizardState extends State<ShopSetupWizard> {
                 },
               ),
             ],
+          ),
+          const SizedBox(height: MSpacing.md),
+          const Text('Shop Brand Color Theme', style: MText.labelMd),
+          const SizedBox(height: MSpacing.xs),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) {
+              return Wrap(
+                spacing: MSpacing.xs,
+                runSpacing: MSpacing.xs,
+                children: AppTheme.brandColorOptions.map((opt) {
+                  final name = opt['name'] as String;
+                  final color = opt['color'] as Color;
+                  final isSelected = themeProvider.primaryBrandColor == color;
+
+                  return ChoiceChip(
+                    avatar: CircleAvatar(
+                      backgroundColor: color,
+                      radius: 8,
+                    ),
+                    label: Text(name, style: const TextStyle(fontSize: 12)),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      themeProvider.setBrandColor(color);
+                    },
+                  );
+                }).toList(),
+              );
+            },
           ),
           const SizedBox(height: MSpacing.md),
           const Text('Business Type', style: MText.labelMd),

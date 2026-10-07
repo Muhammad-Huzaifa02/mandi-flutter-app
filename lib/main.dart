@@ -95,8 +95,14 @@ class MandiApp extends StatelessWidget {
         builder: (_, themeProvider, localeProvider, __) => MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Mandi',
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          theme: AppTheme.getDynamicTheme(
+            brandColor: themeProvider.primaryBrandColor,
+            brightness: Brightness.light,
+          ),
+          darkTheme: AppTheme.getDynamicTheme(
+            brandColor: themeProvider.primaryBrandColor,
+            brightness: Brightness.dark,
+          ),
           themeMode: themeProvider.themeMode,
           locale: localeProvider.locale,
           home: const OfflineBannerWrapper(child: AppRoot()),

@@ -40,7 +40,19 @@ class CustomerDashboardPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(shop?.name ?? 'Mandi'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (shop?.logoUrl != null && shop!.logoUrl!.isNotEmpty) ...[
+              CircleAvatar(
+                radius: 16,
+                backgroundImage: NetworkImage(shop.logoUrl!),
+              ),
+              const SizedBox(width: MSpacing.xs),
+            ],
+            Text(shop?.name ?? 'Mandi'),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

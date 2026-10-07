@@ -9,10 +9,10 @@ class MColors {
   static const gold = Color(0xFFD4A62A);
   static const goldLight = Color(0xFFE8C767);
 
-  static const background = Color(0xFFF3F6F4);
+  static const background = Color(0xFF0B2B1B); // Deep Forest Emerald (#0B2B1B)
   static const surface = Colors.white;
   static const surfaceDark = Color(0xFF14231C);
-  static const backgroundDark = Color(0xFF0E1712);
+  static const backgroundDark = Color(0xFF0B2B1B);
 
   static const textPrimary = Color(0xFF1A231E);
   static const textSecondary = Color(0xFF5C6B62);
@@ -122,121 +122,108 @@ class MText {
 }
 
 class AppTheme {
-  static ThemeData get lightTheme => ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF3F6F4),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: MColors.primary,
-          brightness: Brightness.light,
-          secondary: MColors.gold,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          foregroundColor: MColors.textPrimary,
-          elevation: 0,
-          centerTitle: true,
-          scrolledUnderElevation: 0,
-        ),
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: MColors.primary,
+  static const Color defaultDarkBg = Color(0xFF0B2B1B); // Deep Forest Emerald Dark (#0B2B1B)
+  static const Color goldAccent = Color(0xFFD4A62A);
+
+  static const List<Map<String, dynamic>> brandColorOptions = [
+    {'name': 'Emerald Green', 'color': Color(0xFF0F6B3C)},
+    {'name': 'Royal Blue', 'color': Color(0xFF1E3A8A)},
+    {'name': 'Deep Red', 'color': Color(0xFF8B0000)},
+    {'name': 'Golden Amber', 'color': Color(0xFFB45309)},
+  ];
+
+  static ThemeData getDynamicTheme({
+    required Color brandColor,
+    Brightness brightness = Brightness.dark,
+  }) {
+    final isDark = brightness == Brightness.dark;
+    final scaffoldBg = isDark ? defaultDarkBg : const Color(0xFFF3F6F4);
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      scaffoldBackgroundColor: scaffoldBg,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: brandColor,
+        brightness: brightness,
+        secondary: goldAccent,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        scrolledUnderElevation: 0,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: brandColor,
+        foregroundColor: Colors.white,
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: brandColor,
           foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 6,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          shadowColor: brandColor.withValues(alpha: 0.4),
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: MColors.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 4,
-            shadowColor: MColors.primary.withValues(alpha: 0.35),
-          ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.white.withValues(alpha: 0.85),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.18)
+                  : Colors.grey.shade300,
+              width: 1.2),
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white.withValues(alpha: 0.85),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.7), width: 1.2),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.grey.shade300, width: 1.2),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: MColors.primary, width: 1.8),
-          ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.18)
+                  : Colors.grey.shade300,
+              width: 1.2),
         ),
-        cardTheme: CardThemeData(
-          elevation: 4,
-          shadowColor: MColors.primary.withValues(alpha: 0.08),
-          color: Colors.white.withValues(alpha: 0.85),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.7), width: 1.2),
-          ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: brandColor, width: 1.8),
         ),
+      ),
+      cardTheme: CardThemeData(
+        elevation: 6,
+        shadowColor: isDark
+            ? Colors.black.withValues(alpha: 0.4)
+            : brandColor.withValues(alpha: 0.12),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.white.withValues(alpha: 0.85),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.18)
+                  : Colors.white.withValues(alpha: 0.7),
+              width: 1.2),
+        ),
+      ),
+    );
+  }
+
+  static ThemeData get lightTheme => getDynamicTheme(
+        brandColor: const Color(0xFF0F6B3C),
+        brightness: Brightness.light,
       );
 
-  static ThemeData get darkTheme => ThemeData(
-        useMaterial3: true,
+  static ThemeData get darkTheme => getDynamicTheme(
+        brandColor: const Color(0xFF0F6B3C),
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: MColors.backgroundDark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: MColors.primary,
-          brightness: Brightness.dark,
-          secondary: MColors.gold,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          scrolledUnderElevation: 0,
-        ),
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
-          backgroundColor: MColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 6,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: MColors.primary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            elevation: 4,
-            shadowColor: Colors.black.withValues(alpha: 0.4),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white.withValues(alpha: 0.08),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1.2),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1.2),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: MColors.primary, width: 1.8),
-          ),
-        ),
-        cardTheme: CardThemeData(
-          elevation: 4,
-          shadowColor: Colors.black.withValues(alpha: 0.3),
-          color: Colors.white.withValues(alpha: 0.08),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.15), width: 1.2),
-          ),
-        ),
       );
 }
