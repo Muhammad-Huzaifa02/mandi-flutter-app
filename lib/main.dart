@@ -105,6 +105,15 @@ class MandiApp extends StatelessWidget {
           ),
           themeMode: themeProvider.themeMode,
           locale: localeProvider.locale,
+          builder: (context, child) {
+            final mediaQuery = MediaQuery.of(context);
+            return MediaQuery(
+              data: mediaQuery.copyWith(
+                textScaler: TextScaler.noScaling,
+              ),
+              child: child!,
+            );
+          },
           home: const OfflineBannerWrapper(child: AppRoot()),
         ),
       ),
