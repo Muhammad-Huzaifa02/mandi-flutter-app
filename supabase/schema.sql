@@ -654,9 +654,10 @@ create policy "customers: members can read" on public.customers
   for select using (public.is_shop_member(shop_id));
 
 drop policy if exists "customers: manage_customers can write" on public.customers;
-create policy "customers: manage_customers can write" on public.customers
-  for all using (public.has_permission(shop_id, 'manage_customers'))
-  with check (public.has_permission(shop_id, 'manage_customers'));
+drop policy if exists "customers: members can write" on public.customers;
+create policy "customers: members can write" on public.customers
+  for all using (public.is_shop_member(shop_id))
+  with check (public.is_shop_member(shop_id));
 
 drop policy if exists "customers: self read" on public.customers;
 create policy "customers: self read" on public.customers
@@ -667,9 +668,10 @@ create policy "suppliers: members can read" on public.suppliers
   for select using (public.is_shop_member(shop_id));
 
 drop policy if exists "suppliers: manage_suppliers can write" on public.suppliers;
-create policy "suppliers: manage_suppliers can write" on public.suppliers
-  for all using (public.has_permission(shop_id, 'manage_suppliers'))
-  with check (public.has_permission(shop_id, 'manage_suppliers'));
+drop policy if exists "suppliers: members can write" on public.suppliers;
+create policy "suppliers: members can write" on public.suppliers
+  for all using (public.is_shop_member(shop_id))
+  with check (public.is_shop_member(shop_id));
 
 drop policy if exists "suppliers: self read" on public.suppliers;
 create policy "suppliers: self read" on public.suppliers
@@ -744,8 +746,10 @@ create policy "payments: members can read" on public.payments
   );
 
 drop policy if exists "payments: create_receipt can write" on public.payments;
-create policy "payments: create_receipt can write" on public.payments
-  for all using (public.has_permission(shop_id, 'create_receipt'))
+drop policy if exists "payments: members can write" on public.payments;
+create policy "payments: members can write" on public.payments
+  for all using (public.is_shop_member(shop_id))
+  with check (public.is_shop_member(shop_id));
   with check (public.has_permission(shop_id, 'create_receipt'));
 
 drop policy if exists "notifications: recipient can read" on public.notifications;

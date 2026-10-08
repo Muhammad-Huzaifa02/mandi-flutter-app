@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/excel_export_service.dart';
 import 'package:mandi/data/models/expense_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -69,29 +70,23 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
 
           return Column(
             children: [
-              // Total Summary Banner
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(MSpacing.md),
+              // Total Summary GlassCard
+              GlassCard(
                 margin: const EdgeInsets.all(MSpacing.md),
-                decoration: BoxDecoration(
-                  color: MColors.surface,
-                  borderRadius: MRadius.lg,
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
+                padding: const EdgeInsets.all(MSpacing.md),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Total Expenses',
-                            style: MText.bodySm
-                                .copyWith(color: MColors.textSecondary)),
+                        const Text('Total Expenses',
+                            style: TextStyle(color: Colors.white70, fontSize: 13)),
                         const SizedBox(height: 2),
                         Text(
                           'Rs. ${provider.totalExpensesSum.toStringAsFixed(0)}',
-                          style: MText.titleLg.copyWith(color: MColors.danger),
+                          style: MText.titleLg
+                              .copyWith(color: MColors.danger, fontSize: 22),
                         ),
                       ],
                     ),
@@ -159,8 +154,7 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
                           _searchCtrl.text.isEmpty && _selectedCategory == null
                               ? 'No expenses logged yet.'
                               : 'No expenses match your filter.',
-                          style: MText.bodyMd
-                              .copyWith(color: MColors.textSecondary),
+                          style: MText.bodyMd.copyWith(color: Colors.white70),
                         ),
                       )
                     : ListView.separated(
@@ -170,34 +164,42 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
                             const SizedBox(height: MSpacing.sm),
                         itemBuilder: (context, i) {
                           final e = expenses[i];
-                          return Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: MRadius.md,
-                              side: BorderSide(color: Colors.grey.shade200),
-                            ),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: MColors.danger.withValues(alpha: 0.1),
-                                child: Icon(e.category.icon,
-                                    color: MColors.danger),
-                              ),
-                              title: Text(e.category.displayName,
-                                  style: MText.titleLg),
-                              subtitle: Text(
-                                e.note.isNotEmpty
-                                    ? e.note
-                                    : (e.reference.isNotEmpty
-                                        ? 'Ref: ${e.reference}'
-                                        : 'No note'),
-                                style: MText.bodySm
-                                    .copyWith(color: MColors.textSecondary),
-                              ),
-                              trailing: Text(
-                                '- Rs. ${e.amount.toStringAsFixed(0)}',
-                                style: MText.titleLg
-                                    .copyWith(color: MColors.danger),
-                              ),
+                          return GlassCard(
+                            padding: const EdgeInsets.all(MSpacing.md),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor:
+                                      MColors.danger.withValues(alpha: 0.2),
+                                  child: Icon(e.category.icon,
+                                      color: MColors.danger),
+                                ),
+                                const SizedBox(width: MSpacing.md),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(e.category.displayName,
+                                          style: MText.titleLg
+                                              .copyWith(color: Colors.white)),
+                                      Text(
+                                        e.note.isNotEmpty
+                                            ? e.note
+                                            : (e.reference.isNotEmpty
+                                                ? 'Ref: ${e.reference}'
+                                                : 'No note'),
+                                        style: MText.bodySm
+                                            .copyWith(color: Colors.white70),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  '- Rs. ${e.amount.toStringAsFixed(0)}',
+                                  style: MText.titleLg
+                                      .copyWith(color: MColors.danger),
+                                ),
+                              ],
                             ),
                           );
                         },

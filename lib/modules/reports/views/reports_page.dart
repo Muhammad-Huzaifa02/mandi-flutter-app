@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
 import 'package:mandi/modules/expenses/providers/expense_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
@@ -36,27 +37,24 @@ class ReportsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Net Mandi Profit & Loss Summary Card
-            Container(
+            // Net Mandi Profit & Loss Summary GlassCard
+            GlassCard(
               width: double.infinity,
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                gradient: MGradient.primary,
-                borderRadius: MRadius.lg,
-              ),
+              backgroundColor: MColors.primary.withValues(alpha: 0.35),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'Net Mandi Profit (Commission - Expenses)',
-                    style: TextStyle(color: MColors.textOnDarkSub, fontSize: 13),
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                   const SizedBox(height: MSpacing.xs),
                   Text(
                     'Rs. ${netProfit.toStringAsFixed(0)}',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 26,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -80,16 +78,12 @@ class ReportsPage extends StatelessWidget {
 
             const SizedBox(height: MSpacing.lg),
 
-            // Mandi Sales & Volume Overview Card
-            const Text('Sales & Volume Overview', style: MText.titleLg),
+            // Mandi Sales & Volume Overview GlassCard
+            Text('Sales & Volume Overview',
+                style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
-            Container(
+            GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Column(
                 children: [
                   _ReportRow(
@@ -115,61 +109,48 @@ class ReportsPage extends StatelessWidget {
             const SizedBox(height: MSpacing.lg),
 
             // Receivables & Payables Ledger Summary
-            const Text('Ledger Balance Summary', style: MText.titleLg),
+            Text('Ledger Balance Summary',
+                style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
             Row(
               children: [
                 Expanded(
-                  child: Container(
+                  child: GlassCard(
                     padding: const EdgeInsets.all(MSpacing.md),
-                    decoration: BoxDecoration(
-                      color: MColors.surface,
-                      borderRadius: MRadius.md,
-                      border: Border.all(color: MColors.danger.withValues(alpha: 0.3)),
-                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Customer Receivables',
-                            style: MText.bodySm
-                                .copyWith(color: MColors.textSecondary)),
+                        const Text('Customer Receivables',
+                            style: TextStyle(color: Colors.white70, fontSize: 12)),
                         const SizedBox(height: MSpacing.xs),
                         Text(
                           'Rs. ${totalReceivables.toStringAsFixed(0)}',
                           style: MText.titleLg.copyWith(color: MColors.danger),
                         ),
                         const SizedBox(height: 2),
-                        Text('Money owed to shop',
-                            style: MText.bodySm
-                                .copyWith(color: MColors.textSecondary)),
+                        const Text('Money owed to shop',
+                            style: TextStyle(color: Colors.white60, fontSize: 11)),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(width: MSpacing.md),
                 Expanded(
-                  child: Container(
+                  child: GlassCard(
                     padding: const EdgeInsets.all(MSpacing.md),
-                    decoration: BoxDecoration(
-                      color: MColors.surface,
-                      borderRadius: MRadius.md,
-                      border: Border.all(color: MColors.primary.withValues(alpha: 0.3)),
-                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Supplier Payables',
-                            style: MText.bodySm
-                                .copyWith(color: MColors.textSecondary)),
+                        const Text('Supplier Payables',
+                            style: TextStyle(color: Colors.white70, fontSize: 12)),
                         const SizedBox(height: MSpacing.xs),
                         Text(
                           'Rs. ${totalPayables.toStringAsFixed(0)}',
-                          style: MText.titleLg.copyWith(color: MColors.primary),
+                          style: MText.titleLg.copyWith(color: Colors.greenAccent),
                         ),
                         const SizedBox(height: 2),
-                        Text('Money owed by shop',
-                            style: MText.bodySm
-                                .copyWith(color: MColors.textSecondary)),
+                        const Text('Money owed by shop',
+                            style: TextStyle(color: Colors.white60, fontSize: 11)),
                       ],
                     ),
                   ),
@@ -195,7 +176,7 @@ class _StatColumn extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: const TextStyle(color: MColors.textOnDarkSub, fontSize: 12)),
+            style: const TextStyle(color: Colors.white70, fontSize: 12)),
         const SizedBox(height: 2),
         Text(value,
             style: const TextStyle(
@@ -220,8 +201,9 @@ class _ReportRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
-          Text(value, style: MText.titleLg.copyWith(fontSize: 15)),
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
+          Text(value,
+              style: MText.titleLg.copyWith(fontSize: 15, color: MColors.gold)),
         ],
       ),
     );
