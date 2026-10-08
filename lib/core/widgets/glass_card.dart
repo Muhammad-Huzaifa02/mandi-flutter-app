@@ -10,6 +10,8 @@ class GlassCard extends StatelessWidget {
   final VoidCallback? onTap;
   final double borderRadius;
   final Color? backgroundColor;
+  final double? width;
+  final double? height;
 
   const GlassCard({
     super.key,
@@ -19,6 +21,8 @@ class GlassCard extends StatelessWidget {
     this.onTap,
     this.borderRadius = 18.0,
     this.backgroundColor,
+    this.width,
+    this.height,
   });
 
   @override
@@ -34,6 +38,8 @@ class GlassCard extends StatelessWidget {
         : Colors.white.withValues(alpha: 0.7);
 
     Widget content = Container(
+      width: width,
+      height: height,
       margin: margin,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),

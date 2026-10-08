@@ -30,7 +30,6 @@ class DashboardPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             if (shop?.logoUrl != null && shop!.logoUrl!.isNotEmpty) ...[
               CircleAvatar(
@@ -39,7 +38,12 @@ class DashboardPage extends StatelessWidget {
               ),
               const SizedBox(width: MSpacing.xs),
             ],
-            Text(shop?.name ?? 'Mandi'),
+            Expanded(
+              child: Text(
+                shop?.name ?? 'Mandi',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: [
@@ -63,12 +67,12 @@ class DashboardPage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 26,
-                    backgroundColor: MColors.primary.withValues(alpha: 0.1),
+                    backgroundColor: MColors.gold.withValues(alpha: 0.2),
                     child: Text(
                       shopCtx.currentMember?.name.isNotEmpty == true
                           ? shopCtx.currentMember!.name[0].toUpperCase()
                           : 'M',
-                      style: MText.titleLg.copyWith(color: MColors.primary),
+                      style: MText.titleLg.copyWith(color: MColors.gold),
                     ),
                   ),
                   const SizedBox(width: MSpacing.md),
@@ -77,11 +81,11 @@ class DashboardPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Welcome, ${shopCtx.currentMember?.name ?? ''}',
-                            style: MText.titleLg),
+                            style: MText.titleLg.copyWith(color: Colors.white)),
                         const SizedBox(height: 2),
                         Text('Role: ${shopCtx.currentRole?.name ?? '—'}',
                             style: MText.bodySm
-                                .copyWith(color: MColors.textSecondary)),
+                                .copyWith(color: MColors.textOnDarkSub)),
                       ],
                     ),
                   ),
@@ -90,7 +94,8 @@ class DashboardPage extends StatelessWidget {
             ),
 
             const SizedBox(height: MSpacing.xl),
-            const Text('Manage', style: MText.titleLg),
+            Text('Manage',
+                style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
 
             Wrap(
@@ -251,9 +256,14 @@ class _ManageTile extends StatelessWidget {
         width: 76,
         child: Column(
           children: [
-            Icon(icon, color: MColors.primary, size: 26),
+            Icon(icon, color: MColors.gold, size: 26),
             const SizedBox(height: MSpacing.xs),
-            Text(label, style: MText.labelMd, textAlign: TextAlign.center),
+            Text(
+              label,
+              style: MText.labelMd.copyWith(color: Colors.white),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),

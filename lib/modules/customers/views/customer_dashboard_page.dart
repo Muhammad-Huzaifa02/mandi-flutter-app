@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/customer_model.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -41,7 +42,6 @@ class CustomerDashboardPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             if (shop?.logoUrl != null && shop!.logoUrl!.isNotEmpty) ...[
               CircleAvatar(
@@ -50,7 +50,12 @@ class CustomerDashboardPage extends StatelessWidget {
               ),
               const SizedBox(width: MSpacing.xs),
             ],
-            Text(shop?.name ?? 'Mandi'),
+            Expanded(
+              child: Text(
+                shop?.name ?? 'Mandi',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         actions: [
@@ -68,25 +73,22 @@ class CustomerDashboardPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, ${member?.name ?? ''}', style: MText.titleLg),
+            Text('Welcome, ${member?.name ?? ''}',
+                style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.xs),
             Text('Customer at ${shop?.name ?? 'this shop'}',
-                style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
+                style: MText.bodyMd.copyWith(color: MColors.textOnDarkSub)),
             const SizedBox(height: MSpacing.xl),
 
-            // Balance Card
-            Container(
+            // Glass Balance Card
+            GlassCard(
               width: double.infinity,
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('My Outstanding Balance', style: MText.labelMd),
+                  Text('My Outstanding Balance',
+                      style: MText.labelMd.copyWith(color: Colors.white70)),
                   const SizedBox(height: MSpacing.xs),
                   Text(
                     'Rs. ${myCustomer.runningBalance.toStringAsFixed(0)}',
@@ -94,6 +96,7 @@ class CustomerDashboardPage extends StatelessWidget {
                       color: myCustomer.runningBalance > 0
                           ? MColors.danger
                           : Colors.green,
+                      fontSize: 24,
                     ),
                   ),
                 ],
@@ -101,7 +104,7 @@ class CustomerDashboardPage extends StatelessWidget {
             ),
 
             const SizedBox(height: MSpacing.xl),
-            const Text('Shop', style: MText.titleLg),
+            Text('Shop', style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
             Wrap(
               spacing: MSpacing.sm,
@@ -127,7 +130,8 @@ class CustomerDashboardPage extends StatelessWidget {
             ),
 
             const SizedBox(height: MSpacing.lg),
-            const Text('My Account', style: MText.titleLg),
+            Text('My Account',
+                style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
             Wrap(
               spacing: MSpacing.sm,
@@ -173,22 +177,23 @@ class _CustomerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GlassCard(
       onTap: onTap,
-      borderRadius: MRadius.md,
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.symmetric(vertical: MSpacing.md),
-        decoration: BoxDecoration(
-          color: MColors.surface,
-          borderRadius: MRadius.md,
-          border: Border.all(color: Colors.grey.shade200),
-        ),
+      borderRadius: 18,
+      padding: const EdgeInsets.symmetric(
+          vertical: MSpacing.md, horizontal: MSpacing.xs),
+      child: SizedBox(
+        width: 80,
         child: Column(
           children: [
-            Icon(icon, color: MColors.primary),
+            Icon(icon, color: MColors.gold, size: 26),
             const SizedBox(height: MSpacing.xs),
-            Text(label, style: MText.labelMd, textAlign: TextAlign.center),
+            Text(
+              label,
+              style: MText.labelMd.copyWith(color: Colors.white),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),
