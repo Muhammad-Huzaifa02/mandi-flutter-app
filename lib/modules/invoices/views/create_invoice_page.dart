@@ -105,10 +105,30 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           : 0;
 
   void _addItemDialog() {
-    final products = context.read<ProductProvider>().products;
+    final allProducts = context.read<ProductProvider>().products;
+
+    // Filter products: when creating a Supplier invoice, show products offered by that supplier
+    List<Product> products = allProducts;
+    if (_invoiceType == 'supplier' && _selectedSupplier != null) {
+      final supplierProducts = allProducts
+          .where((p) =>
+              p.supplierId == _selectedSupplier!.id ||
+              (p.supplierName.isNotEmpty &&
+                  p.supplierName.toLowerCase() ==
+                      _selectedSupplier!.name.toLowerCase()))
+          .toList();
+      if (supplierProducts.isNotEmpty) {
+        products = supplierProducts;
+      }
+    }
+
     if (products.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add products first.')),
+        SnackBar(
+          content: Text(_selectedSupplier != null
+              ? 'No products listed for ${_selectedSupplier!.name} yet.'
+              : 'Please add products first.'),
+        ),
       );
       return;
     }
