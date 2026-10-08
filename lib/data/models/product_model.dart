@@ -64,7 +64,8 @@ class Product {
 
   Map<String, dynamic> toMap() => {
         'shop_id': shopId,
-        'supplier_id': supplierId,
+        if (supplierId != null && supplierId!.isNotEmpty)
+          'supplier_id': supplierId,
         'supplier_name': supplierName,
         'name': name,
         'category': category,

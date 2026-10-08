@@ -226,6 +226,8 @@ create index if not exists idx_audit_actor on public.audit_logs(shop_id, actor_i
 create table if not exists public.products (
   id                 uuid primary key default gen_random_uuid(),
   shop_id            uuid not null references public.shops(id) on delete cascade,
+  supplier_id        uuid,
+  supplier_name      text default '',
   name               text not null,
   category           text default '',
   sku                text,
@@ -241,6 +243,8 @@ create table if not exists public.products (
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
 );
+alter table public.products add column if not exists supplier_id uuid;
+alter table public.products add column if not exists supplier_name text default '';
 create index if not exists idx_products_shop on public.products(shop_id);
 
 create table if not exists public.customers (
