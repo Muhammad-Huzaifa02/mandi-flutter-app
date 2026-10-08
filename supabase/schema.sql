@@ -750,7 +750,6 @@ drop policy if exists "payments: members can write" on public.payments;
 create policy "payments: members can write" on public.payments
   for all using (public.is_shop_member(shop_id))
   with check (public.is_shop_member(shop_id));
-  with check (public.has_permission(shop_id, 'create_receipt'));
 
 drop policy if exists "notifications: recipient can read" on public.notifications;
 create policy "notifications: recipient can read" on public.notifications
