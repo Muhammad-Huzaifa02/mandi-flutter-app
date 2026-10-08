@@ -649,9 +649,10 @@ create policy "products: members can read" on public.products
   for select using (public.is_shop_member(shop_id));
 
 drop policy if exists "products: manage_products can write" on public.products;
-create policy "products: manage_products can write" on public.products
-  for all using (public.has_permission(shop_id, 'manage_products'))
-  with check (public.has_permission(shop_id, 'manage_products'));
+drop policy if exists "products: members can write" on public.products;
+create policy "products: members can write" on public.products
+  for all using (public.is_shop_member(shop_id))
+  with check (public.is_shop_member(shop_id));
 
 drop policy if exists "customers: members can read" on public.customers;
 create policy "customers: members can read" on public.customers
