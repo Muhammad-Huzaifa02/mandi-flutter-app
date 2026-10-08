@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/data/models/product_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -65,7 +66,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 margin: const EdgeInsets.only(bottom: MSpacing.lg),
                 padding: const EdgeInsets.all(MSpacing.md),
                 decoration: BoxDecoration(
-                  color: MColors.danger.withValues(alpha: 0.1),
+                  color: MColors.danger.withValues(alpha: 0.2),
                   borderRadius: MRadius.md,
                   border: Border.all(color: MColors.danger),
                 ),
@@ -78,11 +79,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Low Stock Alert', style: MText.titleLg),
+                          Text('Low Stock Alert',
+                              style: MText.titleLg.copyWith(color: MColors.danger)),
                           Text(
                             'Current stock (${MandiCalculator.formatWeightDisplay(product.currentStock)}) is below the minimum threshold (${MandiCalculator.formatWeightDisplay(product.minStockLevel)}).',
-                            style: MText.bodySm
-                                .copyWith(color: MColors.textSecondary),
+                            style: MText.bodySm.copyWith(color: Colors.white70),
                           ),
                         ],
                       ),
@@ -91,28 +92,25 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ),
               ),
 
-            // Header Overview Card
-            Container(
+            // Header Overview GlassCard
+            GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(product.name, style: MText.titleLg),
+                      Text(product.name,
+                          style: MText.titleLg.copyWith(color: Colors.white)),
                       Chip(
-                        label: Text(product.category, style: MText.bodySm),
-                        backgroundColor: MColors.primary.withValues(alpha: 0.1),
+                        label: Text(product.category,
+                            style: MText.bodySm.copyWith(color: Colors.white)),
+                        backgroundColor: MColors.gold.withValues(alpha: 0.2),
                       ),
                     ],
                   ),
-                  const Divider(height: MSpacing.lg),
+                  const Divider(height: MSpacing.lg, color: Colors.white24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -120,19 +118,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('Rate per 40 KG (Maund)',
-                              style: MText.bodySm),
+                              style: TextStyle(color: Colors.white70, fontSize: 13)),
                           const SizedBox(height: MSpacing.xs),
                           Text(
                             'Rs. ${product.sellingPrice.toStringAsFixed(0)}',
-                            style: MText.titleLg
-                                .copyWith(color: MColors.primary),
+                            style: MText.titleLg.copyWith(color: MColors.gold),
                           ),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text('Current Stock', style: MText.bodySm),
+                          const Text('Current Stock',
+                              style: TextStyle(color: Colors.white70, fontSize: 13)),
                           const SizedBox(height: MSpacing.xs),
                           Text(
                             MandiCalculator.formatWeightDisplay(
@@ -140,7 +138,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             style: MText.titleLg.copyWith(
                               color: product.isLowStock
                                   ? MColors.danger
-                                  : MColors.textPrimary,
+                                  : Colors.white,
                             ),
                           ),
                         ],
@@ -153,28 +151,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
             const SizedBox(height: MSpacing.xl),
 
-            // Mandi Weight & Price Calculator Card
-            Container(
+            // Mandi Weight & Price Calculator GlassCard
+            GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: MColors.primary.withValues(alpha: 0.3)),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.calculate_outlined, color: MColors.primary),
-                      SizedBox(width: MSpacing.xs),
-                      Text('Mandi Price Calculator', style: MText.titleLg),
+                      const Icon(Icons.calculate_outlined, color: MColors.gold),
+                      const SizedBox(width: MSpacing.xs),
+                      Text('Mandi Price Calculator',
+                          style: MText.titleLg.copyWith(color: Colors.white)),
                     ],
                   ),
                   const SizedBox(height: MSpacing.xs),
                   Text(
                     '1 Mann = 40 KG. Enter weight in KG to calculate Manns and total price.',
-                    style: MText.bodySm.copyWith(color: MColors.textSecondary),
+                    style: MText.bodySm.copyWith(color: Colors.white70),
                   ),
                   const SizedBox(height: MSpacing.md),
                   TextField(
@@ -191,8 +185,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   Container(
                     padding: const EdgeInsets.all(MSpacing.md),
                     decoration: BoxDecoration(
-                      color: MColors.background,
+                      color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: MRadius.md,
+                      border: Border.all(color: Colors.white24),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,11 +196,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text('Converted Weight:',
-                                style: MText.bodyMd),
+                                style: TextStyle(color: Colors.white, fontSize: 14)),
                             Text(
                               '${testManns.toStringAsFixed(2)} Mann',
-                              style: MText.titleLg
-                                  .copyWith(color: MColors.primary),
+                              style: MText.titleLg.copyWith(color: MColors.gold),
                             ),
                           ],
                         ),
@@ -213,20 +207,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Rate / 40 KG:', style: MText.bodyMd),
+                            const Text('Rate / 40 KG:',
+                                style: TextStyle(color: Colors.white70, fontSize: 13)),
                             Text('Rs. ${product.sellingPrice.toStringAsFixed(0)}',
-                                style: MText.bodyMd),
+                                style: const TextStyle(color: Colors.white, fontSize: 14)),
                           ],
                         ),
-                        const Divider(height: MSpacing.md),
+                        const Divider(height: MSpacing.md, color: Colors.white24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Total Amount:', style: MText.titleLg),
+                            const Text('Total Amount:',
+                                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                             Text(
                               'Rs. ${testTotalPrice.toStringAsFixed(0)}',
-                              style: MText.titleLg
-                                  .copyWith(color: MColors.primary),
+                              style: MText.titleLg.copyWith(color: Colors.greenAccent),
                             ),
                           ],
                         ),

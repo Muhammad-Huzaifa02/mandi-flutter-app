@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/ledger_pdf_generator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/customer_model.dart';
@@ -175,14 +176,9 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Header Card with Loyalty Badge
-            Container(
+            // Profile Header GlassCard with Loyalty Badge
+            GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -190,12 +186,12 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: MColors.primary.withValues(alpha: 0.1),
+                        backgroundColor: MColors.gold.withValues(alpha: 0.2),
                         child: Text(
                           _customer.name.isNotEmpty
                               ? _customer.name[0].toUpperCase()
                               : 'C',
-                          style: MText.titleLg.copyWith(color: MColors.primary),
+                          style: MText.titleLg.copyWith(color: MColors.gold),
                         ),
                       ),
                       const SizedBox(width: MSpacing.md),
@@ -203,19 +199,20 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(_customer.name, style: MText.titleLg),
+                            Text(_customer.name,
+                                style: MText.titleLg.copyWith(color: Colors.white)),
                             if (_customer.phone.isNotEmpty)
                               Text('Phone: ${_customer.phone}',
                                   style: MText.bodySm
-                                      .copyWith(color: MColors.textSecondary)),
+                                      .copyWith(color: Colors.white70)),
                             if (_customer.email.isNotEmpty)
                               Text('Email: ${_customer.email}',
                                   style: MText.bodySm
-                                      .copyWith(color: MColors.textSecondary)),
+                                      .copyWith(color: Colors.white70)),
                             if (locationStr.isNotEmpty)
                               Text('Address: $locationStr',
                                   style: MText.bodySm
-                                      .copyWith(color: MColors.textSecondary)),
+                                      .copyWith(color: Colors.white70)),
                           ],
                         ),
                       ),
@@ -228,9 +225,11 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                     label: Text(
                       '$loyaltyPoints Loyalty Points (Rs. ${totalSpent.toStringAsFixed(0)} spent)',
                       style: const TextStyle(
-                          fontSize: 11, fontWeight: FontWeight.bold),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
-                    backgroundColor: Colors.amber.withValues(alpha: 0.15),
+                    backgroundColor: Colors.amber.withValues(alpha: 0.2),
                   ),
                 ],
               ),
@@ -238,19 +237,15 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
 
             const SizedBox(height: MSpacing.lg),
 
-            // Khata Balance Card
-            Container(
+            // Khata Balance GlassCard
+            GlassCard(
               width: double.infinity,
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Outstanding Khata Balance', style: MText.labelMd),
+                  Text('Outstanding Khata Balance',
+                      style: MText.labelMd.copyWith(color: Colors.white70)),
                   const SizedBox(height: MSpacing.xs),
                   Text(
                     'Rs. ${_customer.runningBalance.toStringAsFixed(0)}',
@@ -258,8 +253,9 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                       color: _customer.runningBalance > 0
                           ? MColors.danger
                           : (_customer.runningBalance < 0
-                              ? Colors.green
-                              : MColors.textPrimary),
+                              ? Colors.greenAccent
+                              : Colors.white),
+                      fontSize: 24,
                     ),
                   ),
                   const SizedBox(height: MSpacing.xs),
@@ -269,8 +265,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                         : (_customer.runningBalance < 0
                             ? 'Advance payment received'
                             : 'Khata Settled'),
-                    style:
-                        MText.bodySm.copyWith(color: MColors.textSecondary),
+                    style: MText.bodySm.copyWith(color: Colors.white70),
                   ),
                 ],
               ),
@@ -282,26 +277,20 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Invoices History', style: MText.titleLg),
+                Text('Invoices History',
+                    style: MText.titleLg.copyWith(color: Colors.white)),
                 Text('${myInvoices.length} Invoices',
-                    style: MText.bodySm.copyWith(color: MColors.textSecondary)),
+                    style: MText.bodySm.copyWith(color: Colors.white70)),
               ],
             ),
             const SizedBox(height: MSpacing.sm),
 
             if (myInvoices.isEmpty)
-              Container(
-                width: double.infinity,
+              GlassCard(
                 padding: const EdgeInsets.all(MSpacing.xl),
-                decoration: BoxDecoration(
-                  color: MColors.surface,
-                  borderRadius: MRadius.md,
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
                 child: Center(
                   child: Text('No invoices issued for this customer yet.',
-                      style:
-                          MText.bodyMd.copyWith(color: MColors.textSecondary)),
+                      style: MText.bodyMd.copyWith(color: Colors.white70)),
                 ),
               )
             else
@@ -312,54 +301,56 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                 separatorBuilder: (_, __) => const SizedBox(height: MSpacing.xs),
                 itemBuilder: (context, i) {
                   final inv = myInvoices[i];
-                  return Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: MRadius.md,
-                      side: BorderSide(color: Colors.grey.shade200),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: MColors.primary.withValues(alpha: 0.1),
-                        child: const Icon(Icons.receipt_long,
-                            color: MColors.primary),
-                      ),
-                      title: Text(inv.invoiceNumber, style: MText.titleLg),
-                      subtitle: Text(
-                        inv.createdAt != null
-                            ? '${inv.createdAt!.day}/${inv.createdAt!.month}/${inv.createdAt!.year}'
-                            : 'Sales Invoice',
-                        style: MText.bodySm
-                            .copyWith(color: MColors.textSecondary),
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'Rs. ${inv.total.toStringAsFixed(0)}',
-                            style: MText.titleLg
-                                .copyWith(color: MColors.primary),
-                          ),
-                          Text(
-                            inv.pendingAmount > 0
-                                ? 'Pending: Rs. ${inv.pendingAmount.toStringAsFixed(0)}'
-                                : 'PAID',
-                            style: MText.bodySm.copyWith(
-                              color: inv.pendingAmount > 0
-                                  ? MColors.danger
-                                  : Colors.green,
-                              fontWeight: FontWeight.bold,
+                  return GlassCard(
+                    padding: const EdgeInsets.all(MSpacing.md),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: MColors.gold.withValues(alpha: 0.2),
+                              child: const Icon(Icons.receipt_long,
+                                  color: MColors.gold),
                             ),
-                          ),
-                        ],
-                      ),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => InvoiceDetailPage(invoice: inv),
+                            const SizedBox(width: MSpacing.md),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(inv.invoiceNumber,
+                                    style: MText.titleLg.copyWith(color: Colors.white)),
+                                Text(
+                                  inv.createdAt != null
+                                      ? '${inv.createdAt!.day}/${inv.createdAt!.month}/${inv.createdAt!.year}'
+                                      : 'Sales Invoice',
+                                  style: MText.bodySm
+                                      .copyWith(color: Colors.white70),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Rs. ${inv.total.toStringAsFixed(0)}',
+                              style: MText.titleLg.copyWith(color: MColors.gold),
+                            ),
+                            Text(
+                              inv.pendingAmount > 0
+                                  ? 'Pending: Rs. ${inv.pendingAmount.toStringAsFixed(0)}'
+                                  : 'PAID',
+                              style: MText.bodySm.copyWith(
+                                color: inv.pendingAmount > 0
+                                    ? MColors.danger
+                                    : Colors.greenAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -372,6 +363,11 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white38),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -381,17 +377,19 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                         ),
                       ),
                     ),
-                    icon: const Icon(Icons.payment_outlined),
-                    label: const Text('Record Receipt'),
+                    icon: const Icon(Icons.payment_outlined, size: 18),
+                    label: const Text('Record Receipt',
+                        style: TextStyle(fontSize: 13)),
                   ),
                 ),
                 if (_customer.runningBalance > 0 &&
                     _customer.phone.isNotEmpty) ...[
-                  const SizedBox(width: MSpacing.md),
+                  const SizedBox(width: MSpacing.sm),
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF25D366),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () {
                         WhatsAppShareService.sharePaymentReminder(
@@ -404,7 +402,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                       icon: const Icon(Icons.send_outlined,
                           color: Colors.white, size: 18),
                       label: const Text('WhatsApp',
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Colors.white, fontSize: 13)),
                     ),
                   ),
                 ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/invoice_pdf_generator.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
@@ -81,29 +82,25 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Card
-            Container(
+            // Glass Header Card
+            GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_invoice.invoiceNumber, style: MText.titleLg),
+                      Text(_invoice.invoiceNumber,
+                          style: MText.titleLg.copyWith(color: Colors.white)),
                       Chip(
                         label: Text(
                           _invoice.status.toUpperCase(),
                           style: TextStyle(
                             color: _invoice.status == 'paid'
-                                ? Colors.green
+                                ? Colors.greenAccent
                                 : (_invoice.status == 'partial'
-                                    ? Colors.orange
+                                    ? Colors.orangeAccent
                                     : MColors.danger),
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
@@ -114,11 +111,11 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                                 : (_invoice.status == 'partial'
                                     ? Colors.orange
                                     : MColors.danger))
-                            .withValues(alpha: 0.1),
+                            .withValues(alpha: 0.2),
                       ),
                     ],
                   ),
-                  const Divider(height: MSpacing.lg),
+                  const Divider(height: MSpacing.lg, color: Colors.white24),
                   _InfoRow(
                       label: 'Customer / Buyer',
                       value: _invoice.customerName.isNotEmpty
@@ -144,7 +141,8 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             const SizedBox(height: MSpacing.lg),
 
             // Line Items Section
-            const Text('Purchased Items', style: MText.titleLg),
+            Text('Purchased Items',
+                style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
 
             if (_loadingItems)
@@ -156,7 +154,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
               )
             else if (_invoice.items.isEmpty)
               Text('No item details available.',
-                  style: MText.bodyMd.copyWith(color: MColors.textSecondary))
+                  style: MText.bodyMd.copyWith(color: Colors.white70))
             else
               ListView.separated(
                 shrinkWrap: true,
@@ -165,30 +163,38 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                 separatorBuilder: (_, __) => const SizedBox(height: MSpacing.xs),
                 itemBuilder: (context, i) {
                   final item = _invoice.items[i];
-                  return Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: MRadius.md,
-                      side: BorderSide(color: Colors.grey.shade200),
-                    ),
-                    child: ListTile(
-                      title: Text(
-                          item.productName.isNotEmpty
-                              ? item.productName
-                              : 'Item ${i + 1}',
-                          style: MText.titleLg),
-                      subtitle: Text(
-                        MandiCalculator.formatCalculationBreakdown(
-                          weightKg: item.weightKg,
-                          pricePer40kg: item.unitPrice,
+                  return GlassCard(
+                    padding: const EdgeInsets.all(MSpacing.md),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.productName.isNotEmpty
+                                    ? item.productName
+                                    : 'Item ${i + 1}',
+                                style: MText.titleLg.copyWith(color: Colors.white),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                MandiCalculator.formatCalculationBreakdown(
+                                  weightKg: item.weightKg,
+                                  pricePer40kg: item.unitPrice,
+                                ),
+                                style: MText.bodySm
+                                    .copyWith(color: Colors.white70),
+                              ),
+                            ],
+                          ),
                         ),
-                        style:
-                            MText.bodySm.copyWith(color: MColors.textSecondary),
-                      ),
-                      trailing: Text(
-                        'Rs. ${item.lineTotal.toStringAsFixed(0)}',
-                        style: MText.titleLg.copyWith(color: MColors.primary),
-                      ),
+                        Text(
+                          'Rs. ${item.lineTotal.toStringAsFixed(0)}',
+                          style: MText.titleLg.copyWith(color: MColors.gold),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -196,14 +202,9 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
             const SizedBox(height: MSpacing.lg),
 
-            // Financial Summary Card
-            Container(
+            // Glass Financial Summary Card
+            GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Column(
                 children: [
                   _SummaryRow(
@@ -220,7 +221,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                     _SummaryRow(
                         label: 'Discount:',
                         value: '- Rs. ${_invoice.discount.toStringAsFixed(0)}'),
-                  const Divider(height: MSpacing.md),
+                  const Divider(height: MSpacing.md, color: Colors.white24),
                   _SummaryRow(
                     label: 'Grand Total:',
                     value: 'Rs. ${_invoice.total.toStringAsFixed(0)}',
@@ -229,7 +230,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                   _SummaryRow(
                     label: 'Received Amount:',
                     value: 'Rs. ${_invoice.receivedAmount.toStringAsFixed(0)}',
-                    color: Colors.green,
+                    color: Colors.greenAccent,
                   ),
                   if (_invoice.pendingAmount > 0)
                     _SummaryRow(
@@ -249,6 +250,11 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white38),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                     onPressed: () {
                       InvoicePdfGenerator.printOrShareInvoice(
                         invoice: _invoice,
@@ -257,8 +263,9 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                         shopCity: shop?.city,
                       );
                     },
-                    icon: const Icon(Icons.print_outlined),
-                    label: const Text('PDF / Print'),
+                    icon: const Icon(Icons.print_outlined, size: 18),
+                    label: const Text('PDF / Print',
+                        style: TextStyle(fontSize: 13)),
                   ),
                 ),
                 const SizedBox(width: MSpacing.sm),
@@ -266,6 +273,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF25D366),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () {
                       WhatsAppShareService.shareInvoice(
@@ -275,7 +283,8 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                       );
                     },
                     icon: const Icon(Icons.share, color: Colors.white, size: 18),
-                    label: const Text('WhatsApp', style: TextStyle(color: Colors.white)),
+                    label: const Text('WhatsApp',
+                        style: TextStyle(color: Colors.white, fontSize: 13)),
                   ),
                 ),
                 if (customerEmail.isNotEmpty) ...[
@@ -315,8 +324,8 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
-          Text(value, style: MText.bodyMd.copyWith(fontWeight: FontWeight.bold)),
+          Text(label, style: MText.bodyMd.copyWith(color: Colors.white70)),
+          Text(value, style: MText.bodyMd.copyWith(fontWeight: FontWeight.bold, color: Colors.white)),
         ],
       ),
     );
@@ -339,8 +348,8 @@ class _SummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = isBold
-        ? MText.titleLg.copyWith(color: color ?? MColors.textPrimary)
-        : MText.bodyMd.copyWith(color: color ?? MColors.textPrimary);
+        ? MText.titleLg.copyWith(color: color ?? Colors.white)
+        : MText.bodyMd.copyWith(color: color ?? Colors.white70);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/ledger_pdf_generator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/supplier_model.dart';
@@ -169,24 +170,19 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Header Card
-            Container(
+            // Profile Header GlassCard
+            GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: MColors.primary.withValues(alpha: 0.1),
+                    backgroundColor: MColors.gold.withValues(alpha: 0.2),
                     child: Text(
                       _supplier.name.isNotEmpty
                           ? _supplier.name[0].toUpperCase()
                           : 'S',
-                      style: MText.titleLg.copyWith(color: MColors.primary),
+                      style: MText.titleLg.copyWith(color: MColors.gold),
                     ),
                   ),
                   const SizedBox(width: MSpacing.md),
@@ -194,40 +190,38 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_supplier.name, style: MText.titleLg),
+                        Text(_supplier.name,
+                            style: MText.titleLg.copyWith(color: Colors.white)),
                         if (_supplier.phone.isNotEmpty)
                           Text('Phone: ${_supplier.phone}',
                               style: MText.bodySm
-                                  .copyWith(color: MColors.textSecondary)),
+                                  .copyWith(color: Colors.white70)),
                         if (_supplier.email.isNotEmpty)
                           Text('Email: ${_supplier.email}',
                               style: MText.bodySm
-                                  .copyWith(color: MColors.textSecondary)),
+                                  .copyWith(color: Colors.white70)),
                         if (_supplier.productsSupplied.isNotEmpty)
                           Text('Supplies: ${_supplier.productsSupplied}',
                               style: MText.bodySm
-                                  .copyWith(color: MColors.textSecondary)),
+                                  .copyWith(color: Colors.white70)),
                       ],
                     ),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: MSpacing.lg),
 
-            // Ledger Summary
-            Container(
+            // Payable Balance GlassCard
+            GlassCard(
               width: double.infinity,
               padding: const EdgeInsets.all(MSpacing.lg),
-              decoration: BoxDecoration(
-                color: MColors.surface,
-                borderRadius: MRadius.lg,
-                border: Border.all(color: Colors.grey.shade200),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Outstanding Payable Balance', style: MText.labelMd),
+                  Text('Outstanding Payable Balance',
+                      style: MText.labelMd.copyWith(color: Colors.white70)),
                   const SizedBox(height: MSpacing.xs),
                   Text(
                     'Rs. ${_supplier.runningBalance.toStringAsFixed(0)}',
@@ -235,8 +229,9 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                       color: _supplier.runningBalance > 0
                           ? MColors.danger
                           : (_supplier.runningBalance < 0
-                              ? Colors.green
-                              : MColors.textPrimary),
+                              ? Colors.greenAccent
+                              : Colors.white),
+                      fontSize: 24,
                     ),
                   ),
                   const SizedBox(height: MSpacing.xs),
@@ -246,8 +241,7 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                         : (_supplier.runningBalance < 0
                             ? 'Advance paid to supplier'
                             : 'Settled'),
-                    style:
-                        MText.bodySm.copyWith(color: MColors.textSecondary),
+                    style: MText.bodySm.copyWith(color: Colors.white70),
                   ),
                 ],
               ),
@@ -259,26 +253,20 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Purchase Orders', style: MText.titleLg),
+                Text('Purchase Orders',
+                    style: MText.titleLg.copyWith(color: Colors.white)),
                 Text('${myOrders.length} Orders',
-                    style: MText.bodySm.copyWith(color: MColors.textSecondary)),
+                    style: MText.bodySm.copyWith(color: Colors.white70)),
               ],
             ),
             const SizedBox(height: MSpacing.sm),
 
             if (myOrders.isEmpty)
-              Container(
-                width: double.infinity,
+              GlassCard(
                 padding: const EdgeInsets.all(MSpacing.xl),
-                decoration: BoxDecoration(
-                  color: MColors.surface,
-                  borderRadius: MRadius.md,
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
                 child: Center(
                   child: Text('No purchase orders recorded for this supplier.',
-                      style:
-                          MText.bodyMd.copyWith(color: MColors.textSecondary)),
+                      style: MText.bodyMd.copyWith(color: Colors.white70)),
                 ),
               )
             else
@@ -289,46 +277,54 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                 separatorBuilder: (_, __) => const SizedBox(height: MSpacing.xs),
                 itemBuilder: (context, i) {
                   final po = myOrders[i];
-                  return Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: MRadius.md,
-                      side: BorderSide(color: Colors.grey.shade200),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: MColors.primary.withValues(alpha: 0.1),
-                        child: const Icon(Icons.assignment_outlined,
-                            color: MColors.primary),
-                      ),
-                      title: Text(po.supplierName, style: MText.titleLg),
-                      subtitle: Text(
-                        'Status: ${po.status.toUpperCase()} ${po.createdAt != null ? '• ${po.createdAt!.day}/${po.createdAt!.month}/${po.createdAt!.year}' : ''}',
-                        style: MText.bodySm
-                            .copyWith(color: MColors.textSecondary),
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'Rs. ${po.total.toStringAsFixed(0)}',
-                            style: MText.titleLg
-                                .copyWith(color: MColors.primary),
-                          ),
-                          Text(
-                            po.pendingAmount > 0
-                                ? 'Pending: Rs. ${po.pendingAmount.toStringAsFixed(0)}'
-                                : 'PAID',
-                            style: MText.bodySm.copyWith(
-                              color: po.pendingAmount > 0
-                                  ? MColors.danger
-                                  : Colors.green,
-                              fontWeight: FontWeight.bold,
+                  return GlassCard(
+                    padding: const EdgeInsets.all(MSpacing.md),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: MColors.gold.withValues(alpha: 0.2),
+                              child: const Icon(Icons.assignment_outlined,
+                                  color: MColors.gold),
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: MSpacing.md),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(po.supplierName,
+                                    style: MText.titleLg.copyWith(color: Colors.white)),
+                                Text(
+                                  'Status: ${po.status.toUpperCase()} ${po.createdAt != null ? '• ${po.createdAt!.day}/${po.createdAt!.month}/${po.createdAt!.year}' : ''}',
+                                  style: MText.bodySm
+                                      .copyWith(color: Colors.white70),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Rs. ${po.total.toStringAsFixed(0)}',
+                              style: MText.titleLg.copyWith(color: MColors.gold),
+                            ),
+                            Text(
+                              po.pendingAmount > 0
+                                  ? 'Pending: Rs. ${po.pendingAmount.toStringAsFixed(0)}'
+                                  : 'PAID',
+                              style: MText.bodySm.copyWith(
+                                color: po.pendingAmount > 0
+                                    ? MColors.danger
+                                    : Colors.greenAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -341,6 +337,11 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white38),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -350,17 +351,19 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                         ),
                       ),
                     ),
-                    icon: const Icon(Icons.payment_outlined),
-                    label: const Text('Pay Supplier'),
+                    icon: const Icon(Icons.payment_outlined, size: 18),
+                    label: const Text('Pay Supplier',
+                        style: TextStyle(fontSize: 13)),
                   ),
                 ),
                 if (_supplier.runningBalance > 0 &&
                     _supplier.phone.isNotEmpty) ...[
-                  const SizedBox(width: MSpacing.md),
+                  const SizedBox(width: MSpacing.sm),
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF25D366),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () {
                         WhatsAppShareService.sharePaymentReminder(
@@ -373,7 +376,7 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                       icon: const Icon(Icons.send_outlined,
                           color: Colors.white, size: 18),
                       label: const Text('WhatsApp',
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Colors.white, fontSize: 13)),
                     ),
                   ),
                 ],
