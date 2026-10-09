@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/products/providers/product_provider.dart';
@@ -9,7 +10,9 @@ import 'package:mandi/modules/products/views/add_edit_product_page.dart';
 import 'package:mandi/modules/products/views/product_detail_page.dart';
 
 class ProductListPage extends StatefulWidget {
-  const ProductListPage({super.key});
+  final String? supplierFilterId;
+
+  const ProductListPage({super.key, this.supplierFilterId});
 
   @override
   State<ProductListPage> createState() => _ProductListPageState();
@@ -29,9 +32,17 @@ class _ProductListPageState extends State<ProductListPage> {
   Widget build(BuildContext context) {
     final shopCtx = context.watch<ShopContextProvider>();
     final canEdit = shopCtx.hasPermission('manage_products');
+    final member = shopCtx.currentMember;
+    final isSupplierRole = shopCtx.currentRole?.id == 'supplier' ||
+        shopCtx.currentRole?.name.toLowerCase() == 'supplier';
+
+    final activeSupplierId =
+        widget.supplierFilterId ?? (isSupplierRole ? member?.id : null);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Products & Inventory')),
+      appBar: AppBar(
+        title: Text(isSupplierRole ? 'My Offered Products' : 'Products & Inventory'),
+      ),
       floatingActionButton: canEdit
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.push(
@@ -49,6 +60,19 @@ class _ProductListPageState extends State<ProductListPage> {
           }
 
           var products = provider.search(_searchCtrl.text);
+
+          // If supplier is viewing, show ONLY products offered by this supplier
+          if (activeSupplierId != null) {
+            products = products
+                .where((p) =>
+                    p.supplierId == activeSupplierId ||
+                    (p.supplierName.isNotEmpty &&
+                        member?.name.isNotEmpty == true &&
+                        p.supplierName.toLowerCase() ==
+                            member!.name.toLowerCase()))
+                .toList();
+          }
+
           if (_showLowStockOnly) {
             products = products.where((p) => p.isLowStock).toList();
           }
@@ -58,7 +82,7 @@ class _ProductListPageState extends State<ProductListPage> {
           return Column(
             children: [
               // Low stock alert banner
-              if (lowStockCount > 0)
+              if (lowStockCount > 0 && !isSupplierRole)
                 Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: MSpacing.md, vertical: MSpacing.xs),
@@ -137,12 +161,14 @@ class _ProductListPageState extends State<ProductListPage> {
                     ? Center(
                         child: Text(
                           _searchCtrl.text.isEmpty
-                              ? (_showLowStockOnly
-                                  ? 'No low stock products.'
-                                  : 'No products added yet.')
+                              ? (isSupplierRole
+                                  ? 'No products offered by you yet. Click "Offer Product".'
+                                  : (_showLowStockOnly
+                                      ? 'No low stock products.'
+                                      : 'No products added yet.'))
                               : 'No products match your search.',
                           style: MText.bodyMd
-                              .copyWith(color: MColors.textSecondary),
+                              .copyWith(color: Colors.white70),
                         ),
                       )
                     : ListView.separated(
@@ -152,34 +178,28 @@ class _ProductListPageState extends State<ProductListPage> {
                             const SizedBox(height: MSpacing.sm),
                         itemBuilder: (context, i) {
                           final p = products[i];
-                          return Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: MRadius.md,
-                              side: BorderSide(
-                                color: p.isLowStock
-                                    ? MColors.danger
-                                    : Colors.grey.shade200,
-                              ),
-                            ),
+                          return GlassCard(
+                            padding: const EdgeInsets.all(MSpacing.md),
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: p.isLowStock
-                                    ? MColors.danger.withValues(alpha: 0.1)
-                                    : MColors.primary.withValues(alpha: 0.1),
+                                    ? MColors.danger.withValues(alpha: 0.2)
+                                    : MColors.gold.withValues(alpha: 0.2),
                                 child: Icon(
                                   Icons.grass,
                                   color: p.isLowStock
                                       ? MColors.danger
-                                      : MColors.primary,
+                                      : MColors.gold,
                                 ),
                               ),
                               title: Row(
                                 children: [
                                   Expanded(
-                                    child: Text(p.name, style: MText.titleLg),
+                                    child: Text(p.name,
+                                        style: MText.titleLg
+                                            .copyWith(color: Colors.white)),
                                   ),
-                                  if (p.isLowStock)
+                                  if (p.isLowStock && !isSupplierRole)
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 6, vertical: 2),
@@ -201,7 +221,7 @@ class _ProductListPageState extends State<ProductListPage> {
                               subtitle: Text(
                                 'Rate: Rs. ${p.sellingPrice.toStringAsFixed(0)} / 40kg • Stock: ${MandiCalculator.formatWeightDisplay(p.currentStock)}',
                                 style: MText.bodySm
-                                    .copyWith(color: MColors.textSecondary),
+                                    .copyWith(color: Colors.white70),
                               ),
                               onTap: () => Navigator.push(
                                 context,

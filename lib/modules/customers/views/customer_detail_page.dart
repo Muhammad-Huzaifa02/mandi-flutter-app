@@ -9,7 +9,6 @@ import 'package:mandi/data/models/customer_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
-import 'package:mandi/modules/invoices/views/invoice_detail_page.dart';
 import 'package:mandi/modules/payments/views/add_payment_page.dart';
 
 class CustomerDetailPage extends StatefulWidget {

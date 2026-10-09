@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
-import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/data/models/supplier_model.dart';
+import 'package:mandi/data/models/product_model.dart';
 import 'package:mandi/data/models/purchase_order_model.dart';
+import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
+import 'package:mandi/modules/products/providers/product_provider.dart';
 import 'package:mandi/modules/purchase_orders/providers/purchase_order_provider.dart';
 
 class AddPurchaseOrderPage extends StatefulWidget {
@@ -19,6 +22,7 @@ class AddPurchaseOrderPage extends StatefulWidget {
 class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
   final _formKey = GlobalKey<FormState>();
   Supplier? _selectedSupplier;
+  Product? _selectedProduct;
 
   final _weightCtrl = TextEditingController();
   final _ratePer40kgCtrl = TextEditingController();
@@ -40,7 +44,7 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
     final w = double.tryParse(_weightCtrl.text.trim()) ?? 0;
     final r = double.tryParse(_ratePer40kgCtrl.text.trim()) ?? 0;
     if (w > 0 && r > 0) {
-      final calcTotal = MandiCalculator.calculateLineTotal(w, r);
+      final calcTotal = (w / 40.0) * r;
       _totalCtrl.text = calcTotal.toStringAsFixed(0);
     }
   }
@@ -55,11 +59,25 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
     try {
       final total = double.parse(_totalCtrl.text.trim());
       final paid = double.tryParse(_paidAmountCtrl.text.trim()) ?? 0;
+      final w = double.tryParse(_weightCtrl.text.trim()) ?? 0;
+      final r = double.tryParse(_ratePer40kgCtrl.text.trim()) ?? 0;
+
+      String? validSupplierId;
+      if (_selectedSupplier != null) {
+        validSupplierId = await SupabaseService.ensureSupplierRow(
+          shopId: shopId,
+          supplierId: _selectedSupplier!.id,
+          userId: _selectedSupplier!.userId,
+          name: _selectedSupplier!.name,
+          phone: _selectedSupplier!.phone,
+          email: _selectedSupplier!.email,
+        );
+      }
 
       final po = PurchaseOrder(
         id: '',
         shopId: shopId,
-        supplierId: _selectedSupplier?.id,
+        supplierId: validSupplierId,
         supplierName: _selectedSupplier?.name ?? 'Direct Supplier',
         total: total,
         paidAmount: paid,
@@ -68,9 +86,25 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
 
       await provider.addPurchaseOrder(po);
 
+      // Auto-increase product stock in PostgreSQL when purchased from supplier
+      if (_selectedProduct != null && w > 0) {
+        final client = Supabase.instance.client;
+        final currentStock = _selectedProduct!.currentStock;
+        await client
+            .from('products')
+            .update({
+              'current_stock': currentStock + w,
+              'purchase_price': r > 0 ? r : _selectedProduct!.purchasePrice,
+              'is_active': true,
+            })
+            .eq('id', _selectedProduct!.id);
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Purchase order recorded.')),
+        const SnackBar(
+            content: Text(
+                'Purchase order recorded & product stock updated successfully!')),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -86,6 +120,7 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
   @override
   Widget build(BuildContext context) {
     final suppliers = context.watch<SupplierProvider>().suppliers;
+    final products = context.watch<ProductProvider>().products;
     final w = double.tryParse(_weightCtrl.text.trim()) ?? 0;
     final r = double.tryParse(_ratePer40kgCtrl.text.trim()) ?? 0;
 
@@ -112,8 +147,35 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
               ),
               const SizedBox(height: MSpacing.md),
 
+              DropdownButtonFormField<Product>(
+                initialValue: _selectedProduct,
+                decoration:
+                    const InputDecoration(labelText: 'Product Purchased'),
+                hint: const Text('Select Product (Stock will increase)'),
+                items: products
+                    .map((p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(
+                              '${p.name} (Current Stock: ${p.currentStock}kg)'),
+                        ))
+                    .toList(),
+                onChanged: (p) {
+                  if (p != null) {
+                    setState(() {
+                      _selectedProduct = p;
+                      if (p.purchasePrice > 0) {
+                        _ratePer40kgCtrl.text =
+                            p.purchasePrice.toStringAsFixed(0);
+                      }
+                    });
+                  }
+                },
+              ),
+
+              const SizedBox(height: MSpacing.md),
+
               // Option B: Rate per 40 KG Mandi Calculator
-              const Text('Direct Purchase Calculation (Option B)', style: MText.titleLg),
+              const Text('Direct Purchase Calculation', style: MText.titleLg),
               const SizedBox(height: MSpacing.xs),
               Row(
                 children: [
@@ -155,8 +217,7 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
               if (w > 0 && r > 0) ...[
                 const SizedBox(height: MSpacing.xs),
                 Text(
-                  MandiCalculator.formatCalculationBreakdown(
-                      weightKg: w, pricePer40kg: r),
+                  '${(w / 40.0).toStringAsFixed(2)} Manns @ Rs. ${r.toStringAsFixed(0)} / 40kg',
                   style: MText.bodySm.copyWith(color: MColors.textSecondary),
                 ),
               ],
