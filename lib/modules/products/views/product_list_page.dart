@@ -33,6 +33,8 @@ class _ProductListPageState extends State<ProductListPage> {
     final shopCtx = context.watch<ShopContextProvider>();
     final canEdit = shopCtx.hasPermission('manage_products');
     final member = shopCtx.currentMember;
+    final isCustomerRole = shopCtx.currentRole?.id == 'customer' ||
+        shopCtx.currentRole?.name.toLowerCase() == 'customer';
     final isSupplierRole = shopCtx.currentRole?.id == 'supplier' ||
         shopCtx.currentRole?.name.toLowerCase() == 'supplier';
 
@@ -41,7 +43,9 @@ class _ProductListPageState extends State<ProductListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isSupplierRole ? 'My Offered Products' : 'Products & Inventory'),
+        title: Text(isCustomerRole
+            ? 'Available Shop Products'
+            : (isSupplierRole ? 'My Offered Products' : 'Products & Inventory')),
       ),
       floatingActionButton: canEdit
           ? FloatingActionButton.extended(
@@ -60,6 +64,13 @@ class _ProductListPageState extends State<ProductListPage> {
           }
 
           var products = provider.search(_searchCtrl.text);
+
+          // If customer is viewing, show ONLY active published products with available stock
+          if (isCustomerRole) {
+            products = products
+                .where((p) => p.isActive && p.currentStock > 0)
+                .toList();
+          }
 
           // If supplier is viewing, show ONLY products offered by this supplier
           if (activeSupplierId != null) {
