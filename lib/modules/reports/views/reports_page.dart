@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -71,6 +72,78 @@ class ReportsPage extends StatelessWidget {
                         value: 'Rs. ${expensesSum.toStringAsFixed(0)}',
                       ),
                     ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: MSpacing.xl),
+
+            // Financial Analytics Interactive Line Chart
+            Text('Financial Trends',
+                style: MText.titleLg.copyWith(color: Colors.white)),
+            const SizedBox(height: MSpacing.sm),
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Sales vs Commission Trend',
+                          style: MText.labelMd.copyWith(color: Colors.white)),
+                      Row(
+                        children: [
+                          Container(width: 8, height: 8, color: MColors.gold),
+                          const SizedBox(width: 4),
+                          const Text('Sales',
+                              style: TextStyle(color: Colors.white70, fontSize: 11)),
+                          const SizedBox(width: 10),
+                          Container(width: 8, height: 8, color: Colors.greenAccent),
+                          const SizedBox(width: 4),
+                          const Text('Commission',
+                              style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: MSpacing.lg),
+                  SizedBox(
+                    height: 180,
+                    child: LineChart(
+                      LineChartData(
+                        gridData: const FlGridData(show: false),
+                        titlesData: const FlTitlesData(show: false),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: invoices.isEmpty
+                                ? const [FlSpot(0, 0), FlSpot(1, 0)]
+                                : List.generate(
+                                    invoices.length > 6 ? 6 : invoices.length,
+                                    (i) => FlSpot(i.toDouble(), invoices[i].subtotal / 1000),
+                                  ),
+                            isCurved: true,
+                            color: MColors.gold,
+                            barWidth: 3,
+                            dotData: const FlDotData(show: true),
+                          ),
+                          LineChartBarData(
+                            spots: invoices.isEmpty
+                                ? const [FlSpot(0, 0), FlSpot(1, 0)]
+                                : List.generate(
+                                    invoices.length > 6 ? 6 : invoices.length,
+                                    (i) => FlSpot(i.toDouble(), invoices[i].commission / 1000),
+                                  ),
+                            isCurved: true,
+                            color: Colors.greenAccent,
+                            barWidth: 3,
+                            dotData: const FlDotData(show: true),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),

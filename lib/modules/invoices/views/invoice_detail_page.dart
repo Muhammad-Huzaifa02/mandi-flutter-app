@@ -5,6 +5,7 @@ import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/invoice_pdf_generator.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
+import 'package:mandi/core/utils/thermal_receipt_service.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/invoice_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
@@ -64,8 +65,20 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
         title: Text(_invoice.invoiceNumber),
         actions: [
           IconButton(
+            icon: const Icon(Icons.receipt_outlined),
+            tooltip: 'Print Thermal POS Slip (80mm)',
+            onPressed: () {
+              ThermalReceiptService.printThermalSlip(
+                invoice: _invoice,
+                shopName: shop?.name ?? 'Mandi Shop',
+                shopPhone: shop?.phone,
+                shopCity: shop?.city,
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.print_outlined),
-            tooltip: 'Print / Save PDF',
+            tooltip: 'Print A4 PDF Invoice',
             onPressed: () {
               InvoicePdfGenerator.printOrShareInvoice(
                 invoice: _invoice,

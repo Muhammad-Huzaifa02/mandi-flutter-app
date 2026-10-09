@@ -6,6 +6,8 @@ class Product {
   final String supplierName;
   final String name;
   final String category;
+  final String qualityGrade; // e.g. 'Grade A', 'Grade B', 'Super Premium'
+  final String batchNumber; // e.g. 'LOT-2024-001'
   final String sku;
   final String description;
   final String unit;
@@ -25,6 +27,8 @@ class Product {
     this.supplierName = '',
     required this.name,
     this.category = 'Grains',
+    this.qualityGrade = 'Grade A',
+    this.batchNumber = '',
     this.sku = '',
     this.description = '',
     this.unit = '40 KG (Maund)',
@@ -47,6 +51,8 @@ class Product {
         supplierName: d['supplier_name'] as String? ?? '',
         name: d['name'] as String? ?? '',
         category: d['category'] as String? ?? 'Grains',
+        qualityGrade: d['quality_grade'] as String? ?? 'Grade A',
+        batchNumber: d['batch_number'] as String? ?? '',
         sku: d['sku'] as String? ?? '',
         description: d['description'] as String? ?? '',
         unit: d['unit'] as String? ?? '40 KG (Maund)',
@@ -69,6 +75,8 @@ class Product {
         'supplier_name': supplierName,
         'name': name,
         'category': category,
+        'quality_grade': qualityGrade,
+        'batch_number': batchNumber,
         'sku': sku,
         'description': description,
         'unit': unit,
