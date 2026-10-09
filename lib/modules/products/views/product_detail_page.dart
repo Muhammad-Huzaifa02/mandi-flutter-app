@@ -32,6 +32,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final shopCtx = context.watch<ShopContextProvider>();
     final canEdit = shopCtx.hasPermission('manage_products');
 
+    final isAvailable = product.isActive && product.currentStock > 0;
+
     final testWeight = double.tryParse(_testWeightCtrl.text) ?? 0;
     final testManns = MandiCalculator.kgToMann(testWeight);
     final testTotalPrice = MandiCalculator.calculateTotalAmount(
@@ -46,6 +48,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           if (canEdit)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Edit Product',
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -60,40 +63,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Low Stock Warning Banner
-            if (product.isLowStock)
-              Container(
-                margin: const EdgeInsets.only(bottom: MSpacing.lg),
-                padding: const EdgeInsets.all(MSpacing.md),
-                decoration: BoxDecoration(
-                  color: MColors.danger.withValues(alpha: 0.2),
-                  borderRadius: MRadius.md,
-                  border: Border.all(color: MColors.danger),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.warning_amber_rounded,
-                        color: MColors.danger),
-                    const SizedBox(width: MSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Low Stock Alert',
-                              style: MText.titleLg.copyWith(color: MColors.danger)),
-                          Text(
-                            'Current stock (${MandiCalculator.formatWeightDisplay(product.currentStock)}) is below the minimum threshold (${MandiCalculator.formatWeightDisplay(product.minStockLevel)}).',
-                            style: MText.bodySm.copyWith(color: Colors.white70),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Header Overview GlassCard
+            // Product Name, Price & Availability Status Card
             GlassCard(
+              width: double.infinity,
               padding: const EdgeInsets.all(MSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,49 +73,53 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(product.name,
-                          style: MText.titleLg.copyWith(color: Colors.white)),
+                      Expanded(
+                        child: Text(
+                          product.name,
+                          style: MText.titleLg.copyWith(
+                            color: Colors.white,
+                            fontSize: 22,
+                          ),
+                        ),
+                      ),
                       Chip(
-                        label: Text(product.category,
-                            style: MText.bodySm.copyWith(color: Colors.white)),
-                        backgroundColor: MColors.gold.withValues(alpha: 0.2),
+                        avatar: Icon(
+                          isAvailable
+                              ? Icons.check_circle_outline
+                              : Icons.cancel_outlined,
+                          color: isAvailable ? Colors.greenAccent : MColors.danger,
+                          size: 18,
+                        ),
+                        label: Text(
+                          isAvailable
+                              ? 'Currently Available'
+                              : 'Currently Unavailable',
+                          style: TextStyle(
+                            color: isAvailable ? Colors.greenAccent : MColors.danger,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                        backgroundColor: (isAvailable
+                                ? Colors.green
+                                : MColors.danger)
+                            .withValues(alpha: 0.2),
                       ),
                     ],
                   ),
+
                   const Divider(height: MSpacing.lg, color: Colors.white24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Rate per 40 KG (Maund)',
-                              style: TextStyle(color: Colors.white70, fontSize: 13)),
-                          const SizedBox(height: MSpacing.xs),
-                          Text(
-                            'Rs. ${product.sellingPrice.toStringAsFixed(0)}',
-                            style: MText.titleLg.copyWith(color: MColors.gold),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text('Current Stock',
-                              style: TextStyle(color: Colors.white70, fontSize: 13)),
-                          const SizedBox(height: MSpacing.xs),
-                          Text(
-                            MandiCalculator.formatWeightDisplay(
-                                product.currentStock),
-                            style: MText.titleLg.copyWith(
-                              color: product.isLowStock
-                                  ? MColors.danger
-                                  : Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+
+                  const Text('Rate / 40 KG (Maund)',
+                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const SizedBox(height: MSpacing.xs),
+                  Text(
+                    'Rs. ${product.sellingPrice.toStringAsFixed(0)}',
+                    style: MText.titleLg.copyWith(
+                      color: MColors.gold,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -151,7 +127,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
             const SizedBox(height: MSpacing.xl),
 
-            // Mandi Weight & Price Calculator GlassCard
+            // Mandi Price Calculator
             GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
               child: Column(
@@ -167,7 +143,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   const SizedBox(height: MSpacing.xs),
                   Text(
-                    '1 Mann = 40 KG. Enter weight in KG to calculate Manns and total price.',
+                    '1 Mann = 40 KG. Enter weight in KG to calculate total price.',
                     style: MText.bodySm.copyWith(color: Colors.white70),
                   ),
                   const SizedBox(height: MSpacing.md),
@@ -190,7 +166,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       border: Border.all(color: Colors.white24),
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -203,25 +178,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: MSpacing.xs),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Rate / 40 KG:',
-                                style: TextStyle(color: Colors.white70, fontSize: 13)),
-                            Text('Rs. ${product.sellingPrice.toStringAsFixed(0)}',
-                                style: const TextStyle(color: Colors.white, fontSize: 14)),
-                          ],
-                        ),
                         const Divider(height: MSpacing.md, color: Colors.white24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text('Total Amount:',
-                                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold)),
                             Text(
                               'Rs. ${testTotalPrice.toStringAsFixed(0)}',
-                              style: MText.titleLg.copyWith(color: Colors.greenAccent),
+                              style: MText.titleLg
+                                  .copyWith(color: Colors.greenAccent),
                             ),
                           ],
                         ),

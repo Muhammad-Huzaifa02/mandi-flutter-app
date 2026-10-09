@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
+import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/employees/views/employee_list_page.dart';
@@ -20,6 +21,83 @@ import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dar
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
+
+  void _editProfileDialog(BuildContext context) {
+    final shopCtx = context.read<ShopContextProvider>();
+    final member = shopCtx.currentMember;
+    if (member == null) return;
+
+    final nameCtrl = TextEditingController(text: member.name);
+    final phoneCtrl = TextEditingController(text: member.phone);
+    final emailCtrl = TextEditingController(text: member.email);
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Edit My Profile'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'Full Name *'),
+              ),
+              const SizedBox(height: MSpacing.sm),
+              TextFormField(
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Phone Number'),
+              ),
+              const SizedBox(height: MSpacing.sm),
+              TextFormField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(labelText: 'Email Address'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.trim().isEmpty) return;
+
+              final updateData = {
+                'name': nameCtrl.text.trim(),
+                'phone': phoneCtrl.text.trim(),
+                'email': emailCtrl.text.trim(),
+              };
+
+              await SupabaseService.updateShopMember(
+                membershipId: member.id,
+                shopId: member.shopId,
+                data: updateData,
+                actorUid: member.id,
+                actorName: member.name,
+              );
+
+              if (context.mounted) {
+                await shopCtx.refreshShop();
+              }
+
+              Navigator.pop(dialogCtx);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile updated successfully!')),
+                );
+              }
+            },
+            child: const Text('Save Changes'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +141,7 @@ class DashboardPage extends StatelessWidget {
           children: [
             GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
+              onTap: () => _editProfileDialog(context),
               child: Row(
                 children: [
                   CircleAvatar(
@@ -80,8 +159,15 @@ class DashboardPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Welcome, ${shopCtx.currentMember?.name ?? ''}',
-                            style: MText.titleLg.copyWith(color: Colors.white)),
+                        Row(
+                          children: [
+                            Text('Welcome, ${shopCtx.currentMember?.name ?? ''}',
+                                style: MText.titleLg.copyWith(color: Colors.white)),
+                            const SizedBox(width: 6),
+                            const Icon(Icons.edit_outlined,
+                                size: 16, color: MColors.gold),
+                          ],
+                        ),
                         const SizedBox(height: 2),
                         Text('Role: ${shopCtx.currentRole?.name ?? '—'}',
                             style: MText.bodySm

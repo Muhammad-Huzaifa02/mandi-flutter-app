@@ -75,12 +75,56 @@ class SupplierDashboardPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome, ${member?.name ?? ''}',
-                style: MText.titleLg.copyWith(color: Colors.white)),
-            const SizedBox(height: MSpacing.xs),
-            Text('Supplier to ${shop?.name ?? 'this shop'}',
-                style: MText.bodyMd.copyWith(color: MColors.textOnDarkSub)),
-            const SizedBox(height: MSpacing.xl),
+            InkWell(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => SupplierDetailPage(supplier: mySupplier),
+                ),
+              ),
+              borderRadius: BorderRadius.circular(18),
+              child: GlassCard(
+                padding: const EdgeInsets.all(MSpacing.lg),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 26,
+                      backgroundColor: MColors.gold.withValues(alpha: 0.2),
+                      child: Text(
+                        member?.name.isNotEmpty == true
+                            ? member!.name[0].toUpperCase()
+                            : 'S',
+                        style: MText.titleLg.copyWith(color: MColors.gold),
+                      ),
+                    ),
+                    const SizedBox(width: MSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text('Welcome, ${member?.name ?? ''}',
+                                  style: MText.titleLg
+                                      .copyWith(color: Colors.white)),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.edit_outlined,
+                                  size: 16, color: MColors.gold),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text('Supplier to ${shop?.name ?? 'this shop'}',
+                              style: MText.bodySm
+                                  .copyWith(color: MColors.textOnDarkSub)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: MSpacing.lg),
 
             // Glass Balance Card with WhatsApp Reminder
             GlassCard(
@@ -97,7 +141,7 @@ class SupplierDashboardPage extends StatelessWidget {
                     style: MText.titleLg.copyWith(
                       color: mySupplier.runningBalance > 0
                           ? MColors.danger
-                          : Colors.green,
+                          : Colors.greenAccent,
                       fontSize: 24,
                     ),
                   ),
@@ -202,6 +246,16 @@ Thank you!
                 _SupplierTile(
                   icon: Icons.menu_book_outlined,
                   label: 'Ledger',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => SupplierDetailPage(supplier: mySupplier),
+                    ),
+                  ),
+                ),
+                _SupplierTile(
+                  icon: Icons.person_outline,
+                  label: 'Profile',
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
