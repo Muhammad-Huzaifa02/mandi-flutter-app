@@ -55,10 +55,19 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
     final prefix = shop?.invoicePrefix ?? 'INV';
     final invoices = context.read<InvoiceProvider>().invoices;
-    final count = invoices.length + 1;
-    final shopNext = shop?.invoiceNextNumber ?? 1;
-    final nextNum = shopNext > count ? shopNext : count;
-    _invoiceNumberCtrl.text = '$prefix-${nextNum.toString().padLeft(4, '0')}';
+
+    int maxNum = shop?.invoiceNextNumber ?? 1;
+    for (final inv in invoices) {
+      final parts = inv.invoiceNumber.split('-');
+      if (parts.length >= 2) {
+        final numPart = int.tryParse(parts.last);
+        if (numPart != null && numPart >= maxNum) {
+          maxNum = numPart + 1;
+        }
+      }
+    }
+
+    _invoiceNumberCtrl.text = '$prefix-${maxNum.toString().padLeft(4, '0')}';
   }
 
   @override
@@ -413,6 +422,12 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       );
       Navigator.pop(context);
     } catch (e) {
+      if (e.toString().contains('23505') || e.toString().contains('already exists')) {
+        // Auto-resolve duplicate key by appending unique suffix
+        final timestamp = DateTime.now().millisecondsSinceEpoch % 1000;
+        _invoiceNumberCtrl.text = '${_invoiceNumberCtrl.text.trim()}-$timestamp';
+        return _submit();
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString()), backgroundColor: MColors.danger),
@@ -759,7 +774,14 @@ class _SummaryRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: style),
+          Expanded(
+            child: Text(
+              label,
+              style: style,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: MSpacing.xs),
           Text(value, style: style),
         ],
       ),
