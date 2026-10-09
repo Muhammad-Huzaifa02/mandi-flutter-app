@@ -327,6 +327,26 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
               ),
 
               const SizedBox(height: MSpacing.lg),
+              const Text('Text & Font Size Adjustment', style: MText.titleLg),
+              const SizedBox(height: MSpacing.sm),
+              Consumer<ThemeProvider>(
+                builder: (context, themeProvider, _) {
+                  return SegmentedButton<double>(
+                    segments: const [
+                      ButtonSegment(value: 0.85, label: Text('Small')),
+                      ButtonSegment(value: 1.0, label: Text('Normal')),
+                      ButtonSegment(value: 1.15, label: Text('Large')),
+                      ButtonSegment(value: 1.30, label: Text('XL')),
+                    ],
+                    selected: {themeProvider.fontScale},
+                    onSelectionChanged: (set) {
+                      themeProvider.setFontScale(set.first);
+                    },
+                  );
+                },
+              ),
+
+              const SizedBox(height: MSpacing.lg),
               const Text('App Language (زبان)', style: MText.titleLg),
               const SizedBox(height: MSpacing.sm),
               Consumer<LocaleProvider>(

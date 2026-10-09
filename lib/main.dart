@@ -107,9 +107,14 @@ class MandiApp extends StatelessWidget {
           locale: localeProvider.locale,
           builder: (context, child) {
             final mediaQuery = MediaQuery.of(context);
+            final clampedSystemFactor =
+                mediaQuery.textScaler.scale(1.0).clamp(0.85, 1.2);
+            final effectiveScale =
+                themeProvider.fontScale * clampedSystemFactor;
+
             return MediaQuery(
               data: mediaQuery.copyWith(
-                textScaler: TextScaler.noScaling,
+                textScaler: TextScaler.linear(effectiveScale),
               ),
               child: child!,
             );
