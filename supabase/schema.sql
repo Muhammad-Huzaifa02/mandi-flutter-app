@@ -530,6 +530,79 @@ end;
 $$;
 
 -- ============================================================================
+-- 8c. RPC — cancel_invoice_and_restore_stock
+--    Cancels an invoice (status='void'), restores product stock,
+--    reverses running balance on customer/supplier, and logs audit record.
+-- ============================================================================
+create or replace function public.cancel_invoice_and_restore_stock(
+  p_invoice_id uuid,
+  p_shop_id uuid,
+  p_actor_id text,
+  p_actor_name text,
+  p_reason text default ''
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_invoice record;
+  item record;
+begin
+  if not public.has_permission(p_shop_id, 'create_invoice') then
+    raise exception 'Missing permission: create_invoice';
+  end if;
+
+  select * into v_invoice from public.invoices
+    where id = p_invoice_id and shop_id = p_shop_id
+    for update;
+
+  if v_invoice is null then
+    raise exception 'Invoice not found';
+  end if;
+
+  if v_invoice.status = 'void' or v_invoice.status = 'cancelled' then
+    raise exception 'Invoice is already cancelled';
+  end if;
+
+  -- 1. Restore product stock for each line item
+  for item in select * from public.invoice_items where invoice_id = p_invoice_id loop
+    update public.products
+      set current_stock = current_stock + item.weight_kg, updated_at = now()
+      where id = item.product_id and shop_id = p_shop_id;
+  end loop;
+
+  -- 2. Reverse running balance on customer if pending amount was added
+  if v_invoice.customer_id is not null and v_invoice.pending_amount > 0 then
+    update public.customers
+      set running_balance = greatest(0, running_balance - v_invoice.pending_amount)
+      where id = v_invoice.customer_id and shop_id = p_shop_id;
+  end if;
+
+  -- 3. Reverse running balance on supplier if applicable
+  if v_invoice.supplier_id is not null and v_invoice.pending_amount > 0 then
+    update public.suppliers
+      set running_balance = greatest(0, running_balance - v_invoice.pending_amount)
+      where id = v_invoice.supplier_id and shop_id = p_shop_id;
+  end if;
+
+  -- 4. Mark invoice status as void
+  update public.invoices
+    set status = 'void', updated_at = now()
+    where id = p_invoice_id and shop_id = p_shop_id;
+
+  -- 5. Add audit log entry
+  insert into public.audit_logs (
+    shop_id, actor_id, actor_name, action, entity_type, entity_id, summary
+  ) values (
+    p_shop_id, p_actor_id, p_actor_name, 'invoice_cancelled', 'invoice', p_invoice_id::text,
+    p_actor_name || ' cancelled invoice #' || v_invoice.invoice_number || '. Reason: ' || coalesce(p_reason, 'None')
+  );
+end;
+$$;
+
+-- ============================================================================
 -- 9. ROW LEVEL SECURITY
 -- ============================================================================
 alter table public.profiles              enable row level security;

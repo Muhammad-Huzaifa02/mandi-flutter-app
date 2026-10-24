@@ -1,130 +1,127 @@
-# Mandi — Architecture
+# Mandi System Architecture & Technical Specifications
 
-## Stack
+This document details the software architecture, state management patterns, database schema design, Row Level Security (RLS) enforcement, and hardware integration specs of the **Mandi Application**.
 
-- **Client**: Flutter (Android primary, iOS supported by the same code)
-- **Backend**: Supabase — Postgres, Auth, Storage, Edge Functions
-- **State**: `provider` package — `ChangeNotifierProxyProvider` wires
-  shop-scoped providers to whichever shop is currently active
+---
 
-Originally built on Firebase (Firestore + Cloud Functions); migrated to
-Supabase to move tenant isolation from hand-written security-rule logic
-to real Postgres Row Level Security, and to drop the Blaze billing
-requirement Cloud Functions needed. See `docs/MEMORY.md` for why, in
-more detail.
-
-## The one rule everything else follows
+## 1. High-Level Architecture Diagram
 
 ```
-auth.uid()
-   →  shop_memberships (status = 'active')
-   →  shop_id + role_id + custom_permissions
-   →  has_permission(shop_id, 'x') / is_shop_member(shop_id)
-   →  every single RLS policy's actual check
+┌─────────────────────────────────────────────────────────┐
+│                    Flutter Client                       │
+│  ┌────────────────────┐      ┌───────────────────────┐  │
+│  │   UI Views & Pages │      │ ChangeNotifier        │  │
+│  │  (Glassmorphism)   │ ◄───►│ Providers (Reactive)  │  │
+│  └────────────────────┘      └──────────┬────────────┘  │
+└─────────────────────────────────────────│───────────────┘
+                                          │ Supabase Client / Stream
+                                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                  Supabase Cloud Services                │
+│  ┌────────────────────┐      ┌───────────────────────┐  │
+│  │ PostgreSQL DB      │      │ Row Level Security    │  │
+│  │ (schema.sql)       │ ◄───►│ (RLS Policies)        │  │
+│  └────────┬───────────┘      └───────────────────────┘  │
+│           │ RPC Functions                               │
+│  ┌────────┴───────────┐      ┌───────────────────────┐  │
+│  │ PL/pgSQL Stored    │      │ Deno Edge Functions   │  │
+│  │ Functions          │      │ (create-staff, etc.)  │  │
+│  └────────────────────┘      └───────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
 ```
 
-No table trusts a `shop_id` the client sends. Client-side filtering
-(`.eq('shop_id', ...)`) exists for correctness and performance only —
-the real boundary is server-side RLS, re-deriving the same chain
-independently on every request. See `supabase/schema.sql` for the full
-policy set, and its own bottom-of-file security test checklist.
+---
 
-## Auth → Dashboard flow
+## 2. Flutter State Management & Provider Hierarchy
 
-```
-Login (phone or email, no role/shop picker)
-   ↓
-AuthProvider resolves the Supabase session
-   ↓
-AppRoot calls ShopContextProvider.loadForUser(uid)
-   ↓
-Loads every active shop_memberships row for this user
-   ↓
-0 memberships  → NoShopPage ("Create New Shop")
-1 membership   → that shop's dashboard, immediately
-2+ memberships → "Choose Shop" (the ONLY case this ever shows)
-   ↓
-ShopContextProvider now exposes currentShop / currentMember /
-currentRole / hasPermission(x) — every screen reads from here,
-never from a hardcoded or passed-in shop id
+The app uses `Provider` and `ChangeNotifierProxyProvider` to achieve reactive data flow bound to the active shop ID:
+
+```dart
+MultiProvider(
+  providers: [
+    ChangeNotifierProvider(create: (_) => ThemeProvider()),
+    ChangeNotifierProvider(create: (_) => LocaleProvider()),
+    ChangeNotifierProvider(create: (_) => ConnectivityService()),
+    ChangeNotifierProvider(create: (_) => AuthProvider()),
+    ChangeNotifierProvider(create: (_) => ShopContextProvider()),
+    ChangeNotifierProxyProvider<ShopContextProvider, InvoiceProvider>(
+      create: (_) => InvoiceProvider(),
+      update: (_, shopCtx, provider) => provider!..updateShop(shopCtx.currentShopId),
+    ),
+    // CustomerProvider, SupplierProvider, ProductProvider, EmployeeProvider, ExpenseProvider, PaymentProvider...
+  ],
+)
 ```
 
-## Why staff/customer/supplier creation needs Edge Functions
+### Key Providers
+- **`AuthProvider`**: Manages Supabase Auth session, user claims, login/logout, and password setup flags.
+- **`ShopContextProvider`**: Holds current shop details, user membership role, and evaluates `hasPermission(permissionString)`.
+- **Data Providers**: Listen to Supabase realtime streams filtered by `currentShopId` and notify UI widgets upon database changes.
 
-Creating another person's Auth account requires the service-role key,
-which must never reach the Flutter app (it bypasses RLS entirely). So:
+---
 
-- `create-staff` / `create-customer` / `create-supplier` (Deno, in
-  `supabase/functions/`) share one implementation
-  (`_shared/createAccount.ts`): verify the caller's permission
-  server-side via `has_permission()`, then use
-  `admin.inviteUserByEmail()` — which sends an activation email and lets
-  the person set their **own** password. No plain-text password is ever
-  created, shown, or shared by the shop.
-- Everything that does NOT need the service role stays a plain
-  RLS-guarded client call: editing a member's profile, deactivating them
-  (`shop_memberships.status = 'inactive'` — RLS already requires
-  `status = 'active'` everywhere, so this alone fully cuts off access),
-  and password resets (`supabase.auth.resetPasswordForEmail`, no
-  privileged key needed at all).
+## 3. Database Schema Reference (`supabase/schema.sql`)
 
-## Atomic multi-table operations
+### 3.1 Tables
+- **`shops`**: Shop profile, commission defaults, logo URL, invoice prefix, next invoice number counter.
+- **`roles`**: Granular permission arrays per shop.
+- **`shop_memberships`**: Links `auth.users` to `shops` with `role_id` and `status` (`active` or `inactive`).
+- **`customers`**: Buyer records, contact details, opening balance, and running balance.
+- **`suppliers`**: Farmer/supplier records, crop history, and running balance.
+- **`products`**: Commodity catalog, Maund weight per unit, pricing, and current stock level in KG.
+- **`invoices`**: Sales invoice header records (subtotal, commission, expenses, discount, grand total, pending balance, status).
+- **`invoice_items`**: Line items linked to invoices and products (quantity, weight in KG, unit price per Maund).
+- **`purchase_orders`**: Farmer crop delivery receipts.
+- **`expenses`**: Shop expense records categorized by type.
+- **`payments`**: Payment transaction receipts updating party running balances.
+- **`audit_logs`**: System audit trail logs.
 
-Postgres doesn't give a Flutter client a "batch/transaction" primitive
-the way Firestore did, so anywhere multiple tables must succeed or fail
-together, it's a `plpgsql` RPC instead:
+---
 
-- `create_shop_with_owner(shop, ownerName, ownerPhone, ownerEmail, defaultRoles)`
-  — shop row + default roles + owner's own membership, in one transaction.
-- `create_invoice_with_stock_deduction(invoice, items)` — row-locks each
-  product (`for update`), refuses the whole invoice if any item is
-  short on stock, then inserts the invoice + items + inventory
-  transactions. Not wired to any screen yet (invoicing UI is Planned).
+## 4. Database RPC Functions & Security
 
-## Data layer conventions
-
-- **`SupabaseService`** (`lib/data/services/`) — one static class, one
-  method per query/mutation, always filtered by `shop_id`. This is the
-  only place `Supabase.instance.client.from(...)` should appear.
-- **`AccountInviteService`** — the three Edge Function callers.
-- **Model `fromMap`** parses real Postgres rows → **snake_case** keys.
-- **Model `toMap`** on `Shop`/`Role` is the one deliberate exception:
-  camelCase, because it feeds the `create_shop_with_owner` RPC's jsonb
-  arguments, not a direct table insert. `ShopMember.toMap()` IS
-  snake_case, because it's used as a real insert/update payload. This
-  split is intentional — see the comment at the top of each `toMap()`.
-- **`Product`/`Customer`/`Supplier`/`Invoice` models** still use their
-  original camelCase Firebase-era `fromMap`/`toMap` — harmless today
-  because nothing calls them yet, but they need the same snake_case
-  pass before their screens get built (see TASKS.md).
-
-## Folder structure
-
+### 4.1 `create_shop_with_owner`
+```sql
+create or replace function public.create_shop_with_owner(
+  p_shop jsonb,
+  p_owner_name text,
+  p_owner_phone text,
+  p_owner_email text,
+  p_default_roles jsonb
+) returns uuid
 ```
-lib/
-  core/
-    theme/            design tokens (see DESIGN.md)
-    utils/             pk_phone.dart, pk_cnic.dart — Pakistani formatting/validation
-  data/
-    models/            Shop, ShopMember, Role, + not-yet-wired Product/Customer/Supplier/Invoice
-    services/          SupabaseService, AccountInviteService
-  providers/           AuthProvider, ShopContextProvider
-  modules/
-    auth/               welcome, login, forgot-password (3 screens), register
-    onboarding/          shop_setup_wizard (4 steps), no_shop_page
-    employees/           list / add (invite) / detail — the template for
-                          customers/suppliers screens when they get built
-    home/                dashboard
-  routes/               app_root.dart — the actual auth+shop gate
-supabase/
-  schema.sql            tables, RLS, RPCs, storage policies
-  config.toml            CLI project link config
-  functions/             create-staff, create-customer, create-supplier
-docs/                   this folder
+Creates shop row, default roles (`owner`, `manager`, `accountant`, `sales_staff`, `inventory_staff`), and owner's `shop_memberships` record in a single atomic transaction.
+
+### 4.2 `create_invoice_with_stock_deduction`
+```sql
+create or replace function public.create_invoice_with_stock_deduction(
+  p_invoice jsonb,
+  p_items jsonb
+) returns uuid
 ```
+Inserts sales invoice + items and deducts stock using `FOR UPDATE` row locking on products to prevent race conditions during high-volume Mandi trading.
 
-## Known architectural gaps
+### 4.3 `cancel_invoice_and_restore_stock`
+```sql
+create or replace function public.cancel_invoice_and_restore_stock(
+  p_invoice_id uuid,
+  p_shop_id uuid,
+  p_actor_id text,
+  p_actor_name text,
+  p_reason text default ''
+) returns void
+```
+Voids invoice (`status = 'void'`), restores product stock, reverses customer/supplier running balance updates, and writes audit record.
 
-See `TASKS.md` for the live list. The two worth knowing up front:
-phone-based invites aren't built (Supabase's invite API is email-only),
-and Customer/Supplier have real backend support but no Flutter screens.
+---
+
+## 5. Local Storage & Keys (`SharedPreferences`)
+
+| Key Name | Type | Purpose |
+| :--- | :--- | :--- |
+| `app_theme_mode` | String | Selected theme mode (`light`, `dark`, `system`) |
+| `primary_brand_color` | Int | Selected shop brand primary color |
+| `app_font_scale` | Double | Text scaling factor (0.85 to 1.30) |
+| `app_language_code` | String | Selected language code (`en` or `ur`) |
+| `printer_roll_width` | Double | Thermal paper width (`80.0` or `58.0`) |
+| `printer_footer_note` | String | Custom footer text printed on receipts |

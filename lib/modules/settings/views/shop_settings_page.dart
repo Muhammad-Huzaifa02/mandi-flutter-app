@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/theme/locale_provider.dart';
@@ -26,7 +27,9 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
   late final TextEditingController _city;
   late final TextEditingController _commission;
   late final TextEditingController _invoicePrefix;
+  late final TextEditingController _printerFooterNote;
 
+  double _printerRollWidth = 80;
   bool _saving = false;
   bool _uploadingLogo = false;
 
@@ -44,6 +47,18 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
     _commission = TextEditingController(
         text: shop?.defaultCommissionPercent.toStringAsFixed(1) ?? '5.0');
     _invoicePrefix = TextEditingController(text: shop?.invoicePrefix ?? 'INV');
+    _printerFooterNote = TextEditingController(text: '*** Thank You! ***');
+
+    _loadPrinterPrefs();
+  }
+
+  Future<void> _loadPrinterPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _printerRollWidth = prefs.getDouble('printer_roll_width') ?? 80;
+      _printerFooterNote.text =
+          prefs.getString('printer_footer_note') ?? '*** Thank You! ***';
+    });
   }
 
   @override
@@ -57,6 +72,7 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
     _city.dispose();
     _commission.dispose();
     _invoicePrefix.dispose();
+    _printerFooterNote.dispose();
     super.dispose();
   }
 
@@ -123,6 +139,12 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
 
       await SupabaseService.updateShop(shopId, updateData);
       await shopCtx.refreshShop();
+
+      // Save Printer preferences to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('printer_roll_width', _printerRollWidth);
+      await prefs.setString(
+          'printer_footer_note', _printerFooterNote.text.trim());
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -297,6 +319,37 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
                   ),
                 ],
               ),
+
+              const SizedBox(height: MSpacing.lg),
+              const Text('Thermal POS Printer Configuration', style: MText.titleLg),
+              const SizedBox(height: MSpacing.sm),
+              SegmentedButton<double>(
+                segments: const [
+                  ButtonSegment(
+                    value: 80,
+                    label: Text('80mm Standard POS'),
+                    icon: Icon(Icons.print),
+                  ),
+                  ButtonSegment(
+                    value: 58,
+                    label: Text('58mm Mobile Roll'),
+                    icon: Icon(Icons.receipt_long),
+                  ),
+                ],
+                selected: {_printerRollWidth},
+                onSelectionChanged: (set) {
+                  setState(() => _printerRollWidth = set.first);
+                },
+              ),
+              const SizedBox(height: MSpacing.md),
+              TextFormField(
+                controller: _printerFooterNote,
+                decoration: const InputDecoration(
+                  labelText: 'Receipt Footer Note',
+                  hintText: 'e.g. *** Thank You For Doing Business With Us! ***',
+                ),
+              ),
+
               const SizedBox(height: MSpacing.lg),
               const Text('Shop Brand Color Theme', style: MText.titleLg),
               const SizedBox(height: MSpacing.sm),

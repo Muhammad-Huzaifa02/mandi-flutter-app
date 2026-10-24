@@ -298,6 +298,24 @@ class SupabaseService {
     return id;
   }
 
+  /// Cancels an invoice, restores product stock, reverses customer/supplier
+  /// balance, and writes an audit log entry.
+  static Future<void> cancelInvoice({
+    required String invoiceId,
+    required String shopId,
+    required String actorId,
+    required String actorName,
+    String reason = '',
+  }) async {
+    await _client.rpc('cancel_invoice_and_restore_stock', params: {
+      'p_invoice_id': invoiceId,
+      'p_shop_id': shopId,
+      'p_actor_id': actorId,
+      'p_actor_name': actorName,
+      'p_reason': reason,
+    });
+  }
+
   // ── Expenses ─────────────────────────────────────────────────────────────
 
   static Stream<List<Map<String, dynamic>>> expensesStream(String shopId) =>

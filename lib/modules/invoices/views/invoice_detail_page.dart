@@ -11,6 +11,7 @@ import 'package:mandi/data/models/invoice_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
+import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
 
 class InvoiceDetailPage extends StatefulWidget {
   final Invoice invoice;
@@ -24,6 +25,7 @@ class InvoiceDetailPage extends StatefulWidget {
 class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
   late Invoice _invoice;
   bool _loadingItems = false;
+  bool _cancelling = false;
 
   @override
   void initState() {
@@ -49,9 +51,91 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
     }
   }
 
+  Future<void> _showCancelInvoiceDialog() async {
+    final reasonController = TextEditingController();
+    final shopCtx = context.read<ShopContextProvider>();
+    final member = shopCtx.currentMember;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Cancel & Void Invoice'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Are you sure you want to cancel this invoice?\n\n'
+              '• Product stock will be automatically restored.\n'
+              '• Customer balance adjustment will be reversed.\n'
+              '• An audit log entry will be recorded.',
+              style: TextStyle(fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: MSpacing.md),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Reason for cancellation (optional)',
+                hintText: 'e.g., Wrong quantity entered / Order returned',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx, false),
+            child: const Text('Go Back'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: MColors.danger),
+            onPressed: () => Navigator.pop(dialogCtx, true),
+            child: const Text('Void Invoice', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _cancelling = true);
+
+    try {
+      final invoiceProvider = context.read<InvoiceProvider>();
+      await invoiceProvider.cancelInvoice(
+        invoiceId: _invoice.id,
+        actorId: member?.id ?? '',
+        actorName: member?.name ?? 'Shop Member',
+        reason: reasonController.text.trim(),
+      );
+
+      setState(() {
+        _invoice = _invoice.copyWith(status: 'void');
+        _cancelling = false;
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invoice cancelled and stock restored successfully!'),
+          backgroundColor: MColors.danger,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _cancelling = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to cancel invoice: $e'),
+          backgroundColor: MColors.danger,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final shop = context.watch<ShopContextProvider>().currentShop;
+    final shopCtx = context.watch<ShopContextProvider>();
     final customers = context.watch<CustomerProvider>().customers;
     final customer = _invoice.customerId != null
         ? customers.where((c) => c.id == _invoice.customerId).firstOrNull
@@ -59,6 +143,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
     final customerPhone = customer?.phone ?? '';
     final customerEmail = customer?.email ?? '';
+    final isVoid = _invoice.status == 'void' || _invoice.status == 'cancelled';
 
     return Scaffold(
       appBar: AppBar(
@@ -95,6 +180,35 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (isVoid)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.bottom(MSpacing.md),
+                padding: const EdgeInsets.symmetric(
+                    vertical: MSpacing.sm, horizontal: MSpacing.md),
+                decoration: BoxDecoration(
+                  color: MColors.danger.withValues(alpha: 0.2),
+                  border: Border.all(color: MColors.danger),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.cancel_outlined, color: MColors.danger),
+                    SizedBox(width: MSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        'THIS INVOICE HAS BEEN VOIDED / CANCELLED',
+                        style: TextStyle(
+                          color: MColors.danger,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             // Glass Header Card
             GlassCard(
               padding: const EdgeInsets.all(MSpacing.lg),
@@ -110,20 +224,24 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                         label: Text(
                           _invoice.status.toUpperCase(),
                           style: TextStyle(
-                            color: _invoice.status == 'paid'
-                                ? Colors.greenAccent
-                                : (_invoice.status == 'partial'
-                                    ? Colors.orangeAccent
-                                    : MColors.danger),
+                            color: isVoid
+                                ? MColors.danger
+                                : (_invoice.status == 'paid'
+                                    ? Colors.greenAccent
+                                    : (_invoice.status == 'partial'
+                                        ? Colors.orangeAccent
+                                        : MColors.danger)),
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
                         ),
-                        backgroundColor: (_invoice.status == 'paid'
-                                ? Colors.green
-                                : (_invoice.status == 'partial'
-                                    ? Colors.orange
-                                    : MColors.danger))
+                        backgroundColor: (isVoid
+                                ? MColors.danger
+                                : (_invoice.status == 'paid'
+                                    ? Colors.green
+                                    : (_invoice.status == 'partial'
+                                        ? Colors.orange
+                                        : MColors.danger)))
                             .withValues(alpha: 0.2),
                       ),
                     ],
@@ -317,6 +435,32 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                 ],
               ],
             ),
+
+            if (!isVoid && shopCtx.hasPermission('create_invoice')) ...[
+              const SizedBox(height: MSpacing.lg),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: MColors.danger,
+                    side: const BorderSide(color: MColors.danger),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: _cancelling ? null : _showCancelInvoiceDialog,
+                  icon: _cancelling
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: MColors.danger),
+                        )
+                      : const Icon(Icons.block, size: 18),
+                  label: Text(
+                      _cancelling ? 'Cancelling Invoice...' : 'Void / Cancel Invoice',
+                      style: const TextStyle(fontSize: 14)),
+                ),
+              ),
+            ],
           ],
         ),
       ),

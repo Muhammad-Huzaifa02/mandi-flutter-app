@@ -109,6 +109,88 @@ class ExcelExportService {
     }
   }
 
+  /// Exports a complete Financial Report (Summary, Invoices & Expenses) to Excel.
+  static Future<void> exportFinancialSummary({
+    required String periodName,
+    required double totalSalesSubtotal,
+    required double totalCommission,
+    required double totalExpenses,
+    required double netProfit,
+    required double totalReceivables,
+    required double totalPayables,
+    required List<Invoice> invoices,
+    required List<Expense> expenses,
+  }) async {
+    final excel = Excel.createExcel();
+    
+    // Summary Sheet
+    final summarySheet = excel['Summary'];
+    summarySheet.appendRow([TextCellValue('MANDI FINANCIAL REPORT')]);
+    summarySheet.appendRow([TextCellValue('Period:'), TextCellValue(periodName)]);
+    summarySheet.appendRow([]);
+    summarySheet.appendRow([TextCellValue('Metric'), TextCellValue('Amount (PKR)')]);
+    summarySheet.appendRow([TextCellValue('Total Sales Volume'), DoubleCellValue(totalSalesSubtotal)]);
+    summarySheet.appendRow([TextCellValue('Total Commission Earned'), DoubleCellValue(totalCommission)]);
+    summarySheet.appendRow([TextCellValue('Total Shop Expenses'), DoubleCellValue(totalExpenses)]);
+    summarySheet.appendRow([TextCellValue('Net Mandi Profit'), DoubleCellValue(netProfit)]);
+    summarySheet.appendRow([TextCellValue('Customer Receivables'), DoubleCellValue(totalReceivables)]);
+    summarySheet.appendRow([TextCellValue('Supplier Payables'), DoubleCellValue(totalPayables)]);
+
+    // Invoices Sheet
+    final invSheet = excel['Invoices'];
+    invSheet.appendRow([
+      TextCellValue('Invoice #'),
+      TextCellValue('Customer'),
+      TextCellValue('Date'),
+      TextCellValue('Subtotal (PKR)'),
+      TextCellValue('Commission (PKR)'),
+      TextCellValue('Total (PKR)'),
+      TextCellValue('Status'),
+    ]);
+    for (final inv in invoices) {
+      final dateStr = inv.createdAt != null
+          ? '${inv.createdAt!.day}/${inv.createdAt!.month}/${inv.createdAt!.year}'
+          : '';
+      invSheet.appendRow([
+        TextCellValue(inv.invoiceNumber),
+        TextCellValue(inv.customerName.isNotEmpty ? inv.customerName : 'Walk-in'),
+        TextCellValue(dateStr),
+        DoubleCellValue(inv.subtotal),
+        DoubleCellValue(inv.commission),
+        DoubleCellValue(inv.total),
+        TextCellValue(inv.status.toUpperCase()),
+      ]);
+    }
+
+    // Expenses Sheet
+    final expSheet = excel['Expenses'];
+    expSheet.appendRow([
+      TextCellValue('Category'),
+      TextCellValue('Amount (PKR)'),
+      TextCellValue('Reference'),
+      TextCellValue('Date'),
+      TextCellValue('Note'),
+    ]);
+    for (final e in expenses) {
+      final dateStr = e.createdAt != null
+          ? '${e.createdAt!.day}/${e.createdAt!.month}/${e.createdAt!.year}'
+          : '';
+      expSheet.appendRow([
+        TextCellValue(e.category.displayName),
+        DoubleCellValue(e.amount),
+        TextCellValue(e.reference),
+        TextCellValue(dateStr),
+        TextCellValue(e.note),
+      ]);
+    }
+
+    final bytes = excel.save();
+    if (bytes != null) {
+      final safePeriod = periodName.replaceAll(' ', '_');
+      await _saveAndShareExcel(bytes, 'Mandi_Financial_Report_$safePeriod.xlsx');
+    }
+  }
+
   static Future<void> _saveAndShareExcel(
       List<int> bytes, String fileName) async {
     final xFile = XFile.fromData(

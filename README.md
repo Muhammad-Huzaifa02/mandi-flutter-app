@@ -1,203 +1,211 @@
-# Mandi — Multi-Shop Agricultural Business Platform
+# Mandi (منڈی) — Agricultural Commission Shop Management System
 
-Flutter app, Supabase backend (Postgres + Auth + Storage + Edge Functions).
-Migrated from an earlier Firebase-based build — see "Why Supabase" below
-for what changed and why.
+[![Flutter](https://img.shields.io/badge/Flutter-3.3.0+-02569B?logo=flutter)](https://flutter.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%7C%20RLS-3ECF8E?logo=supabase)](https://supabase.com)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Desktop-blue)](#)
+[![License](https://img.shields.io/badge/License-Proprietary-red)](#)
 
-## Architecture
+A comprehensive, production-ready, multi-tenant Flutter application designed specifically for **Agricultural Commission Shops (آڑھت / Mandi)** and grain trading businesses in Pakistan. It streamilines daily auction sales, weight calculations (**Manns / Maunds / Maund = 40 KG**), farmer/supplier purchase orders, customer Khata ledgers, expenses, thermal receipt printing, and real-time financial reporting.
 
+---
+
+## 📑 Table of Contents
+1. [Key Features Overview](#-key-features-overview)
+2. [Module Breakdown](#-module-breakdown)
+3. [Mandi Unit Calculation Engine](#-mandi-unit-calculation-engine)
+4. [Role-Based Access Control (RBAC)](#-role-based-access-control-rbac)
+5. [System Architecture](#-system-architecture)
+6. [Getting Started & Installation](#-getting-started--installation)
+7. [Database Setup & Supabase RPCs](#-database-setup--supabase-rpcs)
+8. [Thermal POS & PDF Printing](#-thermal-pos--pdf-printing)
+9. [Documentation Hub](#-documentation-hub)
+
+---
+
+## 🌟 Key Features Overview
+
+### 🏪 Multi-Tenant & Multi-Shop Architecture
+- **Multi-Shop Management**: Manage one or multiple commission shops under a single account.
+- **Onboarding Wizard**: Guided shop setup wizard with logo upload, commission percentage defaults, and invoice prefix configuration.
+- **Role Router**: Intelligent `AppRoot` gatekeeper routing owners/managers, accountants (munshis), buyers (customers), and farmers (suppliers) to their custom dedicated dashboards.
+
+### ⚖️ Mandi Unit Conversions & Invoicing
+- **Automatic Maund Calculations**: Convert **Kilograms (KG)** to **Manns (من = 40 KG)** automatically.
+- **Mandi Commission & Expenses**: Automatic calculation of shop commission %, line item expenses (loading, labor/mazdoori, freight/kraya), and discounts.
+- **Thermal Receipt Printing**: Print 80mm standard desktop POS or 58mm mobile Bluetooth receipts directly from the app.
+- **A4 PDF & WhatsApp Sharing**: Instant A4 invoice PDF generation and direct WhatsApp/Email sharing with buyers.
+- **Invoice Cancellation & Stock Restoration**: Void/Cancel invoices with 1-click database transaction restoring product stock and reversing ledger balances.
+
+### 📖 Khata & Ledger Management
+- **Customer (Buyer) Ledgers**: Real-time tracking of receivables, running balances, opening balances, and payment receipts.
+- **Supplier (Farmer) Ledgers**: Real-time tracking of payables, purchase receipts, and harvest payouts.
+- **Payment Recording**: Support for Cash, Bank Transfer, Cheque, and Online Transfer payments with instant running balance updates.
+- **PDF Ledger Statements**: Export detailed customer/supplier account statements to PDF or share via WhatsApp.
+
+### 📊 Analytics & Financial Reports
+- **Interactive Financial Charts**: Sales vs Mandi Commission line charts using `fl_chart`.
+- **Date Range Filters**: Filter reports by **All Time, Today, This Week, This Month, or Custom Date Range**.
+- **Financial Exports**: Export complete business summary, sales invoices, and shop expenses to **Excel (.xlsx)** or **PDF**.
+
+### 🔐 Security & Audit Logging
+- **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks.
+- **Audit Logging**: Comprehensive activity trail recording every user action (invoice created, member updated, invoice voided, role edited).
+
+---
+
+## 📦 Module Breakdown
+
+| Module | Features & Capabilities |
+| :--- | :--- |
+| **Authentication & Onboarding** | Owner registration, login, phone/email password reset, account activation, shop setup wizard. |
+| **Dashboard** | Dynamic role-based dashboard displaying quick-action tiles gated by user permissions. |
+| **Invoices** | Create sales invoices, Maund/KG weight calculator, thermal print, PDF generate, WhatsApp share, Void/Cancel invoice. |
+| **Purchase Orders** | Record incoming crops/goods from farmers/suppliers, stock auto-increment, pending payout tracking. |
+| **Customers** | Customer directory, running balance ledgers, customer profile detail, account statement exports. |
+| **Suppliers** | Supplier/Farmer directory, purchase history, payout tracking, ledger statement exports. |
+| **Products & Stock** | Commodity catalog (Wheat/گندم, Rice/چاول, Maize/مکئی, Cotton/کپاس), current stock tracking, min-stock alerts. |
+| **Expenses** | Record daily shop expenses (Labor/مزدوری, Freight/کرایہ, Rent, Electricity, Refreshments), expense categories. |
+| **Payments** | Record cash/bank receipts from customers and payouts to suppliers, auto-update running balances. |
+| **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
+| **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
+| **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |
+| **Audit Logs** | Real-time security audit log stream filtering actions by shop and team members. |
+
+---
+
+## ⚖️ Mandi Unit Calculation Engine
+
+In South Asian agricultural markets (Mandi), commodities are bought and sold based on **Manns (Maund = 40 KG)**:
+
+$$\text{Manns (من)} = \frac{\text{Total Weight in KG}}{40.0}$$
+
+$$\text{Line Total (PKR)} = \left(\frac{\text{Weight in KG}}{40.0}\right) \times \text{Unit Price per Mann}$$
+
+$$\text{Grand Total} = \text{Subtotal} + \text{Commission Amount} + \text{Expenses} - \text{Discount}$$
+
+$$\text{Pending Balance} = \text{Grand Total} - \text{Received Amount}$$
+
+---
+
+## 🔐 Role-Based Access Control (RBAC)
+
+The system supports granular permission strings evaluated at runtime and enforced by Supabase RLS:
+
+| Permission String | Description | Assigned Default Roles |
+| :--- | :--- | :--- |
+| `manage_settings` | Edit shop profile, logo, invoice prefix | Owner |
+| `manage_employees` | Invite, update, activate/deactivate staff | Owner, Manager |
+| `manage_roles` | Edit role permission matrix | Owner |
+| `manage_customers` | Add and edit buyer records | Owner, Manager, Accountant |
+| `manage_suppliers` | Add and edit farmer/supplier records | Owner, Manager, Accountant |
+| `manage_products` | Manage product catalog and pricing | Owner, Manager, Inventory Staff |
+| `create_invoice` | Generate sales invoices and void invoices | Owner, Manager, Sales Staff |
+| `create_purchase` | Add purchase orders from suppliers | Owner, Manager, Inventory Staff |
+| `manage_expenses` | Record and categorize shop expenses | Owner, Manager, Accountant |
+| `create_receipt` | Record customer/supplier payments | Owner, Accountant |
+| `view_ledger` | View Khata running balances and statements | Owner, Manager, Accountant |
+| `view_reports` | Access analytics and financial exports | Owner, Manager, Accountant |
+
+---
+
+## 📁 System Architecture
+
+```text
+mandi-flutter-app/
+├── android/                   # Android native project & build configuration
+├── docs/                      # Comprehensive technical documentation & guides
+│   ├── ARCHITECTURE.md        # Deep architectural design & database spec
+│   ├── FEATURES.md            # Complete feature walkthrough
+│   ├── SUPABASE_SETUP.md      # Database schema deployment guide
+│   └── USER_GUIDE.md          # End-user operational manual
+├── lib/
+│   ├── core/
+│   │   ├── theme/             # AppTheme, ThemeProvider, LocaleProvider
+│   │   ├── utils/             # MandiCalculator, ThermalReceiptService, ExcelExportService, InvoicePdfGenerator
+│   │   └── widgets/           # GlassCard, GlassContainer, ModuleTile, OfflineBanner
+│   ├── data/
+│   │   ├── models/            # Customer, Supplier, Product, Invoice, Expense, Payment, Shop, Member, Role
+│   │   └── services/          # SupabaseService (PostgreSQL streams & RPC triggers)
+│   ├── modules/               # Feature modules (Auth, Customers, Invoices, Reports, Settings, etc.)
+│   ├── providers/             # AuthProvider, ShopContextProvider
+│   └── routes/                # AppRoot gatekeeper & DashboardRouter
+└── supabase/                  # PostgreSQL database schema, Edge functions, & config
+    ├── functions/             # Deno Edge Functions (create-staff, create-customer, create-supplier)
+    └── schema.sql             # Complete database tables, RLS policies, and RPC functions
 ```
-Flutter app
-     │
-     ▼
-  Supabase
-     │
- ┌───┼────────┬─────────────┐
- │   │        │             │
-Auth │     Storage    Edge Functions
-     ▼                      │
- PostgreSQL         (create-staff, create-customer,
- (RLS-enforced          create-supplier — the only
-  multi-tenant           operations needing the
-  data)                  service-role key)
+
+---
+
+## 🚀 Getting Started & Installation
+
+### Prerequisites
+- Flutter SDK `>=3.3.0`
+- Android Studio / VS Code with Flutter extension
+- Supabase account with a active project
+
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/your-username/mandi-flutter-app.git
+cd mandi-flutter-app
 ```
 
-The core rule enforced end to end:
-
-```
-auth.uid()  →  shop_memberships (active)  →  shop_id + role + permissions
-                                                     ↓
-                                    every table's Row Level Security check
+### Step 2: Install Dependencies
+```bash
+flutter pub get
 ```
 
-No table trusts a `shop_id` sent by the client for authorization — every
-RLS policy re-derives it from `shop_memberships` against `auth.uid()`.
-Client-side filtering (`.eq('shop_id', ...)`) is there for correctness and
-performance, not security.
+### Step 3: Configure Supabase Credentials
+Configure `lib/supabase_config.dart` or supply credentials via `--dart-define` flags:
 
-## What's implemented
+```bash
+flutter run \
+  --dart-define=SUPABASE_URL=https://your-project.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=your-publishable-key
+```
 
-- **`supabase/schema.sql`** — full Postgres schema: `profiles`, `shops`,
-  `roles`, `shop_memberships`, `invitations`, `audit_logs`, plus scaffolded
-  business tables (`products`, `customers`, `suppliers`, `invoices`/
-  `invoice_items`, `purchase_orders`, `inventory_transactions`, `expenses`,
-  `payments`, `notifications`). RLS on every table. Two RPCs for the
-  operations that need atomicity: `create_shop_with_owner` and
-  `create_invoice_with_stock_deduction`.
-- **`supabase/functions/`** — three Edge Functions (`create-staff`,
-  `create-customer`, `create-supplier`) sharing one implementation.
-  Invitation-based: they call Supabase's `inviteUserByEmail`, which sends
-  an activation email and lets the person set their own password — no
-  plain-text password is ever created, shown, or shared by the shop.
-- **Flutter data layer**: `SupabaseService` (shop-scoped queries),
-  `AccountInviteService` (calls the three Edge Functions),
-  `ShopContextProvider` (resolves active shop + role + permissions),
-  `AuthProvider` (Supabase Auth wrapper, email and phone sign-in).
-- **Staff management**: list, add (invite), edit, deactivate/reactivate,
-  send password reset — fully wired to Supabase, no code left assuming
-  Firebase.
-- **Onboarding**: Welcome → Owner Registration → 4-step Shop Setup Wizard
-  → Dashboard, creating the shop via the `create_shop_with_owner` RPC.
+---
 
-## Why Supabase (what changed from the Firebase version)
+## 🛢️ Database Setup & Supabase RPCs
 
-- Firestore Security Rules → **Postgres Row Level Security**. Same idea
-  (never trust the client's claimed shop), expressed as SQL policies
-  instead of a separate rules DSL.
-- Firebase Cloud Functions (Admin SDK, to create staff Auth accounts
-  without signing the owner out) → **Supabase Edge Functions** using the
-  service-role key, same reasoning.
-- A genuine simplification: deactivating a member no longer needs a
-  privileged function call at all. Firebase's Firestore rules couldn't
-  cheaply express "is this membership currently active," so deactivation
-  had to also disable the person's Firebase Auth account via the Admin
-  SDK. Here, **every single RLS policy already requires
-  `status = 'active'`** before granting any shop data access — flipping
-  that one column via a plain, RLS-guarded update is enough to fully cut
-  someone off. Same for password resets: Supabase's own
-  `resetPasswordForEmail` needs no service-role key at all, so there's no
-  Edge Function for it either.
-- Temp passwords shown once by the owner → **secure invitation** (Supabase
-  sends the activation email; the person sets their own password). This
-  was also a requirement change, not just a backend swap.
-
-## Known gaps — read before running
-
-- **Phone-based invites aren't built.** `inviteUserByEmail` is what
-  Supabase provides out of the box; there's no equivalent one-call phone
-  invite. The Edge Functions currently require an email for every
-  staff/customer/supplier invite. A phone-first invite would need
-  `admin.createUser({phone, phone_confirm: true})` plus a custom SMS
-  step — flagged here rather than left silently unsupported.
-- **Customer/Supplier Flutter screens don't exist yet.** The Edge
-  Functions (`create-customer`, `create-supplier`) and their RLS policies
-  are real and ready; only the HTML prototype has UI for them so far. The
-  Staff screens are the template to copy.
-- **Products, Inventory, Invoices, Purchases, Expenses, Reports** have
-  real schema and RLS but no Flutter UI — same "Planned" status as in the
-  SRS, just now on the new backend. Note: `Product`, `Customer`,
-  `Supplier`, `Invoice` model classes (`lib/data/models/`) still use their
-  original camelCase `fromMap`/`toMap` keys from the Firebase version —
-  they compile fine today only because nothing calls them yet. Give them
-  the same snake_case pass `Shop`/`ShopMember`/`Role` already got (see
-  those three files for the pattern) before wiring up their screens.
-- `register_owner_page.dart` registers the owner by email (Supabase's
-  `signUp` needs one identifier); phone-first *login* is fully wired, but
-  a phone-first *signup* path for a brand-new owner isn't built yet.
-
-## Setup
-
-1. **Create a Supabase project** at supabase.com, then grab the Project
-   URL and anon key from Project Settings → API.
-
-2. **Run the schema**: Supabase Dashboard → SQL Editor → paste and run
-   `supabase/schema.sql` (or `supabase db push` with the Supabase CLI).
-
-3. **Deploy the Edge Functions** (requires the Supabase CLI):
-   ```
+1. Open **Supabase Dashboard → SQL Editor**.
+2. Paste and run the entire contents of `supabase/schema.sql`.
+3. Deploy Edge Functions in `supabase/functions/` using Supabase CLI:
+   ```bash
    supabase functions deploy create-staff
    supabase functions deploy create-customer
    supabase functions deploy create-supplier
    ```
-   These need `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and
-   `SUPABASE_SERVICE_ROLE_KEY` available as function secrets — the CLI
-   sets the first two automatically; set the service role key with:
-   ```
-   supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-   ```
-   Never put the service-role key anywhere in the Flutter app.
 
-4. **Configure email templates** (optional but recommended): Supabase
-   Dashboard → Authentication → Email Templates → customize the "Invite
-   user" template so it matches Mandi's branding.
+### Core RPC Functions
+- **`create_shop_with_owner`**: Creates shop, default roles, and owner membership atomically.
+- **`create_invoice_with_stock_deduction`**: Inserts invoice + line items and deducts product stock with `FOR UPDATE` row locks.
+- **`cancel_invoice_and_restore_stock`**: Voids invoice, restores stock, reverses ledger balance, and writes audit log.
 
-5. **Get Flutter platform folders** (this project only has `lib/`,
-   `pubspec.yaml`, `supabase/` — no `android/`/`ios/` yet):
-   ```
-   flutter create --org com.yourcompany --project-name mandi .
-   ```
-   Decline overwriting `lib/` and `pubspec.yaml` if prompted.
+---
 
-6. **Install dependencies**:
-   ```
-   flutter pub get
-   ```
+## 🖨️ Thermal POS & PDF Printing
 
-7. **Run it**, passing your Supabase credentials at build/run time (never
-   hardcode them into `lib/supabase_config.dart`):
-   ```
-   flutter run --dart-define=SUPABASE_URL=https://your-ref.supabase.co \
-               --dart-define=SUPABASE_ANON_KEY=your-anon-key
-   ```
+### Thermal Receipts
+- Supports **80mm Standard POS** and **58mm Mobile Bluetooth Roll** printers.
+- Configure roll paper width and receipt footer note in **Shop Settings**.
+- Uses `ThermalReceiptService.printThermalSlip` for direct printing.
 
-## Security testing checklist
+### A4 PDF Reports
+- Full A4 invoices via `InvoicePdfGenerator`.
+- Ledger account statements via `LedgerPdfGenerator`.
+- Executive financial reports generated via `ReportsPage`.
 
-Run these manually against two seeded shops before trusting this in
-production (see the bottom of `supabase/schema.sql` for the same list):
+---
 
-1. A member of Shop A can read Shop A's rows.
-2. The same user selects Shop B's rows → empty result.
-3. The same user tries to insert a row claiming `shop_id = Shop B` →
-   denied by RLS regardless of what the client sends.
-4. A customer account tries to read the full staff roster
-   (`shop_memberships`) → denied; they can still read only their own
-   membership row.
-5. A deactivated membership (`status = 'inactive'`) immediately loses all
-   access — no new login required, no Auth account changes needed.
+## 📚 Documentation Hub
 
-## Phone-first login + Forgot Password (this batch)
+For further details, refer to the documentation files in `docs/`:
+- 📖 [docs/FEATURES.md](file:///C:/Users/seith/StudioProjects/mandi-flutter-app/docs/FEATURES.md) — Comprehensive feature walkthrough.
+- 🏗️ [docs/ARCHITECTURE.md](file:///C:/Users/seith/StudioProjects/mandi-flutter-app/docs/ARCHITECTURE.md) — Technical architecture & database schema reference.
+- ⚙️ [docs/SUPABASE_SETUP.md](file:///C:/Users/seith/StudioProjects/mandi-flutter-app/docs/SUPABASE_SETUP.md) — Step-by-step database deployment guide.
+- 👤 [docs/USER_GUIDE.md](file:///C:/Users/seith/StudioProjects/mandi-flutter-app/docs/USER_GUIDE.md) — End-user operational manual for shop owners and munshis.
 
-- **`lib/core/utils/pk_phone.dart`** / **`pk_cnic.dart`** — live formatting,
-  validation, normalization (to E.164 for Auth calls) and masking, shared
-  by every screen that collects a phone number or CNIC.
-- **`welcome_page.dart`** — rebuilt to match the unified-login
-  architecture: "Login / Continue" is the one primary action; "Create New
-  Shop" is a secondary link, not an equal second button.
-- **`login_page.dart`** — one field accepts either a Pakistani phone
-  number (live-formatted as you type) or an email address, routing to
-  `AuthProvider.signInWithPhone` or `.signInWithEmail` accordingly. Nobody
-  picks a role or a shop here — same as the HTML prototype's architecture,
-  now real.
-- **Forgot Password**, three screens (`forgot_password_phone_page.dart` →
-  `forgot_password_otp_page.dart` → `forgot_password_new_password_page.dart`):
-  phone entry → 6-digit OTP (auto-advance, 30s resend countdown, wrong-code
-  state) → new password with a strength meter and visibility toggle. Uses
-  Supabase's `signInWithOtp`/`verifyOTP` for phone, which is also how
-  Supabase expects phone-based recovery to work (there's no phone
-  equivalent of an email reset link). Verifying the OTP creates a real
-  session, so "Password Updated" hands the person straight to their
-  dashboard via `AppRoot` rather than back to the login form.
-- **`register_owner_page.dart`** — mobile number now uses the same
-  live-formatted, validated phone field; added an optional CNIC field with
-  live formatting, persisted onto the owner's `shop_memberships` row after
-  shop creation.
+---
 
-## Suggested next batches
-
-1. Customer and Supplier Flutter screens, mirroring the Staff module.
-2. Products/Inventory screens on `SupabaseService.productsStream`.
-3. Invoice creation screen using `create_invoice_with_stock_deduction`.
-4. A phone-based invite path for staff/customer/supplier creation (the
-   Edge Functions are currently email-only — see "Known gaps" above).
-5. Roles editor UI (permissions are already fully modeled; no UI to
-   customize them per shop yet).
+## 📄 License
+This project is proprietary and confidential. All rights reserved.

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/data/models/invoice_model.dart';
@@ -164,7 +165,7 @@ class ThermalReceiptService {
     required String shopName,
     String? shopPhone,
     String? shopCity,
-    double rollWidthMm = 80,
+    double? rollWidthMm,
   }) async {
     var fullInvoice = invoice;
     if (fullInvoice.items.isEmpty && fullInvoice.id.isNotEmpty) {
@@ -173,13 +174,19 @@ class ThermalReceiptService {
       fullInvoice = fullInvoice.copyWith(items: fetchedItems);
     }
 
+    double width = rollWidthMm ?? 80;
+    if (rollWidthMm == null) {
+      final prefs = await SharedPreferences.getInstance();
+      width = prefs.getDouble('printer_roll_width') ?? 80;
+    }
+
     await Printing.layoutPdf(
       onLayout: (_) => generateThermalReceiptPdf(
         invoice: fullInvoice,
         shopName: shopName,
         shopPhone: shopPhone,
         shopCity: shopCity,
-        rollWidthMm: rollWidthMm,
+        rollWidthMm: width,
       ),
     );
   }

@@ -1,4 +1,4 @@
-package com.example.mandi
+package com.mandi.app
 
 import io.flutter.embedding.android.FlutterActivity
 

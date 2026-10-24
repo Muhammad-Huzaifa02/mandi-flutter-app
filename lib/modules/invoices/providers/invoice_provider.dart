@@ -101,6 +101,22 @@ class InvoiceProvider extends ChangeNotifier {
     return id;
   }
 
+  Future<void> cancelInvoice({
+    required String invoiceId,
+    required String actorId,
+    required String actorName,
+    String reason = '',
+  }) async {
+    if (_shopId == null) return;
+    await SupabaseService.cancelInvoice(
+      invoiceId: invoiceId,
+      shopId: _shopId!,
+      actorId: actorId,
+      actorName: actorName,
+      reason: reason,
+    );
+  }
+
   @override
   void dispose() {
     _sub?.cancel();
