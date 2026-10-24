@@ -183,7 +183,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             if (isVoid)
               Container(
                 width: double.infinity,
-                margin: const EdgeInsets.bottom(MSpacing.md),
+                margin: const EdgeInsets.only(bottom: MSpacing.md),
                 padding: const EdgeInsets.symmetric(
                     vertical: MSpacing.sm, horizontal: MSpacing.md),
                 decoration: BoxDecoration(
