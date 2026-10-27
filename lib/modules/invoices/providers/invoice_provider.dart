@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:mandi/core/utils/notification_service.dart';
 import 'package:mandi/data/models/invoice_model.dart';
@@ -63,33 +62,19 @@ class InvoiceProvider extends ChangeNotifier {
     final invoiceData = invoice.toMap();
     final itemsData = items.map((item) => item.toMap()).toList();
 
+    // The Postgres function create_invoice_with_stock_deduction now
+    // credits the customer's (and, for a consignment sale, the
+    // supplier's) running_balance itself, atomically with the invoice
+    // insert and stock deduction — see supabase/schema.sql. Doing it
+    // here as a second client-side step used to race with a concurrent
+    // invoice for the same customer (read balance, then write it back —
+    // no lock in between) and silently dropped the update entirely if
+    // anything failed (catch (_) {}), which is a real way for a
+    // customer's Khata to drift from their actual invoices.
     final id = await SupabaseService.createInvoiceWithStockDeduction(
       invoiceData: invoiceData,
       items: itemsData,
     );
-
-    // Auto-update customer Khata running_balance if invoice has a pending amount
-    if (invoice.customerId != null &&
-        invoice.customerId!.isNotEmpty &&
-        invoice.pendingAmount > 0) {
-      try {
-        final client = Supabase.instance.client;
-        final customerRow = await client
-            .from('customers')
-            .select('running_balance')
-            .eq('id', invoice.customerId!)
-            .maybeSingle();
-
-        if (customerRow != null) {
-          final currentBalance =
-              (customerRow['running_balance'] as num?)?.toDouble() ?? 0;
-          await client
-              .from('customers')
-              .update({'running_balance': currentBalance + invoice.pendingAmount})
-              .eq('id', invoice.customerId!);
-        }
-      } catch (_) {}
-    }
 
     try {
       await NotificationService.showInvoiceCreatedNotification(

@@ -121,6 +121,7 @@ class Invoice {
   final double total;
   final double receivedAmount;
   final double pendingAmount;
+  final double supplierPayout; // consignment-sale net payout credited to the supplier
   final PaymentMethod paymentMethod;
   final String status; // 'unpaid' | 'partial' | 'paid' | 'void'
   final String? createdBy;
@@ -142,6 +143,7 @@ class Invoice {
     this.total = 0,
     this.receivedAmount = 0,
     this.pendingAmount = 0,
+    this.supplierPayout = 0,
     this.paymentMethod = PaymentMethod.cash,
     this.status = 'unpaid',
     this.createdBy,
@@ -171,6 +173,7 @@ class Invoice {
       total: tot,
       receivedAmount: rec,
       pendingAmount: pend,
+      supplierPayout: (d['supplier_payout'] as num?)?.toDouble() ?? 0,
       paymentMethod: PaymentMethodX.fromString(d['payment_method'] as String?),
       status: d['status'] as String? ?? 'unpaid',
       createdBy: d['created_by'] as String?,
@@ -199,6 +202,8 @@ class Invoice {
         'received_amount': receivedAmount,
         'pendingAmount': pendingAmount,
         'pending_amount': pendingAmount,
+        'supplierPayout': supplierPayout,
+        'supplier_payout': supplierPayout,
         'paymentMethod': paymentMethod.toDbString(),
         'payment_method': paymentMethod.toDbString(),
         'status': status,
@@ -226,6 +231,7 @@ class Invoice {
         total: total,
         receivedAmount: receivedAmount,
         pendingAmount: pendingAmount,
+        supplierPayout: supplierPayout,
         paymentMethod: paymentMethod,
         status: status ?? this.status,
         createdBy: createdBy,

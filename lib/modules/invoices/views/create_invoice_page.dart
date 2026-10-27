@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
@@ -389,6 +388,15 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         total: _grandTotal,
         receivedAmount: _receivedAmount,
         pendingAmount: _pendingAmount,
+        // Option A: Consignment Sale — net payout owed to the supplier.
+        // create_invoice_with_stock_deduction credits this to
+        // suppliers.running_balance atomically with the invoice and
+        // stock changes (see supabase/schema.sql); it used to be applied
+        // here instead, as a separate select-then-update with no lock —
+        // two near-simultaneous invoices for the same supplier could
+        // read the same starting balance and the slower one's credit
+        // would be lost.
+        supplierPayout: _invoiceType == 'supplier' ? _netSupplierPayout : 0,
         paymentMethod: _paymentMethod,
       );
 
@@ -396,24 +404,6 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         invoice: invoice,
         items: _items,
       );
-
-      // If supplier is selected (Option A: Consignment Sale), credit net payout to supplier running balance
-      if (_invoiceType == 'supplier' && _selectedSupplier != null) {
-        final netPayout = _netSupplierPayout;
-        if (netPayout > 0) {
-          final client = Supabase.instance.client;
-          final current = (await client
-              .from('suppliers')
-              .select('running_balance')
-              .eq('id', _selectedSupplier!.id)
-              .single())['running_balance'] as num? ?? 0;
-
-          await client
-              .from('suppliers')
-              .update({'running_balance': current.toDouble() + netPayout})
-              .eq('id', _selectedSupplier!.id);
-        }
-      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

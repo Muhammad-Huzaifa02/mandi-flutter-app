@@ -294,6 +294,14 @@ create table if not exists public.invoices (
   created_at      timestamptz not null default now(),
   unique (shop_id, invoice_number)
 );
+-- Added after the fact: consignment-sale (supplier) invoices. The app's
+-- Dart side (Invoice model, create_invoice_page.dart) and the
+-- cancel_invoice_and_restore_stock RPC already assumed these two columns
+-- existed; they never did, so cancelling ANY invoice crashed at runtime
+-- the instant PL/pgSQL tried to read v_invoice.supplier_id from a record
+-- that had no such field.
+alter table public.invoices add column if not exists supplier_id uuid references public.suppliers(id);
+alter table public.invoices add column if not exists supplier_payout numeric default 0;
 create index if not exists idx_invoices_shop on public.invoices(shop_id);
 
 create table if not exists public.invoice_items (
@@ -485,11 +493,13 @@ begin
   end loop;
 
   insert into public.invoices (
-    shop_id, customer_id, invoice_number, subtotal, commission, expenses,
-    discount, total, received_amount, pending_amount, payment_method, created_by
+    shop_id, customer_id, supplier_id, invoice_number, subtotal, commission,
+    expenses, discount, total, received_amount, pending_amount,
+    supplier_payout, payment_method, created_by
   ) values (
     v_shop_id,
     nullif(p_invoice->>'customerId','')::uuid,
+    nullif(p_invoice->>'supplierId','')::uuid,
     p_invoice->>'invoiceNumber',
     coalesce((p_invoice->>'subtotal')::numeric, 0),
     coalesce((p_invoice->>'commission')::numeric, 0),
@@ -498,6 +508,7 @@ begin
     coalesce((p_invoice->>'total')::numeric, 0),
     coalesce((p_invoice->>'receivedAmount')::numeric, 0),
     coalesce((p_invoice->>'pendingAmount')::numeric, 0),
+    coalesce((p_invoice->>'supplierPayout')::numeric, 0),
     coalesce(p_invoice->>'paymentMethod', 'cash'),
     auth.uid()
   ) returning id into v_invoice_id;
@@ -524,6 +535,27 @@ begin
       'sale', v_invoice_id::text, auth.uid()
     );
   end loop;
+
+  -- Customer Khata: credit the pending amount atomically. A plain UPDATE
+  -- takes a row lock for the statement's duration, so two simultaneous
+  -- invoices for the same customer can't read-then-write and clobber each
+  -- other — this replaces a separate client-side select-then-update that
+  -- had exactly that race (and silently swallowed any failure).
+  if nullif(p_invoice->>'customerId','') is not null
+     and coalesce((p_invoice->>'pendingAmount')::numeric, 0) > 0 then
+    update public.customers
+      set running_balance = running_balance + (p_invoice->>'pendingAmount')::numeric
+      where id = (p_invoice->>'customerId')::uuid and shop_id = v_shop_id;
+  end if;
+
+  -- Supplier consignment payout: same atomicity fix, for the net amount
+  -- owed to the supplier on a consignment sale.
+  if nullif(p_invoice->>'supplierId','') is not null
+     and coalesce((p_invoice->>'supplierPayout')::numeric, 0) > 0 then
+    update public.suppliers
+      set running_balance = running_balance + (p_invoice->>'supplierPayout')::numeric
+      where id = (p_invoice->>'supplierId')::uuid and shop_id = v_shop_id;
+  end if;
 
   return v_invoice_id;
 end;
@@ -580,10 +612,17 @@ begin
       where id = v_invoice.customer_id and shop_id = p_shop_id;
   end if;
 
-  -- 3. Reverse running balance on supplier if applicable
-  if v_invoice.supplier_id is not null and v_invoice.pending_amount > 0 then
+  -- 3. Reverse running balance on supplier — by supplier_payout, the
+  --    amount actually credited at creation time (see
+  --    create_invoice_with_stock_deduction). This was previously reversed
+  --    using pending_amount, a different figure for a consignment-sale
+  --    invoice (pending_amount is customer-side: grand total minus what
+  --    the CUSTOMER paid; supplier_payout is subtotal minus commission
+  --    minus expenses) — that mismatch would have left the supplier's
+  --    ledger wrong after every cancellation.
+  if v_invoice.supplier_id is not null and v_invoice.supplier_payout > 0 then
     update public.suppliers
-      set running_balance = greatest(0, running_balance - v_invoice.pending_amount)
+      set running_balance = greatest(0, running_balance - v_invoice.supplier_payout)
       where id = v_invoice.supplier_id and shop_id = p_shop_id;
   end if;
 
