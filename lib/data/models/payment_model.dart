@@ -39,10 +39,16 @@ class Payment {
             : null,
       );
 
+  /// Carries both key conventions: snake_case for any direct table read/
+  /// write, camelCase for record_payment's jsonb argument (see
+  /// SupabaseService.addPayment and supabase/schema.sql).
   Map<String, dynamic> toMap() => {
         'shop_id': shopId,
+        'shopId': shopId,
         'party_type': partyType,
+        'partyType': partyType,
         'party_id': partyId,
+        'partyId': partyId,
         'amount': amount,
         'method': method,
         'reference': reference,

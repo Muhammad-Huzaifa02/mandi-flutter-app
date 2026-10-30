@@ -642,6 +642,88 @@ end;
 $$;
 
 -- ============================================================================
+-- 8d. RPC — record_payment
+--    Replaces SupabaseService.addPayment's old two-step client-side
+--    pattern (insert the payment row, then separately select-then-update
+--    running_balance). That pattern had two real bugs:
+--      1. No lock between the select and the update, so two near-
+--         simultaneous payments for the same customer/supplier could
+--         read the same starting balance and the slower write would be
+--         lost — a payment that silently never reduced what's owed.
+--      2. The balance update ran as the calling user, subject to RLS's
+--         "manage_customers"/"manage_suppliers can write" policy — NOT
+--         "create_receipt", the permission that actually gates this
+--         action. A member with create_receipt but not manage_customers
+--         (explicitly supported via shop_memberships.custom_permissions,
+--         see role_model.dart) would have the payment insert succeed and
+--         the balance update silently affect zero rows: PostgREST does
+--         not raise an error when RLS blocks an UPDATE, it just updates
+--         nothing. The payment would exist with no visible error, and
+--         the ledger would quietly be wrong.
+--    security definer + checking has_permission(shop_id,'create_receipt')
+--    directly fixes both: one atomic statement (a plain UPDATE takes a
+--    row lock for its duration — no explicit FOR UPDATE needed), and the
+--    right permission is what's actually enforced.
+-- ============================================================================
+create or replace function public.record_payment(
+  p_payment jsonb  -- {shopId, partyType, partyId, amount, method, reference}
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_payment_id uuid;
+  v_shop_id uuid := (p_payment->>'shopId')::uuid;
+  v_party_type text := p_payment->>'partyType';
+  v_party_id uuid := (p_payment->>'partyId')::uuid;
+  v_amount numeric := coalesce((p_payment->>'amount')::numeric, 0);
+begin
+  if not public.has_permission(v_shop_id, 'create_receipt') then
+    raise exception 'Missing permission: create_receipt';
+  end if;
+
+  if v_amount <= 0 then
+    raise exception 'Payment amount must be greater than zero';
+  end if;
+
+  if v_party_type not in ('customer', 'supplier') then
+    raise exception 'Unknown party_type: %', v_party_type;
+  end if;
+
+  insert into public.payments (
+    shop_id, party_type, party_id, amount, method, reference, created_by
+  ) values (
+    v_shop_id, v_party_type, v_party_id, v_amount,
+    coalesce(p_payment->>'method', 'cash'),
+    p_payment->>'reference',
+    auth.uid()
+  ) returning id into v_payment_id;
+
+  if v_party_type = 'customer' then
+    update public.customers
+      set running_balance = running_balance - v_amount
+      where id = v_party_id and shop_id = v_shop_id;
+  else
+    update public.suppliers
+      set running_balance = running_balance - v_amount
+      where id = v_party_id and shop_id = v_shop_id;
+  end if;
+
+  insert into public.audit_logs (
+    shop_id, actor_id, action, entity_type, entity_id, summary
+  ) values (
+    v_shop_id, auth.uid(), 'payment_recorded', 'payment', v_payment_id::text,
+    'Recorded a ' || coalesce(p_payment->>'method', 'cash') || ' payment of ' ||
+      v_amount::text || ' for ' || v_party_type || ' ' || v_party_id::text
+  );
+
+  return v_payment_id;
+end;
+$$;
+
+-- ============================================================================
 -- 9. ROW LEVEL SECURITY
 -- ============================================================================
 alter table public.profiles              enable row level security;
@@ -760,21 +842,29 @@ drop policy if exists "products: members can read" on public.products;
 create policy "products: members can read" on public.products
   for select using (public.is_shop_member(shop_id));
 
+-- Restored: this had regressed to is_shop_member-only (the comment above
+-- still described the intended "writable only with the matching
+-- permission" behavior, but the policy itself no longer enforced it) —
+-- any active shop member, including a customer or supplier role with no
+-- permissions at all, could create, edit, or delete products.
 drop policy if exists "products: manage_products can write" on public.products;
 drop policy if exists "products: members can write" on public.products;
-create policy "products: members can write" on public.products
-  for all using (public.is_shop_member(shop_id))
-  with check (public.is_shop_member(shop_id));
+create policy "products: manage_products can write" on public.products
+  for all using (public.has_permission(shop_id, 'manage_products'))
+  with check (public.has_permission(shop_id, 'manage_products'));
 
 drop policy if exists "customers: members can read" on public.customers;
 create policy "customers: members can read" on public.customers
   for select using (public.is_shop_member(shop_id));
 
+-- Restored: same regression as products above — any active shop member,
+-- including a customer themselves, could edit or delete ANY customer
+-- record in the shop (their own or someone else's).
 drop policy if exists "customers: manage_customers can write" on public.customers;
 drop policy if exists "customers: members can write" on public.customers;
-create policy "customers: members can write" on public.customers
-  for all using (public.is_shop_member(shop_id))
-  with check (public.is_shop_member(shop_id));
+create policy "customers: manage_customers can write" on public.customers
+  for all using (public.has_permission(shop_id, 'manage_customers'))
+  with check (public.has_permission(shop_id, 'manage_customers'));
 
 drop policy if exists "customers: self read" on public.customers;
 create policy "customers: self read" on public.customers
@@ -784,11 +874,14 @@ drop policy if exists "suppliers: members can read" on public.suppliers;
 create policy "suppliers: members can read" on public.suppliers
   for select using (public.is_shop_member(shop_id));
 
+-- Restored: same regression as products/customers above — any active
+-- shop member, including a supplier themselves, could edit or delete
+-- ANY supplier record in the shop.
 drop policy if exists "suppliers: manage_suppliers can write" on public.suppliers;
 drop policy if exists "suppliers: members can write" on public.suppliers;
-create policy "suppliers: members can write" on public.suppliers
-  for all using (public.is_shop_member(shop_id))
-  with check (public.is_shop_member(shop_id));
+create policy "suppliers: manage_suppliers can write" on public.suppliers
+  for all using (public.has_permission(shop_id, 'manage_suppliers'))
+  with check (public.has_permission(shop_id, 'manage_suppliers'));
 
 drop policy if exists "suppliers: self read" on public.suppliers;
 create policy "suppliers: self read" on public.suppliers
@@ -862,11 +955,17 @@ create policy "payments: members can read" on public.payments
     party_id in (select id from public.shop_memberships where user_id = auth.uid())
   );
 
+-- No INSERT/UPDATE/DELETE policy on this table at all, intentionally.
+-- Payments are created exclusively through the record_payment RPC
+-- (security definer, checks has_permission(shop_id,'create_receipt')
+-- itself and bypasses RLS to do its one atomic insert-plus-balance-
+-- update). Dropping the old write policy closes a real hole: it only
+-- checked is_shop_member, so any active member of the shop — including
+-- a customer or supplier role, which gets no permissions by default —
+-- could previously insert, edit, or delete any payment record, their
+-- own or anyone else's, with no permission or ownership check at all.
 drop policy if exists "payments: create_receipt can write" on public.payments;
 drop policy if exists "payments: members can write" on public.payments;
-create policy "payments: members can write" on public.payments
-  for all using (public.is_shop_member(shop_id))
-  with check (public.is_shop_member(shop_id));
 
 drop policy if exists "notifications: recipient can read" on public.notifications;
 create policy "notifications: recipient can read" on public.notifications

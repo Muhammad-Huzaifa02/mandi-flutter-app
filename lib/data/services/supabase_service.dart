@@ -337,36 +337,28 @@ class SupabaseService {
           .eq('shop_id', shopId)
           .order('created_at', ascending: false);
 
-  static Future<void> addPayment(Map<String, dynamic> data) async {
-    await _client.from('payments').insert(data);
+  /// [data] is a payment map in either key convention (Payment.toMap()
+  /// sends both snake_case and camelCase) — only the camelCase keys are
+  /// read here, since record_payment parses its jsonb argument itself.
+  static Future<String> addPayment(Map<String, dynamic> data) async {
+    final shopId = data['shopId'] ?? data['shop_id'];
+    final partyType = data['partyType'] ?? data['party_type'];
+    final partyId = data['partyId'] ?? data['party_id'];
+    final amount = data['amount'];
+    final method = data['method'];
+    final reference = data['reference'];
 
-    final partyType = data['party_type'] as String;
-    final partyId = data['party_id'] as String;
-    final amount = (data['amount'] as num).toDouble();
-
-    if (partyType == 'customer') {
-      final customer = await _client
-          .from('customers')
-          .select('running_balance')
-          .eq('id', partyId)
-          .maybeSingle();
-      final current = (customer?['running_balance'] as num?)?.toDouble() ?? 0;
-      await _client
-          .from('customers')
-          .update({'running_balance': current - amount})
-          .eq('id', partyId);
-    } else if (partyType == 'supplier') {
-      final supplier = await _client
-          .from('suppliers')
-          .select('running_balance')
-          .eq('id', partyId)
-          .maybeSingle();
-      final current = (supplier?['running_balance'] as num?)?.toDouble() ?? 0;
-      await _client
-          .from('suppliers')
-          .update({'running_balance': current - amount})
-          .eq('id', partyId);
-    }
+    final id = await _client.rpc('record_payment', params: {
+      'p_payment': {
+        'shopId': shopId,
+        'partyType': partyType,
+        'partyId': partyId,
+        'amount': amount,
+        'method': method,
+        'reference': reference,
+      },
+    }) as String;
+    return id;
   }
 
   static Future<String> ensureCustomerRow({
