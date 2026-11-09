@@ -18,9 +18,158 @@ import 'package:mandi/modules/roles/views/roles_list_page.dart';
 import 'package:mandi/modules/audit_logs/views/audit_log_list_page.dart';
 import 'package:mandi/modules/settings/views/shop_settings_page.dart';
 import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dart';
+import 'package:mandi/modules/reports/views/roznamcha_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
+
+  void _showShopSwitcherBottomSheet(BuildContext context) {
+    final shopCtx = context.read<ShopContextProvider>();
+    final currentShopId = shopCtx.currentShopId;
+    final available = shopCtx.availableShops;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: MColors.surfaceDark,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(MSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Switch Mandi Shop',
+                          style: MText.titleLg.copyWith(color: Colors.white),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'تبدیل غلہ منڈی دکان',
+                          style: MText.caption.copyWith(color: MColors.gold),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      onPressed: () => Navigator.pop(sheetCtx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: MSpacing.md),
+                if (available.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: MSpacing.md),
+                    child: Text(
+                      'No other shops available for this account.',
+                      style: MText.bodyMd.copyWith(color: Colors.grey),
+                    ),
+                  )
+                else
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: available.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: MSpacing.xs),
+                      itemBuilder: (ctx, i) {
+                        final s = available[i];
+                        final isSelected = s.id == currentShopId;
+                        return GlassCard(
+                          padding: const EdgeInsets.all(MSpacing.sm),
+                          borderColor: isSelected ? MColors.gold : null,
+                          onTap: () async {
+                            Navigator.pop(sheetCtx);
+                            if (!isSelected) {
+                              await shopCtx.switchShop(s.id);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Switched to ${s.name}'),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundColor: isSelected
+                                    ? MColors.gold.withValues(alpha: 0.2)
+                                    : Colors.white10,
+                                backgroundImage: (s.logoUrl != null &&
+                                        s.logoUrl!.isNotEmpty)
+                                    ? NetworkImage(s.logoUrl!)
+                                    : null,
+                                child: (s.logoUrl == null ||
+                                        s.logoUrl!.isEmpty)
+                                    ? Text(
+                                        s.name.isNotEmpty
+                                            ? s.name[0].toUpperCase()
+                                            : 'S',
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? MColors.gold
+                                              : Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              const SizedBox(width: MSpacing.sm),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      s.name,
+                                      style: MText.bodyMd.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                    if (s.city.isNotEmpty)
+                                      Text(
+                                        'Grain Market, ${s.city}',
+                                        style: MText.caption.copyWith(
+                                          color: MColors.textOnDarkSub,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: MColors.gold,
+                                  size: 22,
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   void _editProfileDialog(BuildContext context) {
     final shopCtx = context.read<ShopContextProvider>();
@@ -105,24 +254,48 @@ class DashboardPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            if (shop?.logoUrl != null && shop!.logoUrl!.isNotEmpty) ...[
-              CircleAvatar(
-                radius: 16,
-                backgroundImage: NetworkImage(shop.logoUrl!),
-              ),
-              const SizedBox(width: MSpacing.xs),
-            ],
-            Expanded(
-              child: Text(
-                shop?.name ?? 'Mandi',
-                overflow: TextOverflow.ellipsis,
-              ),
+        title: InkWell(
+          onTap: shopCtx.hasMultipleShops
+              ? () => _showShopSwitcherBottomSheet(context)
+              : null,
+          borderRadius: MRadius.sm,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (shop?.logoUrl != null && shop!.logoUrl!.isNotEmpty) ...[
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundImage: NetworkImage(shop.logoUrl!),
+                  ),
+                  const SizedBox(width: MSpacing.xs),
+                ],
+                Flexible(
+                  child: Text(
+                    shop?.name ?? 'Mandi',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (shopCtx.hasMultipleShops) ...[
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 20,
+                    color: MColors.gold,
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
         ),
         actions: [
+          if (shopCtx.hasMultipleShops)
+            IconButton(
+              icon: const Icon(Icons.swap_horiz_rounded),
+              tooltip: 'Switch Shop (تبدیل دکان)',
+              onPressed: () => _showShopSwitcherBottomSheet(context),
+            ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -278,6 +451,17 @@ class DashboardPage extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ReportsPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('view_reports') ||
+                    shopCtx.hasPermission('view_ledger'))
+                  _ManageTile(
+                    icon: Icons.menu_book_outlined,
+                    label: 'Roznamcha',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const RoznamchaPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_roles'))

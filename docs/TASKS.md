@@ -31,3 +31,12 @@
 - [x] **DSA Algorithmic Ledger Engine**: `LedgerCalculator` with chronological two-pointer merge ($O((N+M)\log(N+M))$), prefix-sum progressive running balance accumulator ($O(N)$), and binary search range queries ($O(\log N)$).
 - [x] **Itemized Khata A4 PDF Statements**: Complete multi-page itemized PDF statement generation with debit/credit breakdown, running balance history, and verification seals.
 - [x] **Flutter Web Support**: Cross-platform Web compilation (`flutter build web`) and web password setup.
+- [x] **Multi-Shop Context Switcher UI**: Active shop switching modal sheet and AppBar dropdown in `DashboardPage` driven by `ShopContextProvider._availableShops`. Seamlessly re-points all proxy providers across shops without page reloads.
+- [x] **Daily Cash Day Book (*Roznamcha / روزنامچہ*)**: Complete physical cash drawer reconciliation engine (`RoznamchaCalculator`), interactive UI (`RoznamchaPage`), and official A4 PDF printable register (`RoznamchaPdfGenerator`). Tracks morning opening cash, daily cash inflows (sales + khata collections), cash outflows (supplier payouts + procurement payments + daily expenses), net cash movement, and expected closing drawer balance.
+
+## In-Progress & Upcoming ERP Roadmap (Sprint 2)
+
+- [ ] **Consignment Lot Tracking (*Dheri / ڈھیری*) & Auction Boli Sheet**: Lot-wise commission agent consignment arrival tracking with lot number, bags, estimated weight, farmer assignment, and auction boli sheet generation.
+- [ ] **Automated Payment Recovery Messaging**: Urdu & English WhatsApp/SMS Khata reminders with dynamic balance amounts and payment QR codes.
+- [ ] **Bank Accounts & Cheque Clearance Ledger**: Reconcile bank transfers, post-dated cheques (*PDC*), and Mandi commission deposits against physical cash.
+

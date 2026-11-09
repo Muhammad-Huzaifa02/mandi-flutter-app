@@ -111,6 +111,8 @@ class MText {
       fontFamily: _font, fontSize: 26, fontWeight: FontWeight.w700);
   static const titleLg = TextStyle(
       fontFamily: _font, fontSize: 20, fontWeight: FontWeight.w600);
+  static const titleMd = TextStyle(
+      fontFamily: _font, fontSize: 17, fontWeight: FontWeight.w600);
   static const bodyMd = TextStyle(
       fontFamily: _font, fontSize: 15, fontWeight: FontWeight.w400);
   static const bodySm = TextStyle(
@@ -119,6 +121,8 @@ class MText {
       fontFamily: _font, fontSize: 13, fontWeight: FontWeight.w600);
   static const labelSm = TextStyle(
       fontFamily: _font, fontSize: 11, fontWeight: FontWeight.w500);
+  static const caption = TextStyle(
+      fontFamily: _font, fontSize: 11, fontWeight: FontWeight.w400);
 }
 
 class AppTheme {

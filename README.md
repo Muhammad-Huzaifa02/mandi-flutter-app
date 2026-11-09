@@ -25,9 +25,14 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 ## 🌟 Key Features Overview
 
 ### 🏪 Multi-Tenant & Multi-Shop Architecture
-- **Multi-Shop Management**: Manage one or multiple commission shops under a single account.
+- **Multi-Shop Management & Active Switcher**: Manage multiple commission shops under a single account with an instant shop switcher bottom sheet that re-points all data providers across shops seamlessly.
 - **Onboarding Wizard**: Guided shop setup wizard with logo upload, commission percentage defaults, and invoice prefix configuration.
 - **Role Router**: Intelligent `AppRoot` gatekeeper routing owners/managers, accountants (munshis), buyers (customers), and farmers (suppliers) to their custom dedicated dashboards.
+
+### 💰 Daily Cash Day Book (*Roznamcha / روزنامچہ*)
+- **Physical Drawer Reconciliation**: Accurate daily cash book reconciling morning opening cash in drawer (*گلہ*), cash sales receipts, customer khata recoveries, supplier disbursements, procurement payments, and daily expenses.
+- **Algorithmic Chronological Journal**: $O(M \log M)$ merge sorting of all daily financial streams with $O(M)$ progressive running cash balances.
+- **Official A4 PDF Printouts**: Mandi-standard daily cash sheets with complete inflow/outflow tables, reconciliation summary box, and cashier/proprietor signature seals.
 
 ### ⚖️ Mandi Unit Conversions & Invoicing
 - **Automatic Maund Calculations**: Convert **Kilograms (KG)** to **Manns (من = 40 KG)** automatically.
@@ -69,6 +74,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Products & Stock** | Commodity catalog (Wheat/گندم, Rice/چاول, Maize/مکئی, Cotton/کپاس), current stock tracking, min-stock alerts. |
 | **Expenses** | Record daily shop expenses (Labor/مزدوری, Freight/کرایہ, Rent, Electricity, Refreshments), expense categories. |
 | **Payments** | Record cash/bank receipts from customers and payouts to suppliers, auto-update running balances. |
+| **Daily Cash Book (Roznamcha)** | Daily morning drawer opening cash, cash sales, khata recoveries, disbursements, operating expenses, and closing balance with A4 PDF printing. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

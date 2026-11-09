@@ -22,6 +22,7 @@ class ShopContextProvider extends ChangeNotifier {
   String? _currentShopId;
   Shop? _currentShop;
   List<ShopMember> _memberships = []; // every shop this user belongs to
+  List<Shop> _availableShops = [];
   ShopMember? _currentMember;
   Role? _currentRole;
   bool _isLoading = true;
@@ -31,6 +32,7 @@ class ShopContextProvider extends ChangeNotifier {
   ShopMember? get currentMember => _currentMember;
   Role? get currentRole => _currentRole;
   List<ShopMember> get memberships => List.unmodifiable(_memberships);
+  List<Shop> get availableShops => List.unmodifiable(_availableShops);
   bool get isLoading => _isLoading;
   bool get hasShop => _currentShopId != null && _currentMember != null;
 
@@ -38,6 +40,11 @@ class ShopContextProvider extends ChangeNotifier {
   /// when the account genuinely has 2+ active memberships. Everyone else
   /// skips straight to their one dashboard.
   bool get hasMultipleShops => _memberships.length > 1;
+
+  ShopMember? memberForShop(String shopId) {
+    final matches = _memberships.where((m) => m.shopId == shopId);
+    return matches.isNotEmpty ? matches.first : null;
+  }
 
   /// permissions() already accounts for a member's custom_permissions
   /// override (see Role/ShopMember) — screens should call hasPermission,
@@ -79,9 +86,21 @@ class ShopContextProvider extends ChangeNotifier {
       _currentShop = null;
       _currentMember = null;
       _currentRole = null;
+      _availableShops = [];
       _isLoading = false;
       notifyListeners();
       return;
+    }
+
+    final shopIds = _memberships.map((m) => m.shopId).toSet().toList();
+    try {
+      final shopRows =
+          await _client.from('shops').select().inFilter('id', shopIds);
+      _availableShops = (shopRows as List)
+          .map((r) => Shop.fromMap(r['id'] as String, r as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      _availableShops = [];
     }
 
     final prefs = await SharedPreferences.getInstance();
@@ -137,6 +156,7 @@ class ShopContextProvider extends ChangeNotifier {
   /// becomes active immediately without re-querying.
   void adoptNewShop(Shop shop, ShopMember ownerMembership, Role ownerRole) {
     _memberships = [..._memberships, ownerMembership];
+    _availableShops = [..._availableShops, shop];
     _currentMember = ownerMembership;
     _currentShopId = ownerMembership.shopId;
     _currentShop = shop;
@@ -164,6 +184,7 @@ class ShopContextProvider extends ChangeNotifier {
     _currentShopId = null;
     _currentShop = null;
     _memberships = [];
+    _availableShops = [];
     _currentMember = null;
     _currentRole = null;
     _isLoading = false;

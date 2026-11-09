@@ -14,6 +14,7 @@ import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
 import 'package:mandi/modules/expenses/providers/expense_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
+import 'package:mandi/modules/reports/views/roznamcha_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -272,6 +273,14 @@ class _ReportsPageState extends State<ReportsPage> {
               ),
             ],
           ),
+          IconButton(
+            icon: const Icon(Icons.menu_book_outlined, color: MColors.gold),
+            tooltip: 'Daily Cash Book (روزنامچہ)',
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RoznamchaPage()),
+            ),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -279,6 +288,69 @@ class _ReportsPageState extends State<ReportsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Quick Roznamcha Action Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: MColors.gold.withValues(alpha: 0.3),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RoznamchaPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: MColors.gold.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.menu_book_outlined,
+                      color: MColors.gold,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Daily Cash Book',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'روزنامچہ',
+                              style: MText.caption.copyWith(
+                                color: MColors.gold,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Reconcile morning cash drawer, receipts, payments & closing balance',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.md),
+
             // Period Filter Choice Chips
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
