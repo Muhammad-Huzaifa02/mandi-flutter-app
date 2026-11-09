@@ -21,6 +21,7 @@ import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dar
 import 'package:mandi/modules/reports/views/roznamcha_page.dart';
 import 'package:mandi/modules/consignment/views/consignment_list_page.dart';
 import 'package:mandi/modules/customers/views/payment_recovery_page.dart';
+import 'package:mandi/modules/banking/views/bank_ledger_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -487,6 +488,18 @@ class DashboardPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (_) => const RoznamchaPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('view_ledger') ||
+                    shopCtx.hasPermission('create_receipt') ||
+                    shopCtx.hasPermission('view_reports'))
+                  _ManageTile(
+                    icon: Icons.account_balance_outlined,
+                    label: 'Bank & Cheques',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const BankLedgerPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_roles'))

@@ -15,6 +15,7 @@ import 'package:mandi/modules/expenses/providers/expense_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
 import 'package:mandi/modules/reports/views/roznamcha_page.dart';
+import 'package:mandi/modules/banking/views/bank_ledger_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -334,6 +335,69 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Reconcile morning cash drawer, receipts, payments & closing balance',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Bank Accounts & Cheques Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: MColors.primary.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const BankLedgerPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: MColors.primary.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.account_balance_outlined,
+                      color: MColors.primaryLight,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Bank Accounts & Cheques',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'بینکاری و چیک',
+                              style: MText.caption.copyWith(
+                                color: MColors.primaryLight,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Track Post-Dated Cheques (PDC), clearance statuses & bank balances',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),

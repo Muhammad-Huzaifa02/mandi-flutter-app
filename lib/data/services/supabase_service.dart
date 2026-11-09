@@ -352,6 +352,128 @@ class SupabaseService {
     }).eq('id', lotId).eq('shop_id', shopId);
   }
 
+  // ── Bank Accounts & Cheques (PDC / بینکاری اور چیک رجسٹر) ─────────────
+
+  static Stream<List<Map<String, dynamic>>> bankAccountsStream(String shopId) =>
+      _client
+          .from('bank_accounts')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('bank_name', ascending: true);
+
+  static Future<List<Map<String, dynamic>>> getBankAccounts(String shopId) =>
+      _client
+          .from('bank_accounts')
+          .select()
+          .eq('shop_id', shopId)
+          .order('bank_name', ascending: true);
+
+  static Future<String> addBankAccount(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('bank_accounts')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateBankAccount({
+    required String id,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    await _client
+        .from('bank_accounts')
+        .update(data)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteBankAccount({
+    required String id,
+    required String shopId,
+  }) async {
+    await _client
+        .from('bank_accounts')
+        .delete()
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Stream<List<Map<String, dynamic>>> chequesStream(String shopId) =>
+      _client
+          .from('cheques')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('due_date', ascending: true);
+
+  static Future<List<Map<String, dynamic>>> getCheques(String shopId) =>
+      _client
+          .from('cheques')
+          .select()
+          .eq('shop_id', shopId)
+          .order('due_date', ascending: true);
+
+  static Future<String> addCheque(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('cheques')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateCheque({
+    required String id,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    await _client
+        .from('cheques')
+        .update(data)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> markChequeDeposited({
+    required String id,
+    required String shopId,
+    required String targetBankAccountId,
+    DateTime? depositDate,
+  }) async {
+    await _client.from('cheques').update({
+      'target_bank_account_id': targetBankAccountId,
+      'deposit_date': (depositDate ?? DateTime.now()).toIso8601String(),
+      'status': 'deposited',
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', id).eq('shop_id', shopId);
+  }
+
+  static Future<void> markChequeCleared({
+    required String id,
+    required String shopId,
+    DateTime? clearanceDate,
+  }) async {
+    final now = clearanceDate ?? DateTime.now();
+    await _client.from('cheques').update({
+      'clearance_date': now.toIso8601String(),
+      'status': 'cleared',
+      'updated_at': now.toIso8601String(),
+    }).eq('id', id).eq('shop_id', shopId);
+  }
+
+  static Future<void> markChequeBounced({
+    required String id,
+    required String shopId,
+    required String bounceReason,
+  }) async {
+    await _client.from('cheques').update({
+      'bounce_reason': bounceReason,
+      'status': 'bounced',
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', id).eq('shop_id', shopId);
+  }
+
   // ── Invoices ─────────────────────────────────────────────────────────────
 
   static Stream<List<Map<String, dynamic>>> invoicesStream(String shopId) =>

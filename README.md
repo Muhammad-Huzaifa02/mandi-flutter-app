@@ -59,6 +59,13 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Multi-Tone Urdu & English Reminders**: Dynamic message generator supporting **Polite** (*شائستہ*), **Formal** (*رسمی*), and **Urgent** (*فوری نوٹس*) tones with automated bank/Raast account injection.
 - **1-Click Dispatch & Receipting**: Instant pre-filled WhatsApp and native SMS dispatch, clipboard copying, phone dialing, and 1-tap "Receive Cash" payment entry.
 
+### 🏦 Bank Accounts & Cheque Clearance Ledger (*PDC / بینکاری اور چیک رجسٹر*)
+- **Commercial Bank Accounts Portfolio**: Configure and monitor multiple commercial bank accounts and digital wallets (Meezan Bank, HBL, MCB, ABL, UBL, BOP, Bank Alfalah, Raast, JazzCash, EasyPaisa) with 1-tap IBAN and account number copying.
+- **Post-Dated Cheque (PDC) Life-Cycle Tracking**: Track received customer cheques and issued supplier cheques through complete states: **In-Hand (PDC)**, **Deposited in Bank**, **Cleared (Realized)**, **Bounced / Dishonored**, and **Returned**.
+- **Real-Time Maturity Alerts**: Proactive notifications and badges for cheques maturing **Today** and **Overdue** in-hand cheques.
+- **Bounced Cheque Audit Trail**: Record return memos and reasons (Insufficient Funds, Signature Mismatch, Stopped Payment) with immediate financial alerts.
+- **Printable A4 Landscape Cheque Register**: Export itemized cheque books and PDC portfolios with comprehensive summary KPIs to printable PDF.
+
 ### 📊 Analytics & Financial Reports
 - **Interactive Financial Charts**: Sales vs Mandi Commission line charts using `fl_chart`.
 - **Date Range Filters**: Filter reports by **All Time, Today, This Week, This Month, or Custom Date Range**.
@@ -88,6 +95,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Payments** | Record cash/bank receipts from customers and payouts to suppliers, auto-update running balances. |
 | **Payment Recovery (Taqaza)** | Debtor khata severity tracker, aging threshold filters, automated Urdu/English WhatsApp & SMS payment reminders with bank/Raast accounts. |
 | **Daily Cash Book (Roznamcha)** | Daily morning drawer opening cash, cash sales, khata recoveries, disbursements, operating expenses, and closing balance with A4 PDF printing. |
+| **Bank & Cheques (PDC Ledger)** | Commercial accounts management, post-dated cheque (*PDC*) portfolio, clearing lifecycle, bounced cheque alerts, and A4 printable register. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

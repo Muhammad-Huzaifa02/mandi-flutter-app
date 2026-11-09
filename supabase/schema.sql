@@ -410,6 +410,57 @@ create index if not exists idx_consignment_lots_supplier on public.consignment_l
 create index if not exists idx_consignment_lots_date on public.consignment_lots(shop_id, created_at desc);
 
 -- ============================================================================
+-- 7c. BANK_ACCOUNTS & CHEQUES (PDC / بینکاری اور چیک رجسٹر)
+--     Commercial bank accounts, post-dated cheques, clearance lifecycle,
+--     and dishonored/bounced tracking.
+-- ============================================================================
+create table if not exists public.bank_accounts (
+  id                  uuid primary key default gen_random_uuid(),
+  shop_id             uuid not null references public.shops(id) on delete cascade,
+  bank_name           text not null,
+  account_title       text not null default '',
+  account_number      text not null default '',
+  iban                text not null default '',
+  branch_name         text not null default '',
+  branch_code         text not null default '',
+  opening_balance     numeric not null default 0,
+  current_balance     numeric not null default 0,
+  is_default          boolean not null default false,
+  is_active           boolean not null default true,
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
+);
+
+create index if not exists idx_bank_accounts_shop on public.bank_accounts(shop_id);
+
+create table if not exists public.cheques (
+  id                      uuid primary key default gen_random_uuid(),
+  shop_id                 uuid not null references public.shops(id) on delete cascade,
+  cheque_number           text not null,
+  type                    text not null default 'received' check (type in ('received', 'issued')),
+  party_type              text not null default 'customer' check (party_type in ('customer', 'supplier', 'other')),
+  party_id                uuid,
+  party_name              text not null default '',
+  bank_name               text not null default '',
+  target_bank_account_id  uuid references public.bank_accounts(id) on delete set null,
+  amount                  numeric not null default 0,
+  issue_date              timestamptz not null default now(),
+  due_date                timestamptz not null default now(),
+  deposit_date            timestamptz,
+  clearance_date          timestamptz,
+  status                  text not null default 'in_hand' check (status in ('in_hand', 'deposited', 'cleared', 'bounced', 'returned')),
+  bounce_reason           text not null default '',
+  notes                   text not null default '',
+  created_by              uuid references auth.users(id),
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now()
+);
+
+create index if not exists idx_cheques_shop on public.cheques(shop_id);
+create index if not exists idx_cheques_due on public.cheques(shop_id, due_date asc);
+create index if not exists idx_cheques_status on public.cheques(shop_id, status);
+
+-- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
 --    membership. Runs as the calling user (not security definer) because
@@ -885,6 +936,8 @@ alter table public.expenses              enable row level security;
 alter table public.payments              enable row level security;
 alter table public.notifications         enable row level security;
 alter table public.consignment_lots       enable row level security;
+alter table public.bank_accounts          enable row level security;
+alter table public.cheques                enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -1156,6 +1209,40 @@ create policy "consignment_lots: authorized staff can write" on public.consignme
     public.has_permission(shop_id, 'create_purchase') or
     public.has_permission(shop_id, 'create_invoice') or
     public.has_permission(shop_id, 'manage_employees')
+  );
+
+drop policy if exists "bank_accounts: members can read" on public.bank_accounts;
+create policy "bank_accounts: members can read" on public.bank_accounts
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "bank_accounts: authorized staff can write" on public.bank_accounts;
+create policy "bank_accounts: authorized staff can write" on public.bank_accounts
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_receipt')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_receipt')
+  );
+
+drop policy if exists "cheques: members can read" on public.cheques;
+create policy "cheques: members can read" on public.cheques
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "cheques: authorized staff can write" on public.cheques;
+create policy "cheques: authorized staff can write" on public.cheques
+  for all using (
+    public.has_permission(shop_id, 'create_receipt') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_purchase')
+  )
+  with check (
+    public.has_permission(shop_id, 'create_receipt') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_purchase')
   );
 
 -- ============================================================================
