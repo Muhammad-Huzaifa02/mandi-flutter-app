@@ -379,6 +379,37 @@ create table if not exists public.notifications (
 create index if not exists idx_notifications_user on public.notifications(user_id, shop_id);
 
 -- ============================================================================
+-- 7b. CONSIGNMENT_LOTS (Dheri / آمد و ڈھیری)
+--     Tracks incoming crop consignments from farmers, auction bidding,
+--     and conversion to sales invoices.
+-- ============================================================================
+create table if not exists public.consignment_lots (
+  id                  uuid primary key default gen_random_uuid(),
+  shop_id             uuid not null references public.shops(id) on delete cascade,
+  lot_number          text not null,
+  supplier_id         uuid references public.suppliers(id) on delete set null,
+  supplier_name       text not null default '',
+  product_id          uuid references public.products(id) on delete set null,
+  product_name        text not null default '',
+  vehicle_number      text not null default '',
+  bag_count           integer not null default 0,
+  weight_kg           numeric not null default 0,
+  rate_per_maund      numeric default 0,
+  winning_buyer_id    uuid references public.customers(id) on delete set null,
+  winning_buyer_name  text not null default '',
+  invoice_id          uuid references public.invoices(id) on delete set null,
+  status              text not null default 'arrived' check (status in ('arrived', 'auctioning', 'sold', 'settled', 'cancelled')),
+  notes               text not null default '',
+  created_by          uuid references auth.users(id),
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
+);
+
+create index if not exists idx_consignment_lots_shop on public.consignment_lots(shop_id);
+create index if not exists idx_consignment_lots_supplier on public.consignment_lots(supplier_id);
+create index if not exists idx_consignment_lots_date on public.consignment_lots(shop_id, created_at desc);
+
+-- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
 --    membership. Runs as the calling user (not security definer) because
@@ -853,6 +884,7 @@ alter table public.inventory_transactions enable row level security;
 alter table public.expenses              enable row level security;
 alter table public.payments              enable row level security;
 alter table public.notifications         enable row level security;
+alter table public.consignment_lots       enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -1102,6 +1134,29 @@ create policy "notifications: recipient can mark read" on public.notifications
 drop policy if exists "notifications: members can insert for their shop" on public.notifications;
 create policy "notifications: members can insert for their shop" on public.notifications
   for insert with check (public.is_shop_member(shop_id));
+
+drop policy if exists "consignment_lots: members can read" on public.consignment_lots;
+create policy "consignment_lots: members can read" on public.consignment_lots
+  for select using (
+    public.is_shop_member(shop_id) or
+    supplier_id in (select id from public.suppliers where user_id = auth.uid()) or
+    winning_buyer_id in (select id from public.customers where user_id = auth.uid())
+  );
+
+drop policy if exists "consignment_lots: authorized staff can write" on public.consignment_lots;
+create policy "consignment_lots: authorized staff can write" on public.consignment_lots
+  for all using (
+    public.has_permission(shop_id, 'manage_suppliers') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'manage_employees')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_suppliers') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'manage_employees')
+  );
 
 -- ============================================================================
 -- 10. STORAGE BUCKETS

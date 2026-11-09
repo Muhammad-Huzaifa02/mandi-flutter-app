@@ -34,6 +34,12 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Algorithmic Chronological Journal**: $O(M \log M)$ merge sorting of all daily financial streams with $O(M)$ progressive running cash balances.
 - **Official A4 PDF Printouts**: Mandi-standard daily cash sheets with complete inflow/outflow tables, reconciliation summary box, and cashier/proprietor signature seals.
 
+### 🌾 Consignment Lot Tracking (*Dheri / آمد و ڈھیری*) & Auction Boli Sheet
+- **Crop Consignment Intake**: Real-time arrival registration capturing lot numbers, farmer names, vehicle/trolley numbers, bag counts, and gross weight in KG and Maunds ($40\text{ KG}$).
+- **Interactive Auction Bidding**: Dedicated `RecordBidDialog` for recording the winning customer bid (rate per Maund) and calculating auction totals on the fly.
+- **Official Mandi Boli Sheet**: Landscape A4 Daily Auction Sheet generation and individual lot weighing slips (*ڈھیری پرچہ*) with printer layout and signature seals.
+- **1-Click Sales Invoicing**: Seamless flow to convert winning bids directly into sales invoices with automatic inventory and ledger reconciliation.
+
 ### ⚖️ Mandi Unit Conversions & Invoicing
 - **Automatic Maund Calculations**: Convert **Kilograms (KG)** to **Manns (من = 40 KG)** automatically.
 - **Mandi Commission & Expenses**: Automatic calculation of shop commission %, line item expenses (loading, labor/mazdoori, freight/kraya), and discounts.
@@ -68,6 +74,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Authentication & Onboarding** | Owner registration, login, phone/email password reset, account activation, shop setup wizard. |
 | **Dashboard** | Dynamic role-based dashboard displaying quick-action tiles gated by user permissions. |
 | **Invoices** | Create sales invoices, Maund/KG weight calculator, thermal print, PDF generate, WhatsApp share, Void/Cancel invoice. |
+| **Consignments & Boli** | Crop consignment arrivals (*Dheri*), bag counts, Maunds weighing, auction bidding sheet (*Boli Register*), weighing slips. |
 | **Purchase Orders** | Record incoming crops/goods from farmers/suppliers, stock auto-increment, pending payout tracking. |
 | **Customers** | Customer directory, running balance ledgers, customer profile detail, account statement exports. |
 | **Suppliers** | Supplier/Farmer directory, purchase history, payout tracking, ledger statement exports. |

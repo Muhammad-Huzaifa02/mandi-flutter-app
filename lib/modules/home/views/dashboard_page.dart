@@ -19,6 +19,7 @@ import 'package:mandi/modules/audit_logs/views/audit_log_list_page.dart';
 import 'package:mandi/modules/settings/views/shop_settings_page.dart';
 import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dart';
 import 'package:mandi/modules/reports/views/roznamcha_page.dart';
+import 'package:mandi/modules/consignment/views/consignment_list_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -398,6 +399,18 @@ class DashboardPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (_) => const PurchaseOrderListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('create_purchase') ||
+                    shopCtx.hasPermission('manage_suppliers') ||
+                    shopCtx.hasPermission('create_invoice'))
+                  _ManageTile(
+                    icon: Icons.gavel_outlined,
+                    label: 'Consignments',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ConsignmentListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_products') ||

@@ -296,6 +296,62 @@ class SupabaseService {
     );
   }
 
+  // ── Consignment Lots (Dheri / آمد و ڈھیری) ──────────────────────────────
+
+  static Stream<List<Map<String, dynamic>>> consignmentLotsStream(
+          String shopId) =>
+      _client
+          .from('consignment_lots')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('created_at', ascending: false);
+
+  static Future<List<Map<String, dynamic>>> getConsignmentLots(String shopId) =>
+      _client
+          .from('consignment_lots')
+          .select()
+          .eq('shop_id', shopId)
+          .order('created_at', ascending: false);
+
+  static Future<String> addConsignmentLot(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('consignment_lots')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateConsignmentLot({
+    required String lotId,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    await _client
+        .from('consignment_lots')
+        .update(data)
+        .eq('id', lotId)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> updateLotBid({
+    required String lotId,
+    required String shopId,
+    required String winningBuyerId,
+    required String winningBuyerName,
+    required double ratePerMaund,
+    double? finalWeightKg,
+  }) async {
+    await _client.from('consignment_lots').update({
+      'winning_buyer_id': winningBuyerId,
+      'winning_buyer_name': winningBuyerName,
+      'rate_per_maund': ratePerMaund,
+      if (finalWeightKg != null && finalWeightKg > 0) 'weight_kg': finalWeightKg,
+      'status': 'sold',
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', lotId).eq('shop_id', shopId);
+  }
+
   // ── Invoices ─────────────────────────────────────────────────────────────
 
   static Stream<List<Map<String, dynamic>>> invoicesStream(String shopId) =>
