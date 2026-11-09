@@ -54,6 +54,11 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Itemized Multi-Page A4 PDF Statements**: Detailed statements (*Khata Parcha*) with complete debit/credit transaction tables and signature verification seals.
 - **Customer & Supplier Ledgers**: Real-time tracking of receivables, payables, running balances, opening balances, and payment receipts.
 
+### 📢 Payment Recovery Hub & Automated Reminders (*تقاضا سنٹر*)
+- **Debtor Severity Aggregator**: Real-time recovery dashboard filtering debtor customer balances by thresholds (>25k, >50k, >100k, >500k PKR) and aging.
+- **Multi-Tone Urdu & English Reminders**: Dynamic message generator supporting **Polite** (*شائستہ*), **Formal** (*رسمی*), and **Urgent** (*فوری نوٹس*) tones with automated bank/Raast account injection.
+- **1-Click Dispatch & Receipting**: Instant pre-filled WhatsApp and native SMS dispatch, clipboard copying, phone dialing, and 1-tap "Receive Cash" payment entry.
+
 ### 📊 Analytics & Financial Reports
 - **Interactive Financial Charts**: Sales vs Mandi Commission line charts using `fl_chart`.
 - **Date Range Filters**: Filter reports by **All Time, Today, This Week, This Month, or Custom Date Range**.
@@ -81,6 +86,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Products & Stock** | Commodity catalog (Wheat/گندم, Rice/چاول, Maize/مکئی, Cotton/کپاس), current stock tracking, min-stock alerts. |
 | **Expenses** | Record daily shop expenses (Labor/مزدوری, Freight/کرایہ, Rent, Electricity, Refreshments), expense categories. |
 | **Payments** | Record cash/bank receipts from customers and payouts to suppliers, auto-update running balances. |
+| **Payment Recovery (Taqaza)** | Debtor khata severity tracker, aging threshold filters, automated Urdu/English WhatsApp & SMS payment reminders with bank/Raast accounts. |
 | **Daily Cash Book (Roznamcha)** | Daily morning drawer opening cash, cash sales, khata recoveries, disbursements, operating expenses, and closing balance with A4 PDF printing. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |

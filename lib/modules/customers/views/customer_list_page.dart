@@ -7,6 +7,7 @@ import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/customers/views/add_customer_page.dart';
 import 'package:mandi/modules/customers/views/customer_detail_page.dart';
+import 'package:mandi/modules/customers/views/payment_recovery_page.dart';
 
 class CustomerListPage extends StatefulWidget {
   const CustomerListPage({super.key});
@@ -33,6 +34,18 @@ class _CustomerListPageState extends State<CustomerListPage> {
       appBar: AppBar(
         title: const Text('Customers'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.campaign_outlined, color: MColors.gold),
+            tooltip: 'Payment Recovery (تقاضا)',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const PaymentRecoveryPage(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.file_download_outlined),
             tooltip: 'Export Excel Ledger',

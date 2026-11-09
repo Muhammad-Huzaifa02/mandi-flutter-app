@@ -34,9 +34,9 @@
 - [x] **Multi-Shop Context Switcher UI**: Active shop switching modal sheet and AppBar dropdown in `DashboardPage` driven by `ShopContextProvider._availableShops`. Seamlessly re-points all proxy providers across shops without page reloads.
 - [x] **Daily Cash Day Book (*Roznamcha / روزنامچہ*)**: Complete physical cash drawer reconciliation engine (`RoznamchaCalculator`), interactive UI (`RoznamchaPage`), and official A4 PDF printable register (`RoznamchaPdfGenerator`). Tracks morning opening cash, daily cash inflows (sales + khata collections), cash outflows (supplier payouts + procurement payments + daily expenses), net cash movement, and expected closing drawer balance.
 - [x] **Consignment Lot Tracking (*Dheri / آمد و ڈھیری*) & Auction Boli Sheet**: Lot-wise commission agent consignment arrival tracking with lot number, bags, gross weight in KG & Maunds, vehicle number, farmer assignment, interactive auction bid recording (`RecordBidDialog`), 1-click invoice creation, and landscape A4 Daily Auction Boli Sheet (`BoliSheetPdfGenerator`) + individual lot weighing slips (*ڈھیری پرچہ*).
+- [x] **Automated Payment Recovery Messaging & Khata Recovery Hub (*تقاضا سنٹر*)**: Dedicated recovery dashboard (`PaymentRecoveryPage`) aggregating debtor accounts by balance severity, filtering by aging/thresholds (>25k, >50k, >100k, >500k), multi-tone reminder engine (`RecoveryMessagingService`) supporting polite, formal, and urgent notices in Urdu & English with online bank details injection, interactive dispatch modal (`SendReminderDialog`), 1-click WhatsApp/SMS launching, and instant cash receipt shortcuts.
 
 ## In-Progress & Upcoming ERP Roadmap (Sprint 2)
 
-- [ ] **Automated Payment Recovery Messaging**: Urdu & English WhatsApp/SMS Khata reminders with dynamic balance amounts and payment QR codes.
 - [ ] **Bank Accounts & Cheque Clearance Ledger**: Reconcile bank transfers, post-dated cheques (*PDC*), and Mandi commission deposits against physical cash.
 

@@ -20,6 +20,7 @@ import 'package:mandi/modules/settings/views/shop_settings_page.dart';
 import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dart';
 import 'package:mandi/modules/reports/views/roznamcha_page.dart';
 import 'package:mandi/modules/consignment/views/consignment_list_page.dart';
+import 'package:mandi/modules/customers/views/payment_recovery_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -454,6 +455,17 @@ class DashboardPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (_) => const PaymentListPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('manage_customers') ||
+                    shopCtx.hasPermission('view_ledger'))
+                  _ManageTile(
+                    icon: Icons.campaign_outlined,
+                    label: 'Recovery',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const PaymentRecoveryPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('view_reports') ||
