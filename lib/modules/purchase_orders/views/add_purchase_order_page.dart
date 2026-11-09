@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/supplier_model.dart';
@@ -84,27 +83,19 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
         status: _status,
       );
 
-      await provider.addPurchaseOrder(po);
-
-      // Auto-increase product stock in PostgreSQL when purchased from supplier
-      if (_selectedProduct != null && w > 0) {
-        final client = Supabase.instance.client;
-        final currentStock = _selectedProduct!.currentStock;
-        await client
-            .from('products')
-            .update({
-              'current_stock': currentStock + w,
-              'purchase_price': r > 0 ? r : _selectedProduct!.purchasePrice,
-              'is_active': true,
-            })
-            .eq('id', _selectedProduct!.id);
-      }
+      // Atomically records PO, increases stock, creates inventory txn, & updates running balance in PostgreSQL
+      await provider.addPurchaseOrder(
+        po,
+        productId: _selectedProduct?.id,
+        weightKg: w,
+        ratePer40kg: r,
+      );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text(
-                'Purchase order recorded & product stock updated successfully!')),
+                'Purchase order recorded & product stock updated atomically!')),
       );
       Navigator.pop(context);
     } catch (e) {

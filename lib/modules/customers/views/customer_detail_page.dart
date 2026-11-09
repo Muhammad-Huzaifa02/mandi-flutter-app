@@ -5,10 +5,13 @@ import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/ledger_pdf_generator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
+import 'package:mandi/core/utils/ledger_calculator.dart';
 import 'package:mandi/data/models/customer_model.dart';
+import 'package:mandi/data/models/ledger_entry_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
+import 'package:mandi/modules/payments/providers/payment_provider.dart';
 import 'package:mandi/modules/payments/views/add_payment_page.dart';
 
 class CustomerDetailPage extends StatefulWidget {
@@ -138,6 +141,21 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                     _customer.name.toLowerCase()))
         .toList();
 
+    final allPayments = context.watch<PaymentProvider>().payments;
+    final myPayments = allPayments
+        .where((p) =>
+            p.partyType.toLowerCase() == 'customer' &&
+            (p.partyId == _customer.id ||
+                (_customer.userId != null && p.partyId == _customer.userId)))
+        .toList();
+
+    // DSA: Chronological Merge & Prefix-Sum progressive balance calculation
+    final ledgerEntries = LedgerCalculator.buildCustomerLedger(
+      openingBalance: _customer.openingBalance,
+      invoices: myInvoices,
+      payments: myPayments,
+    );
+
     final totalSpent =
         myInvoices.fold(0.0, (sum, inv) => sum + inv.total);
     final loyaltyPoints = (totalSpent / 1000).floor();
@@ -165,6 +183,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                 shopName: shop?.name ?? 'Mandi Shop',
                 shopPhone: shop?.phone,
                 shopCity: shop?.city,
+                entries: ledgerEntries,
               );
             },
           ),
@@ -272,23 +291,23 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
 
             const SizedBox(height: MSpacing.xl),
 
-            // Invoices History Section
+            // Account Ledger History Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Invoices History',
+                Text('Account Ledger History',
                     style: MText.titleLg.copyWith(color: Colors.white)),
-                Text('${myInvoices.length} Invoices',
+                Text('${ledgerEntries.length} Transactions',
                     style: MText.bodySm.copyWith(color: Colors.white70)),
               ],
             ),
             const SizedBox(height: MSpacing.sm),
 
-            if (myInvoices.isEmpty)
+            if (ledgerEntries.isEmpty)
               GlassCard(
                 padding: const EdgeInsets.all(MSpacing.xl),
                 child: Center(
-                  child: Text('No invoices issued for this customer yet.',
+                  child: Text('No transactions recorded for this customer yet.',
                       style: MText.bodyMd.copyWith(color: Colors.white70)),
                 ),
               )
@@ -296,10 +315,13 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: myInvoices.length,
+                itemCount: ledgerEntries.length,
                 separatorBuilder: (_, __) => const SizedBox(height: MSpacing.xs),
                 itemBuilder: (context, i) {
-                  final inv = myInvoices[i];
+                  // Reverse order to show newest transactions first in the app UI
+                  final entry = ledgerEntries[ledgerEntries.length - 1 - i];
+                  final isInvoice = entry.type == LedgerEntryType.invoice;
+
                   return GlassCard(
                     padding: const EdgeInsets.all(MSpacing.md),
                     child: Row(
@@ -308,20 +330,24 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: MColors.gold.withValues(alpha: 0.2),
-                              child: const Icon(Icons.receipt_long,
-                                  color: MColors.gold),
+                              backgroundColor: isInvoice
+                                  ? MColors.gold.withValues(alpha: 0.2)
+                                  : Colors.greenAccent.withValues(alpha: 0.2),
+                              child: Icon(
+                                isInvoice ? Icons.receipt_long : Icons.payments,
+                                color: isInvoice
+                                    ? MColors.gold
+                                    : Colors.greenAccent,
+                              ),
                             ),
                             const SizedBox(width: MSpacing.md),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(inv.invoiceNumber,
+                                Text(entry.reference,
                                     style: MText.titleLg.copyWith(color: Colors.white)),
                                 Text(
-                                  inv.createdAt != null
-                                      ? '${inv.createdAt!.day}/${inv.createdAt!.month}/${inv.createdAt!.year}'
-                                      : 'Sales Invoice',
+                                  '${entry.formattedDate} • ${entry.description}',
                                   style: MText.bodySm
                                       .copyWith(color: Colors.white70),
                                 ),
@@ -333,18 +359,22 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'Rs. ${inv.total.toStringAsFixed(0)}',
-                              style: MText.titleLg.copyWith(color: MColors.gold),
-                            ),
-                            Text(
-                              inv.pendingAmount > 0
-                                  ? 'Pending: Rs. ${inv.pendingAmount.toStringAsFixed(0)}'
-                                  : 'PAID',
-                              style: MText.bodySm.copyWith(
-                                color: inv.pendingAmount > 0
-                                    ? MColors.danger
+                              isInvoice
+                                  ? '+ Rs. ${entry.debit.toStringAsFixed(0)} (Dr)'
+                                  : '- Rs. ${entry.credit.toStringAsFixed(0)} (Cr)',
+                              style: MText.bodyMd.copyWith(
+                                color: isInvoice
+                                    ? Colors.orangeAccent
                                     : Colors.greenAccent,
                                 fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Bal: Rs. ${entry.runningBalance.toStringAsFixed(0)}',
+                              style: MText.bodySm.copyWith(
+                                color: entry.runningBalance > 0
+                                    ? MColors.gold
+                                    : Colors.white70,
                               ),
                             ),
                           ],

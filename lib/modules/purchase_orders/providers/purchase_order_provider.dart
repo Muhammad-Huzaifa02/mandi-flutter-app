@@ -54,8 +54,23 @@ class PurchaseOrderProvider extends ChangeNotifier {
         .toList();
   }
 
-  Future<void> addPurchaseOrder(PurchaseOrder po) async {
-    await SupabaseService.addPurchaseOrder(po.toMap());
+  Future<void> addPurchaseOrder(
+    PurchaseOrder po, {
+    String? productId,
+    double weightKg = 0,
+    double ratePer40kg = 0,
+  }) async {
+    await SupabaseService.addPurchaseOrder(
+      shopId: po.shopId,
+      supplierId: po.supplierId,
+      productId: productId,
+      weightKg: weightKg,
+      ratePer40kg: ratePer40kg,
+      total: po.total,
+      paidAmount: po.paidAmount,
+      pendingAmount: po.pendingAmount,
+      status: po.status,
+    );
   }
 
   @override

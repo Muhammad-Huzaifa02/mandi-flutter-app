@@ -113,9 +113,61 @@ create or replace function public.cancel_invoice_and_restore_stock(
 ```
 Voids invoice (`status = 'void'`), restores product stock, reverses customer/supplier running balance updates, and writes audit record.
 
+### 4.4 `create_purchase_order_with_stock_addition`
+```sql
+create or replace function public.create_purchase_order_with_stock_addition(
+  p_po jsonb
+) returns uuid
+```
+Atomically creates purchase order row, auto-increments product stock using row locking (`FOR UPDATE`), logs `inventory_transactions`, and updates supplier running balance in a single transaction.
+
+### 4.5 `check_shop_membership_update` Security Trigger
+```sql
+create trigger trg_check_shop_membership_update
+  before update on public.shop_memberships
+  for each row execute function public.check_shop_membership_update();
+```
+Strictly blocks non-privileged users from self-escalating `role_id`, `custom_permissions`, `status`, or `salary` via PostgREST.
+
 ---
 
-## 5. Local Storage & Keys (`SharedPreferences`)
+## 5. Data Structures & Algorithms (DSA) Ledger Engine
+
+Mandi uses an algorithmic Khata ledger calculation engine:
+
+```
+┌───────────────────────────┐      ┌───────────────────────────┐
+│     Invoices Stream       │      │      Payments Stream      │
+│  (Debits / Receivables)   │      │   (Credits / Receipts)    │
+└─────────────┬─────────────┘      └─────────────┬─────────────┘
+              │                                  │
+              └────────────────┬─────────────────┘
+                               │
+                               ▼
+        ┌──────────────────────────────────────────────┐
+        │  Chronological Merge Sort: O((N+M) log(N+M)) │
+        │        (Implements Comparable<LedgerEntry>)  │
+        └──────────────────────┬───────────────────────┘
+                               │
+                               ▼
+        ┌──────────────────────────────────────────────┐
+        │     Prefix-Sum Running Balance Pass: O(N)    │
+        │ Bal_i = Bal_{i-1} + Debit_i - Credit_i       │
+        └──────────────────────┬───────────────────────┘
+                               │
+                               ▼
+        ┌──────────────────────────────────────────────┐
+        │   Binary Search Date Range Queries: O(log N) │
+        │     (lowerBound index search algorithm)      │
+        └──────────────────────────────────────────────┘
+```
+
+- **`LedgerEntry`**: Strongly typed domain object representing financial debits, credits, and progressive balances.
+- **`LedgerCalculator`**: Pure algorithmic engine computing chronologically sorted statements, prefix-sum running balances, and $O(\log N)$ date-sliced views.
+
+---
+
+## 6. Local Storage & Keys (`SharedPreferences`)
 
 | Key Name | Type | Purpose |
 | :--- | :--- | :--- |

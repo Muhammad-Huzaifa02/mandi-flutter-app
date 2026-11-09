@@ -36,19 +36,22 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **A4 PDF & WhatsApp Sharing**: Instant A4 invoice PDF generation and direct WhatsApp/Email sharing with buyers.
 - **Invoice Cancellation & Stock Restoration**: Void/Cancel invoices with 1-click database transaction restoring product stock and reversing ledger balances.
 
-### 📖 Khata & Ledger Management
-- **Customer (Buyer) Ledgers**: Real-time tracking of receivables, running balances, opening balances, and payment receipts.
-- **Supplier (Farmer) Ledgers**: Real-time tracking of payables, purchase receipts, and harvest payouts.
-- **Payment Recording**: Support for Cash, Bank Transfer, Cheque, and Online Transfer payments with instant running balance updates.
-- **PDF Ledger Statements**: Export detailed customer/supplier account statements to PDF or share via WhatsApp.
+### 📖 Khata & Algorithmic Ledger Engine (DSA)
+- **Chronological Timeline Merge**: Two-pointer merge algorithm ($O((N+M) \log (N+M))$) consolidating invoices and payments into a unified timeline.
+- **Prefix-Sum Running Balances**: Linear-scan ($O(N)$) progressive running balance calculation accurately computing net balances after each debit/credit.
+- **Binary Search Date Range Queries**: $O(\log N)$ `lowerBound` binary search for instant date-range statement filtering.
+- **Itemized Multi-Page A4 PDF Statements**: Detailed statements (*Khata Parcha*) with complete debit/credit transaction tables and signature verification seals.
+- **Customer & Supplier Ledgers**: Real-time tracking of receivables, payables, running balances, opening balances, and payment receipts.
 
 ### 📊 Analytics & Financial Reports
 - **Interactive Financial Charts**: Sales vs Mandi Commission line charts using `fl_chart`.
 - **Date Range Filters**: Filter reports by **All Time, Today, This Week, This Month, or Custom Date Range**.
 - **Financial Exports**: Export complete business summary, sales invoices, and shop expenses to **Excel (.xlsx)** or **PDF**.
 
-### 🔐 Security & Audit Logging
-- **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks.
+### 🔐 Enterprise Security & Audit Logging
+- **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
+- **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
+- **Atomic Transactions (RPCs)**: Sealed direct client writes; all sales and crop procurements are executed via atomic `SECURITY DEFINER` RPCs with `FOR UPDATE` product row-locking.
 - **Audit Logging**: Comprehensive activity trail recording every user action (invoice created, member updated, invoice voided, role edited).
 
 ---

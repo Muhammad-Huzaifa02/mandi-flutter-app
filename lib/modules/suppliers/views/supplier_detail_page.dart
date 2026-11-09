@@ -5,10 +5,14 @@ import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/ledger_pdf_generator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
+import 'package:mandi/core/utils/ledger_calculator.dart';
 import 'package:mandi/data/models/supplier_model.dart';
+import 'package:mandi/data/models/ledger_entry_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/purchase_orders/providers/purchase_order_provider.dart';
+import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
+import 'package:mandi/modules/payments/providers/payment_provider.dart';
 import 'package:mandi/modules/payments/views/add_payment_page.dart';
 
 class SupplierDetailPage extends StatefulWidget {
@@ -141,6 +145,29 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                     _supplier.name.toLowerCase()))
         .toList();
 
+    final allInvoices = context.watch<InvoiceProvider>().invoices
+        .where((inv) =>
+            inv.supplierId == _supplier.id ||
+            (inv.supplierName.isNotEmpty &&
+                inv.supplierName.toLowerCase() ==
+                    _supplier.name.toLowerCase()))
+        .toList();
+
+    final allPayments = context.watch<PaymentProvider>().payments
+        .where((p) =>
+            p.partyType.toLowerCase() == 'supplier' &&
+            (p.partyId == _supplier.id ||
+                (_supplier.userId != null && p.partyId == _supplier.userId)))
+        .toList();
+
+    // DSA: Unified merge & Prefix-Sum progressive running balance calculation
+    final ledgerEntries = LedgerCalculator.buildSupplierLedger(
+      openingBalance: _supplier.openingBalance,
+      purchaseOrders: myOrders,
+      consignmentInvoices: allInvoices,
+      payments: allPayments,
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_supplier.name),
@@ -160,6 +187,7 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                 shopName: shop?.name ?? 'Mandi Shop',
                 shopPhone: shop?.phone,
                 shopCity: shop?.city,
+                entries: ledgerEntries,
               );
             },
           ),
@@ -249,23 +277,23 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
 
             const SizedBox(height: MSpacing.xl),
 
-            // Purchase Orders History Section
+            // Supplier Ledger History Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Purchase Orders',
+                Text('Account Ledger History',
                     style: MText.titleLg.copyWith(color: Colors.white)),
-                Text('${myOrders.length} Orders',
+                Text('${ledgerEntries.length} Transactions',
                     style: MText.bodySm.copyWith(color: Colors.white70)),
               ],
             ),
             const SizedBox(height: MSpacing.sm),
 
-            if (myOrders.isEmpty)
+            if (ledgerEntries.isEmpty)
               GlassCard(
                 padding: const EdgeInsets.all(MSpacing.xl),
                 child: Center(
-                  child: Text('No purchase orders recorded for this supplier.',
+                  child: Text('No transactions recorded for this supplier yet.',
                       style: MText.bodyMd.copyWith(color: Colors.white70)),
                 ),
               )
@@ -273,10 +301,13 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: myOrders.length,
+                itemCount: ledgerEntries.length,
                 separatorBuilder: (_, __) => const SizedBox(height: MSpacing.xs),
                 itemBuilder: (context, i) {
-                  final po = myOrders[i];
+                  // Reverse order to show newest transactions first in the app UI
+                  final entry = ledgerEntries[ledgerEntries.length - 1 - i];
+                  final isPayout = entry.type == LedgerEntryType.payout;
+
                   return GlassCard(
                     padding: const EdgeInsets.all(MSpacing.md),
                     child: Row(
@@ -285,18 +316,24 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: MColors.gold.withValues(alpha: 0.2),
-                              child: const Icon(Icons.assignment_outlined,
-                                  color: MColors.gold),
+                              backgroundColor: isPayout
+                                  ? Colors.greenAccent.withValues(alpha: 0.2)
+                                  : MColors.gold.withValues(alpha: 0.2),
+                              child: Icon(
+                                isPayout ? Icons.payments : Icons.assignment_outlined,
+                                color: isPayout
+                                    ? Colors.greenAccent
+                                    : MColors.gold,
+                              ),
                             ),
                             const SizedBox(width: MSpacing.md),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(po.supplierName,
+                                Text(entry.reference,
                                     style: MText.titleLg.copyWith(color: Colors.white)),
                                 Text(
-                                  'Status: ${po.status.toUpperCase()} ${po.createdAt != null ? '• ${po.createdAt!.day}/${po.createdAt!.month}/${po.createdAt!.year}' : ''}',
+                                  '${entry.formattedDate} • ${entry.description}',
                                   style: MText.bodySm
                                       .copyWith(color: Colors.white70),
                                 ),
@@ -308,18 +345,22 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'Rs. ${po.total.toStringAsFixed(0)}',
-                              style: MText.titleLg.copyWith(color: MColors.gold),
+                              isPayout
+                                  ? '- Rs. ${entry.debit.toStringAsFixed(0)} (Paid)'
+                                  : '+ Rs. ${entry.credit.toStringAsFixed(0)} (Produce)',
+                              style: MText.bodyMd.copyWith(
+                                color: isPayout
+                                    ? Colors.greenAccent
+                                    : Colors.orangeAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             Text(
-                              po.pendingAmount > 0
-                                  ? 'Pending: Rs. ${po.pendingAmount.toStringAsFixed(0)}'
-                                  : 'PAID',
+                              'Bal: Rs. ${entry.runningBalance.toStringAsFixed(0)}',
                               style: MText.bodySm.copyWith(
-                                color: po.pendingAmount > 0
-                                    ? MColors.danger
-                                    : Colors.greenAccent,
-                                fontWeight: FontWeight.bold,
+                                color: entry.runningBalance > 0
+                                    ? MColors.gold
+                                    : Colors.white70,
                               ),
                             ),
                           ],

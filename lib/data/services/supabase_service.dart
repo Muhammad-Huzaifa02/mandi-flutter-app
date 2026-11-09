@@ -241,24 +241,59 @@ class SupabaseService {
           .eq('shop_id', shopId)
           .order('created_at', ascending: false);
 
-  static Future<void> addPurchaseOrder(Map<String, dynamic> data) async {
-    await _client.from('purchase_orders').insert(data);
+  static Future<String> addPurchaseOrder({
+    required String shopId,
+    String? supplierId,
+    String? productId,
+    double weightKg = 0,
+    double ratePer40kg = 0,
+    required double total,
+    double paidAmount = 0,
+    double? pendingAmount,
+    String status = 'received',
+  }) async {
+    final id = await _client.rpc('create_purchase_order_with_stock_addition', params: {
+      'p_po': {
+        'shopId': shopId,
+        'supplierId': supplierId,
+        'productId': productId,
+        'weightKg': weightKg,
+        'ratePer40kg': ratePer40kg,
+        'total': total,
+        'paidAmount': paidAmount,
+        'pendingAmount': pendingAmount ?? (total - paidAmount),
+        'status': status,
+      },
+    }) as String;
+    return id;
+  }
 
-    final supplierId = data['supplier_id'] as String?;
-    final pendingAmount = (data['pending_amount'] as num?)?.toDouble() ?? 0;
+  static Future<String> addPurchaseOrderMap(Map<String, dynamic> data) async {
+    final shopId = data['shopId'] ?? data['shop_id'];
+    final supplierId = data['supplierId'] ?? data['supplier_id'];
+    final productId = data['productId'] ?? data['product_id'];
+    final weightKg =
+        (data['weightKg'] ?? data['weight_kg'] as num?)?.toDouble() ?? 0;
+    final ratePer40kg =
+        (data['ratePer40kg'] ?? data['rate_per_40kg'] as num?)?.toDouble() ?? 0;
+    final total = (data['total'] as num?)?.toDouble() ?? 0;
+    final paidAmount =
+        (data['paidAmount'] ?? data['paid_amount'] as num?)?.toDouble() ?? 0;
+    final pendingAmount =
+        (data['pendingAmount'] ?? data['pending_amount'] as num?)?.toDouble();
+    final status = data['status'] as String? ?? 'received';
 
-    if (supplierId != null && supplierId.isNotEmpty && pendingAmount > 0) {
-      final supplier = await _client
-          .from('suppliers')
-          .select('running_balance')
-          .eq('id', supplierId)
-          .single();
-      final current = (supplier['running_balance'] as num?)?.toDouble() ?? 0;
-      await _client
-          .from('suppliers')
-          .update({'running_balance': current + pendingAmount})
-          .eq('id', supplierId);
-    }
+    return addPurchaseOrder(
+      shopId: shopId as String,
+      supplierId: supplierId as String?,
+      productId: productId as String?,
+      weightKg: weightKg,
+      ratePer40kg: ratePer40kg,
+      total: total,
+      paidAmount: paidAmount,
+      pendingAmount: pendingAmount,
+      status: status,
+    );
   }
 
   // ── Invoices ─────────────────────────────────────────────────────────────

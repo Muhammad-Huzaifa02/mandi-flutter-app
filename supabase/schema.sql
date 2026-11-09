@@ -608,21 +608,16 @@ begin
   -- 2. Reverse running balance on customer if pending amount was added
   if v_invoice.customer_id is not null and v_invoice.pending_amount > 0 then
     update public.customers
-      set running_balance = greatest(0, running_balance - v_invoice.pending_amount)
+      set running_balance = running_balance - v_invoice.pending_amount
       where id = v_invoice.customer_id and shop_id = p_shop_id;
   end if;
 
   -- 3. Reverse running balance on supplier — by supplier_payout, the
   --    amount actually credited at creation time (see
-  --    create_invoice_with_stock_deduction). This was previously reversed
-  --    using pending_amount, a different figure for a consignment-sale
-  --    invoice (pending_amount is customer-side: grand total minus what
-  --    the CUSTOMER paid; supplier_payout is subtotal minus commission
-  --    minus expenses) — that mismatch would have left the supplier's
-  --    ledger wrong after every cancellation.
+  --    create_invoice_with_stock_deduction).
   if v_invoice.supplier_id is not null and v_invoice.supplier_payout > 0 then
     update public.suppliers
-      set running_balance = greatest(0, running_balance - v_invoice.supplier_payout)
+      set running_balance = running_balance - v_invoice.supplier_payout
       where id = v_invoice.supplier_id and shop_id = p_shop_id;
   end if;
 
@@ -722,6 +717,122 @@ begin
   return v_payment_id;
 end;
 $$;
+
+-- ============================================================================
+-- 8e. RPC — create_purchase_order_with_stock_addition
+--    Atomically creates a purchase order, increments product stock using
+--    row-locking (FOR UPDATE), records an inventory_transaction, and credits
+--    the supplier running balance. Replaces client-side non-atomic sequence.
+-- ============================================================================
+create or replace function public.create_purchase_order_with_stock_addition(
+  p_po jsonb -- {shopId, supplierId, productId, weightKg, ratePer40kg, total, paidAmount, pendingAmount, status}
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_po_id uuid;
+  v_shop_id uuid := (p_po->>'shopId')::uuid;
+  v_supplier_id uuid := nullif(p_po->>'supplierId', '')::uuid;
+  v_product_id uuid := nullif(p_po->>'productId', '')::uuid;
+  v_weight_kg numeric := coalesce((p_po->>'weightKg')::numeric, 0);
+  v_rate numeric := coalesce((p_po->>'ratePer40kg')::numeric, 0);
+  v_total numeric := coalesce((p_po->>'total')::numeric, 0);
+  v_paid numeric := coalesce((p_po->>'paidAmount')::numeric, 0);
+  v_pending numeric := coalesce((p_po->>'pendingAmount')::numeric, v_total - v_paid);
+  v_status text := coalesce(p_po->>'status', 'received');
+  v_current_stock numeric;
+begin
+  if not public.has_permission(v_shop_id, 'create_purchase') then
+    raise exception 'Missing permission: create_purchase';
+  end if;
+
+  if v_total < 0 or v_paid < 0 or v_pending < 0 then
+    raise exception 'Amounts cannot be negative';
+  end if;
+
+  insert into public.purchase_orders (
+    shop_id, supplier_id, status, total, paid_amount, pending_amount, created_by
+  ) values (
+    v_shop_id, v_supplier_id, v_status, v_total, v_paid, v_pending, auth.uid()
+  ) returning id into v_po_id;
+
+  -- If status is received, atomically increase product stock and log inventory txn
+  if v_status = 'received' and v_product_id is not null and v_weight_kg > 0 then
+    select current_stock into v_current_stock from public.products
+      where id = v_product_id and shop_id = v_shop_id
+      for update;
+
+    if v_current_stock is not null then
+      update public.products
+        set current_stock = current_stock + v_weight_kg,
+            purchase_price = case when v_rate > 0 then v_rate else purchase_price end,
+            updated_at = now()
+        where id = v_product_id and shop_id = v_shop_id;
+
+      insert into public.inventory_transactions (
+        shop_id, product_id, change_kg, type, reference, created_by
+      ) values (
+        v_shop_id, v_product_id, v_weight_kg, 'purchase', v_po_id::text, auth.uid()
+      );
+    end if;
+  end if;
+
+  -- Atomically update supplier's running balance with row lock
+  if v_supplier_id is not null and v_pending > 0 then
+    update public.suppliers
+      set running_balance = running_balance + v_pending
+      where id = v_supplier_id and shop_id = v_shop_id;
+  end if;
+
+  insert into public.audit_logs (
+    shop_id, actor_id, action, entity_type, entity_id, summary
+  ) values (
+    v_shop_id, auth.uid(), 'purchase_order_created', 'purchase_order', v_po_id::text,
+    'Recorded purchase order #' || v_po_id::text || ' for Rs. ' || v_total::text
+  );
+
+  return v_po_id;
+end;
+$$;
+
+-- Trigger to prevent self-privilege escalation on shop_memberships
+create or replace function public.check_shop_membership_update()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  -- If caller lacks manage_employees, strictly block alterations to sensitive fields
+  if not public.has_permission(OLD.shop_id, 'manage_employees') then
+    if NEW.role_id is distinct from OLD.role_id then
+      raise exception 'Cannot modify role_id without manage_employees permission';
+    end if;
+    if NEW.custom_permissions is distinct from OLD.custom_permissions then
+      raise exception 'Cannot modify custom_permissions without manage_employees permission';
+    end if;
+    if NEW.status is distinct from OLD.status then
+      raise exception 'Cannot modify membership status without manage_employees permission';
+    end if;
+    if NEW.salary is distinct from OLD.salary then
+      raise exception 'Cannot modify salary without manage_employees permission';
+    end if;
+    if NEW.shop_id is distinct from OLD.shop_id or NEW.user_id is distinct from OLD.user_id then
+      raise exception 'Cannot reassign shop or user';
+    end if;
+  end if;
+  NEW.updated_at := now();
+  return NEW;
+end;
+$$;
+
+drop trigger if exists trg_check_shop_membership_update on public.shop_memberships;
+create trigger trg_check_shop_membership_update
+  before update on public.shop_memberships
+  for each row execute function public.check_shop_membership_update();
 
 -- ============================================================================
 -- 9. ROW LEVEL SECURITY
@@ -834,7 +945,7 @@ create policy "audit_logs: members can read" on public.audit_logs
 
 drop policy if exists "audit_logs: members can insert" on public.audit_logs;
 create policy "audit_logs: members can insert" on public.audit_logs
-  for insert with check (public.is_shop_member(shop_id));
+  for insert with check (public.is_shop_member(shop_id) and (actor_id is null or actor_id = auth.uid()));
 
 -- Generic pattern for every remaining shop-owned business table: readable
 -- by any active member, writable only with the matching permission.
@@ -853,9 +964,18 @@ create policy "products: manage_products can write" on public.products
   for all using (public.has_permission(shop_id, 'manage_products'))
   with check (public.has_permission(shop_id, 'manage_products'));
 
+-- customers: staff can read shop customers; customers can strictly read only their own record
 drop policy if exists "customers: members can read" on public.customers;
-create policy "customers: members can read" on public.customers
-  for select using (public.is_shop_member(shop_id));
+drop policy if exists "customers: staff can read" on public.customers;
+create policy "customers: staff can read" on public.customers
+  for select using (
+    public.has_permission(shop_id, 'manage_customers') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_receipt') or
+    public.has_permission(shop_id, 'manage_employees') or
+    user_id = auth.uid()
+  );
 
 -- Restored: same regression as products above — any active shop member,
 -- including a customer themselves, could edit or delete ANY customer
@@ -870,9 +990,18 @@ drop policy if exists "customers: self read" on public.customers;
 create policy "customers: self read" on public.customers
   for select using (user_id = auth.uid());
 
+-- suppliers: staff can read shop suppliers; suppliers can strictly read only their own record
 drop policy if exists "suppliers: members can read" on public.suppliers;
-create policy "suppliers: members can read" on public.suppliers
-  for select using (public.is_shop_member(shop_id));
+drop policy if exists "suppliers: staff can read" on public.suppliers;
+create policy "suppliers: staff can read" on public.suppliers
+  for select using (
+    public.has_permission(shop_id, 'manage_suppliers') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_receipt') or
+    public.has_permission(shop_id, 'manage_employees') or
+    user_id = auth.uid()
+  );
 
 -- Restored: same regression as products/customers above — any active
 -- shop member, including a supplier themselves, could edit or delete
@@ -897,19 +1026,15 @@ create policy "invoices: members can read" on public.invoices
     customer_id in (select id from public.shop_memberships where user_id = auth.uid())
   );
 
+-- No direct client INSERT/UPDATE/DELETE on invoices or invoice_items.
+-- Invoices are created exclusively through create_invoice_with_stock_deduction RPC
+-- and cancelled through cancel_invoice_and_restore_stock RPC.
 drop policy if exists "invoices: create_invoice can write" on public.invoices;
-create policy "invoices: create_invoice can write" on public.invoices
-  for all using (public.has_permission(shop_id, 'create_invoice'))
-  with check (public.has_permission(shop_id, 'create_invoice'));
+drop policy if exists "invoice_items: create_invoice can write" on public.invoice_items;
 
 drop policy if exists "invoice_items: members can read" on public.invoice_items;
 create policy "invoice_items: members can read" on public.invoice_items
   for select using (public.is_shop_member(shop_id));
-
-drop policy if exists "invoice_items: create_invoice can write" on public.invoice_items;
-create policy "invoice_items: create_invoice can write" on public.invoice_items
-  for all using (public.has_permission(shop_id, 'create_invoice'))
-  with check (public.has_permission(shop_id, 'create_invoice'));
 
 drop policy if exists "purchase_orders: members can read" on public.purchase_orders;
 create policy "purchase_orders: members can read" on public.purchase_orders
@@ -921,10 +1046,9 @@ create policy "purchase_orders: members can read" on public.purchase_orders
     supplier_id in (select id from public.shop_memberships where user_id = auth.uid())
   );
 
+-- No direct client INSERT/UPDATE/DELETE on purchase_orders.
+-- Purchase orders are created exclusively through create_purchase_order_with_stock_addition RPC.
 drop policy if exists "purchase_orders: create_purchase can write" on public.purchase_orders;
-create policy "purchase_orders: create_purchase can write" on public.purchase_orders
-  for all using (public.has_permission(shop_id, 'create_purchase'))
-  with check (public.has_permission(shop_id, 'create_purchase'));
 
 drop policy if exists "inventory_txn: members can read" on public.inventory_transactions;
 create policy "inventory_txn: members can read" on public.inventory_transactions

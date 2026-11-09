@@ -81,11 +81,9 @@ class DashboardPage extends StatelessWidget {
                 actorName: member.name,
               );
 
-              if (context.mounted) {
-                await shopCtx.refreshShop();
+              if (dialogCtx.mounted) {
+                Navigator.pop(dialogCtx);
               }
-
-              Navigator.pop(dialogCtx);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Profile updated successfully!')),

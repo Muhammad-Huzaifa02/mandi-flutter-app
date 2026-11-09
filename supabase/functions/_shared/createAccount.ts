@@ -52,24 +52,46 @@ export async function handleCreateAccount(
       .single();
 
     // Invite (not create-with-password): Supabase sends the activation
-    // email and the user sets their OWN password when they accept — the
-    // shop never sees or shares a plain-text password, per the secure
-    // invitation requirement.
+    // email and the user sets their OWN password when they accept.
+    let newUserId: string;
     const { data: invited, error: inviteErr } =
       await adminClient.auth.admin.inviteUserByEmail(email, {
         redirectTo: "mandi://auth-callback",
         data: { full_name: name, invited_to_shop: shop?.name ?? "" },
       });
+
     if (inviteErr) {
       if (inviteErr.message?.toLowerCase().includes("already registered")) {
-        throw new HttpError(
-          409,
-          "An account with this email already exists on the platform."
+        // Multi-tenant: User already exists on platform. Find their existing account to link.
+        const { data: usersData, error: listErr } =
+          await adminClient.auth.admin.listUsers();
+        if (listErr) throw new HttpError(500, listErr.message);
+
+        const existingUser = usersData.users.find(
+          (u) => u.email?.toLowerCase() === email.toLowerCase()
         );
+        if (!existingUser) {
+          throw new HttpError(409, "User account exists but could not be resolved.");
+        }
+        newUserId = existingUser.id;
+
+        // Check if already an active member of this shop
+        const { data: existingMember } = await adminClient
+          .from("shop_memberships")
+          .select("id")
+          .eq("shop_id", shopId)
+          .eq("user_id", newUserId)
+          .maybeSingle();
+
+        if (existingMember) {
+          throw new HttpError(400, "This user is already a member of this shop.");
+        }
+      } else {
+        throw new HttpError(500, inviteErr.message);
       }
-      throw new HttpError(500, inviteErr.message);
+    } else {
+      newUserId = invited.user.id;
     }
-    const newUserId = invited.user.id;
 
     const roleId = body.roleId || config.defaultRoleId;
 
@@ -102,6 +124,14 @@ export async function handleCreateAccount(
       status: "sent",
     });
 
+    const rawOpeningBalance = body.extra?.openingBalance;
+    const openingBalance =
+      typeof rawOpeningBalance === "number"
+        ? rawOpeningBalance
+        : typeof rawOpeningBalance === "string"
+        ? parseFloat(rawOpeningBalance) || 0
+        : 0;
+
     if (config.entityType === "customer") {
       await adminClient.from("customers").insert({
         shop_id: shopId,
@@ -109,6 +139,8 @@ export async function handleCreateAccount(
         name,
         phone: body.phone ?? "",
         email,
+        opening_balance: openingBalance,
+        running_balance: openingBalance,
       });
     } else if (config.entityType === "supplier") {
       await adminClient.from("suppliers").insert({
@@ -118,6 +150,8 @@ export async function handleCreateAccount(
         phone: body.phone ?? "",
         email,
         products_supplied: (body.extra?.productsSupplied as string) ?? "",
+        opening_balance: openingBalance,
+        running_balance: openingBalance,
       });
     }
 

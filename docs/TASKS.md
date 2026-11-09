@@ -26,4 +26,8 @@
 - [x] **Urdu & English Multi-Language UI**: Bilingual English & Urdu (`اردو`) Mandi terms switcher (*Gandum, Chawal, Mazdoori, Kiraya, Mann, Vasool, Baqi*).
 - [x] **Offline Banner & Push Alerts**: Connection status bar (`connectivity_plus`) and on-device push notifications (`flutter_local_notifications`).
 - [x] **Strict Customer & Supplier Data Isolation**: RLS policies for invoices, payments, and purchase orders so customers/suppliers strictly read only their own records.
+- [x] **Hardened Security & Privilege Escalation Prevention**: `check_shop_membership_update()` trigger blocking client tampering of `role_id`, `custom_permissions`, `status`, and `salary`.
+- [x] **Atomic Procurement RPC**: `create_purchase_order_with_stock_addition` RPC with row locks (`FOR UPDATE`), stock increments, inventory transactions, and balance updates in a single transaction.
+- [x] **DSA Algorithmic Ledger Engine**: `LedgerCalculator` with chronological two-pointer merge ($O((N+M)\log(N+M))$), prefix-sum progressive running balance accumulator ($O(N)$), and binary search range queries ($O(\log N)$).
+- [x] **Itemized Khata A4 PDF Statements**: Complete multi-page itemized PDF statement generation with debit/credit breakdown, running balance history, and verification seals.
 - [x] **Flutter Web Support**: Cross-platform Web compilation (`flutter build web`) and web password setup.
