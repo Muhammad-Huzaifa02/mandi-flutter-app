@@ -1061,4 +1061,73 @@ class SupabaseService {
           .stream(primaryKey: ['id'])
           .eq('shop_id', shopId)
           .order('created_at', ascending: false);
+
+  // ── SMS Gateway & Notification Logs (خودکار ایس ایم ایس) ────────────────────
+
+  static Future<Map<String, dynamic>?> getSmsSettings(String shopId) async {
+    final row = await _client
+        .from('sms_gateway_settings')
+        .select('*')
+        .eq('shop_id', shopId)
+        .maybeSingle();
+    return row;
+  }
+
+  static Future<void> upsertSmsSettings(Map<String, dynamic> data) async {
+    data['updated_at'] = DateTime.now().toIso8601String();
+    await _client.from('sms_gateway_settings').upsert(
+          data,
+          onConflict: 'shop_id',
+        );
+  }
+
+  static Stream<List<Map<String, dynamic>>> smsLogsStream(String shopId) =>
+      _client
+          .from('sms_logs')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('created_at', ascending: false);
+
+  static Future<List<Map<String, dynamic>>> getSmsLogs(String shopId,
+      {int limit = 100}) async {
+    final rows = await _client
+        .from('sms_logs')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false)
+        .limit(limit);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createSmsLog(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('sms_logs')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateSmsLogStatus({
+    required String logId,
+    required String shopId,
+    required String status,
+    String? errorMessage,
+    String? externalMessageId,
+  }) async {
+    final updateData = <String, dynamic>{
+      'status': status,
+    };
+    if (errorMessage != null) {
+      updateData['error_message'] = errorMessage;
+    }
+    if (externalMessageId != null) {
+      updateData['external_message_id'] = externalMessageId;
+    }
+    await _client
+        .from('sms_logs')
+        .update(updateData)
+        .eq('id', logId)
+        .eq('shop_id', shopId);
+  }
 }

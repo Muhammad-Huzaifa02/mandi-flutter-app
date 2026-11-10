@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/recovery_messaging_service.dart';
 import 'package:mandi/data/models/customer_model.dart';
 import 'package:mandi/data/models/shop_model.dart';
+import 'package:mandi/data/models/sms_gateway_model.dart';
+import 'package:mandi/modules/sms/providers/sms_provider.dart';
 
 /// Interactive modal sheet to preview, adjust tone/language, and dispatch payment recovery notices.
 class SendReminderDialog extends StatefulWidget {
@@ -208,13 +211,49 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
         ),
         OutlinedButton.icon(
           icon: const Icon(Icons.sms_outlined, size: 16),
-          label: const Text('SMS'),
+          label: const Text('Device SMS'),
           onPressed: () async {
             Navigator.pop(context);
             await RecoveryMessagingService.launchSms(
               phone: widget.customer.phone,
               message: _messageCtrl.text.trim(),
             );
+          },
+        ),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.send_to_mobile_rounded, size: 16),
+          label: const Text('Gateway SMS'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: MColors.primary,
+            foregroundColor: Colors.white,
+          ),
+          onPressed: () async {
+            final smsProvider = context.read<SmsProvider>();
+            final messenger = ScaffoldMessenger.of(context);
+            Navigator.pop(context);
+
+            final res = await smsProvider.sendSms(
+              recipientPhone: widget.customer.phone,
+              recipientName: widget.customer.name,
+              message: _messageCtrl.text.trim(),
+              eventType: SmsEventType.recoveryReminder,
+            );
+
+            if (res.success) {
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text('Recovery SMS dispatched via Gateway to ${widget.customer.name}!'),
+                  backgroundColor: MColors.primary,
+                ),
+              );
+            } else {
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text('SMS Gateway failed: ${res.errorMessage}'),
+                  backgroundColor: Colors.red.shade700,
+                ),
+              );
+            }
           },
         ),
         ElevatedButton.icon(

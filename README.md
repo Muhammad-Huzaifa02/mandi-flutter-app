@@ -119,6 +119,13 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **1-Click Consignment Lot Bridge**: Instantly generates an auction consignment lot (*آمد و ڈھیری*) from arrived cross-border cargo with pre-filled vehicle, weight, and bag numbers.
 - **Official Printable Manifests & Registers**: High-resolution A4 Single Cargo Manifest & Customs Statements and Landscape A4 Border Transit Registers (`CrossBorderPdfGenerator`).
 
+### 📱 Automated SMS Gateway & Transactional Alerts Engine (*خودکار ایس ایم ایس گیٹ وے اور تصدیقی پیغامات*)
+- **Multi-Provider Telecom Integrations**: Comprehensive SMS dispatch infrastructure (`SmsGatewayPage`, `SmsProvider`, `SmsGatewayService`) integrating **Twilio Cloud REST API**, Pakistani Branded Telco Shortcodes, and Generic HTTP Webhook APIs (Jazz, Telenor, Zong, Infobip) alongside an offline local Mock Simulator.
+- **GSM-7 & Unicode Character Segmentation**: Built-in character and multi-part segment calculator ($160/153$ chars for standard GSM-7 vs $70/67$ chars for Urdu/Arabic Unicode) preventing unexpected billing surprises.
+- **Automated Event Triggers**: Configurable background triggers for Sales Invoices (grand total & pending balance), Cash/Bank Receipts (amount & updated running balance), Auction Boli Winning Bids (lot #, rate/Mann, bags), Weighbridge Kanda Slips (gross, tare, net KG & Maunds), and Farmer Advance Deductions.
+- **Delivery Receipts & Audit Trail**: Real-time delivery status monitoring (`sent`, `delivered`, `failed`, `pending`) with telecom message IDs, error reason capturing, and 1-tap retry dispatch.
+- **Integrated Khata Recovery Dispatch**: Direct "Gateway SMS" dispatch button built into the Payment Recovery Hub (`PaymentRecoveryPage`, `SendReminderDialog`).
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -149,6 +156,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Farmer Advances & Inputs** | Pre-harvest cash & input (DAP/Urea, seed, spray) financing, markup calculation, harvest auction recoveries, and A4 statements. |
 | **Thermal Printer Engine** | Raw ESC/POS bytecode generator, 58mm/80mm roll formatting, simulated tear preview, 6-document receipt suite (Invoices, Boli slips, Kanda tickets, Cash Khata vouchers, Advance deductions). |
 | **Cross-Border Mandi Trade** | Pak-Afghan & Pak-Iran transit fruit/vegetable cargo tracking, dual-currency valuation (USD/AFN/IRR to PKR), border checkpoints (Torkham, Chaman, Taftan), customs tariffs & freight landed cost, supplier debt settlement, A4 cargo manifest & register. |
+| **SMS Gateway & Alerts** | Multi-provider telecom integration (Twilio, Pakistani Telco, HTTP webhook, Mock), GSM-7/Unicode part calculator, automatic event-driven dispatch triggers (invoices, receipts, boli, weighbridge), delivery audit logs, and direct recovery hub sending. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

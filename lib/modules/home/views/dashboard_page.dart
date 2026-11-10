@@ -26,6 +26,7 @@ import 'package:mandi/modules/storage/views/storage_and_bardana_page.dart';
 import 'package:mandi/modules/weighbridge/views/weighbridge_page.dart';
 import 'package:mandi/modules/advances/views/farmer_advance_page.dart';
 import 'package:mandi/modules/cross_border/views/cross_border_page.dart';
+import 'package:mandi/modules/sms/views/sms_gateway_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -552,6 +553,15 @@ class DashboardPage extends StatelessWidget {
                           builder: (_) => const CrossBorderPage()),
                     ),
                   ),
+                _ManageTile(
+                  icon: Icons.sms_rounded,
+                  label: 'SMS Gateway (ایس ایم ایس)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const SmsGatewayPage()),
+                  ),
+                ),
                 if (shopCtx.hasPermission('manage_roles'))
                   _ManageTile(
                     icon: Icons.shield_outlined,

@@ -661,6 +661,54 @@ create index if not exists idx_cross_border_status on public.cross_border_shipme
 create index if not exists idx_cross_border_country on public.cross_border_shipments(shop_id, origin_country);
 create index if not exists idx_cross_border_created on public.cross_border_shipments(shop_id, created_at desc);
 
+-- 7h. SMS_GATEWAY_SETTINGS & SMS_LOGS (خودکار ایس ایم ایس گیٹ وے اور تصدیقی پیغامات)
+create table if not exists public.sms_gateway_settings (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null unique references public.shops(id) on delete cascade,
+  provider                    text not null default 'mock', -- mock, twilio, generic_http, telco_pakistan
+  is_enabled                  boolean not null default false,
+  sender_id                   text not null default 'MANDI-ERP', -- Alphanumeric mask or sender phone
+  api_key                     text not null default '',
+  api_secret                  text not null default '', -- Auth token / API Secret
+  account_sid                 text not null default '', -- Twilio Account SID or User ID
+  from_number                 text not null default '', -- Sender phone number e.g. Twilio number
+  webhook_url                 text not null default '', -- Generic HTTP API URL
+  http_method                 text not null default 'POST', -- POST, GET
+  http_headers_json           jsonb not null default '{}'::jsonb,
+  http_payload_template       text not null default '{"to": "{to}", "message": "{message}", "sender": "{sender}"}',
+  auto_send_on_invoice        boolean not null default true,
+  auto_send_on_payment        boolean not null default true,
+  auto_send_on_boli           boolean not null default false,
+  auto_send_on_weighbridge    boolean not null default false,
+  auto_send_on_advance        boolean not null default false,
+  sms_credit_balance          numeric(10,2) not null default 0.00,
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_sms_settings_shop on public.sms_gateway_settings(shop_id);
+
+create table if not exists public.sms_logs (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  recipient_phone             text not null,
+  recipient_name              text not null default '',
+  message_body                text not null,
+  event_type                  text not null default 'manual', -- invoice, payment, boli, weighbridge, farmer_advance, recovery_reminder, manual_test
+  provider                    text not null default 'mock',
+  status                      text not null default 'pending', -- pending, sent, delivered, failed
+  external_message_id         text not null default '',
+  error_message               text,
+  parts_count                 integer not null default 1,
+  cost_pkr                    numeric(10,2) not null default 0.00,
+  created_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_sms_logs_shop on public.sms_logs(shop_id);
+create index if not exists idx_sms_logs_status on public.sms_logs(shop_id, status);
+create index if not exists idx_sms_logs_event on public.sms_logs(shop_id, event_type);
+create index if not exists idx_sms_logs_created on public.sms_logs(shop_id, created_at desc);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1146,6 +1194,8 @@ alter table public.weighbridge_tickets    enable row level security;
 alter table public.farmer_advances        enable row level security;
 alter table public.farmer_advance_recoveries enable row level security;
 alter table public.cross_border_shipments enable row level security;
+alter table public.sms_gateway_settings   enable row level security;
+alter table public.sms_logs               enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -1584,6 +1634,32 @@ create policy "cross_border_shipments: authorized staff can write" on public.cro
     public.has_permission(shop_id, 'view_ledger') or
     public.has_permission(shop_id, 'manage_products')
   );
+
+drop policy if exists "sms_gateway_settings: members can read" on public.sms_gateway_settings;
+create policy "sms_gateway_settings: members can read" on public.sms_gateway_settings
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "sms_gateway_settings: authorized staff can write" on public.sms_gateway_settings;
+create policy "sms_gateway_settings: authorized staff can write" on public.sms_gateway_settings
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_receipt') or
+    public.has_permission(shop_id, 'create_invoice')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_receipt') or
+    public.has_permission(shop_id, 'create_invoice')
+  );
+
+drop policy if exists "sms_logs: members can read" on public.sms_logs;
+create policy "sms_logs: members can read" on public.sms_logs
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "sms_logs: members can write" on public.sms_logs;
+create policy "sms_logs: members can write" on public.sms_logs
+  for all using (public.is_shop_member(shop_id))
+  with check (public.is_shop_member(shop_id));
 
 -- ============================================================================
 -- 10. STORAGE BUCKETS
