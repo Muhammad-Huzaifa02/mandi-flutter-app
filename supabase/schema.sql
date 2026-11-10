@@ -531,6 +531,44 @@ create index if not exists idx_bardana_transactions_shop on public.bardana_trans
 create index if not exists idx_bardana_party on public.bardana_transactions(shop_id, party_id);
 create index if not exists idx_bardana_status on public.bardana_transactions(shop_id, status);
 
+-- 7e. WEIGHBRIDGE_TICKETS (Mandi Kanda & Weighbridge / دھرم کنڈا)
+create table if not exists public.weighbridge_tickets (
+  id                      uuid primary key default gen_random_uuid(),
+  shop_id                 uuid not null references public.shops(id) on delete cascade,
+  ticket_number           text not null,
+  vehicle_number          text not null,
+  vehicle_type            text not null default 'trolley', -- trolley, truck_mazda, shehzore, pickup_dala, rickshaw_loader, other
+  driver_name             text not null default '',
+  driver_phone            text not null default '',
+  party_name              text not null default '', -- Farmer or Buyer name
+  party_type              text not null default 'farmer', -- farmer, buyer, other
+  party_id                uuid,
+  commodity_name          text not null default '',
+  gross_weight_kg         numeric(12,2) not null default 0,
+  tare_weight_kg          numeric(12,2) not null default 0,
+  net_weight_kg           numeric(12,2) not null default 0,
+  deduction_kg            numeric(12,2) not null default 0,
+  deduction_reason        text not null default '',
+  final_weight_kg         numeric(12,2) not null default 0,
+  bag_count               int not null default 0,
+  kanda_fee               numeric(10,2) not null default 0,
+  fee_paid_by             text not null default 'farmer', -- farmer, buyer, shop, waived
+  status                  text not null default 'gross_recorded', -- gross_recorded, completed, cancelled
+  gross_weighed_at        timestamptz not null default now(),
+  tare_weighed_at         timestamptz,
+  operator_name           text not null default '',
+  consignment_lot_id      uuid references public.consignment_lots(id) on delete set null,
+  notes                   text not null default '',
+  created_by              uuid references auth.users(id),
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now()
+);
+
+create index if not exists idx_weighbridge_tickets_shop on public.weighbridge_tickets(shop_id);
+create index if not exists idx_weighbridge_vehicle on public.weighbridge_tickets(shop_id, vehicle_number);
+create index if not exists idx_weighbridge_status on public.weighbridge_tickets(shop_id, status);
+create index if not exists idx_weighbridge_created on public.weighbridge_tickets(shop_id, created_at desc);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1012,6 +1050,7 @@ alter table public.cheques                enable row level security;
 alter table public.storage_locations      enable row level security;
 alter table public.storage_allocations    enable row level security;
 alter table public.bardana_transactions   enable row level security;
+alter table public.weighbridge_tickets    enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -1372,6 +1411,27 @@ create policy "bardana_transactions: authorized staff can write" on public.barda
     public.has_permission(shop_id, 'create_purchase') or
     public.has_permission(shop_id, 'create_invoice') or
     public.has_permission(shop_id, 'view_ledger')
+  );
+
+drop policy if exists "weighbridge_tickets: members can read" on public.weighbridge_tickets;
+create policy "weighbridge_tickets: members can read" on public.weighbridge_tickets
+  for select using (
+    public.is_shop_member(shop_id) or
+    party_id in (select id from public.suppliers where user_id = auth.uid()) or
+    party_id in (select id from public.customers where user_id = auth.uid())
+  );
+
+drop policy if exists "weighbridge_tickets: authorized staff can write" on public.weighbridge_tickets;
+create policy "weighbridge_tickets: authorized staff can write" on public.weighbridge_tickets
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'create_invoice')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'create_invoice')
   );
 
 -- ============================================================================

@@ -594,6 +594,82 @@ class SupabaseService {
     }).eq('id', id).eq('shop_id', shopId);
   }
 
+  // ── Weighbridge & Kanda (دھرم کنڈا وزن پرچی) ─────────────────────────
+
+  static Stream<List<Map<String, dynamic>>> weighbridgeTicketsStream(
+          String shopId) =>
+      _client
+          .from('weighbridge_tickets')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('created_at', ascending: false);
+
+  static Future<List<Map<String, dynamic>>> getWeighbridgeTickets(
+      String shopId) async {
+    final rows = await _client
+        .from('weighbridge_tickets')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createWeighbridgeTicket(
+      Map<String, dynamic> data) async {
+    final res = await _client
+        .from('weighbridge_tickets')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateWeighbridgeTicket({
+    required String id,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    final updateData = Map<String, dynamic>.from(data);
+    updateData['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('weighbridge_tickets')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> recordTareWeight({
+    required String id,
+    required String shopId,
+    required double tareWeightKg,
+    required double deductionKg,
+    required String deductionReason,
+    required double finalWeightKg,
+    required double netWeightKg,
+  }) async {
+    final now = DateTime.now();
+    await _client.from('weighbridge_tickets').update({
+      'tare_weight_kg': tareWeightKg,
+      'deduction_kg': deductionKg,
+      'deduction_reason': deductionReason,
+      'net_weight_kg': netWeightKg,
+      'final_weight_kg': finalWeightKg,
+      'status': 'completed',
+      'tare_weighed_at': now.toIso8601String(),
+      'updated_at': now.toIso8601String(),
+    }).eq('id', id).eq('shop_id', shopId);
+  }
+
+  static Future<void> cancelWeighbridgeTicket({
+    required String id,
+    required String shopId,
+  }) async {
+    await _client.from('weighbridge_tickets').update({
+      'status': 'cancelled',
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', id).eq('shop_id', shopId);
+  }
+
   // ── Invoices ─────────────────────────────────────────────────────────────
 
   static Stream<List<Map<String, dynamic>>> invoicesStream(String shopId) =>

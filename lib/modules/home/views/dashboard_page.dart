@@ -23,6 +23,7 @@ import 'package:mandi/modules/consignment/views/consignment_list_page.dart';
 import 'package:mandi/modules/customers/views/payment_recovery_page.dart';
 import 'package:mandi/modules/banking/views/bank_ledger_page.dart';
 import 'package:mandi/modules/storage/views/storage_and_bardana_page.dart';
+import 'package:mandi/modules/weighbridge/views/weighbridge_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -512,6 +513,18 @@ class DashboardPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (_) => const StorageAndBardanaPage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('manage_inventory') ||
+                    shopCtx.hasPermission('create_purchase') ||
+                    shopCtx.hasPermission('create_invoice'))
+                  _ManageTile(
+                    icon: Icons.scale_rounded,
+                    label: 'Weighbridge (دھرم کنڈا)',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const WeighbridgePage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_roles'))

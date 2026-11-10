@@ -78,6 +78,14 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Date Range Filters**: Filter reports by **All Time, Today, This Week, This Month, or Custom Date Range**.
 - **Financial Exports**: Export complete business summary, sales invoices, and shop expenses to **Excel (.xlsx)** or **PDF**.
 
+### ⚖️ Electronic Weighbridge & Dharam Kanda (*دھرم کنڈا وزن رجسٹر*)
+- **2-Stage Gross & Tare Life-Cycle**: Complete workflow capturing **1st Weight (Gross / بھرا وزن)** upon vehicle arrival and **2nd Weight (Tare / خالی وزن)** after unloading ($\text{Net Weight} = \text{Gross} - \text{Tare}$).
+- **Automated Katoti & Deductions Engine**: Configurable deductions for moisture content percentage, dirt/trash, and packaging tare ($\text{Final Billable Weight} = \text{Net} - \text{Deductions}$).
+- **Mandi Maund Units Math**: Instant auto-conversion of Gross, Tare, Net, and Final weights into Mandi Maunds ($\text{Maunds} = \text{Weight in KG} / 40.0$).
+- **Live Digital Scale Streaming & Simulation**: Interactive indicator interface supporting standard electronic scale indicators (Yaohua, Toledo, Avery) with STABLE (`ST`) vs MOTION (`US`) status, auto-capture, and zeroing.
+- **Printable Official Kanda Certificate Slips & Registers**: High-resolution printable PDF Kanda Slips and full Daily Weighbridge Registers (`WeighbridgeSlipPdfGenerator`).
+- **Direct Bridge to Consignment Lots**: 1-click shortcut to pre-populate incoming Consignment Arrival (*ڈھیری پرچہ*) with certified vehicle number, party, crop, bags, and net weight.
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -104,6 +112,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Daily Cash Book (Roznamcha)** | Daily morning drawer opening cash, cash sales, khata recoveries, disbursements, operating expenses, and closing balance with A4 PDF printing. |
 | **Bank & Cheques (PDC Ledger)** | Commercial accounts management, post-dated cheque (*PDC*) portfolio, clearing lifecycle, bounced cheque alerts, and A4 printable register. |
 | **Godown & Bardana Ledger** | Warehouse/cold store capacity tracking, inward batch rent proration, Jute/Plastic sack revolving ledger, security deposits, and A4 PDF reports. |
+| **Weighbridge & Kanda** | Vehicle gross/tare weighment, moisture/trash deductions, live digital scale simulation, certified kanda slips, and 1-click consignment lot bridge. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

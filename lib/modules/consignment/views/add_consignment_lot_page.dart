@@ -11,7 +11,16 @@ import 'package:mandi/modules/consignment/providers/consignment_provider.dart';
 
 /// Form page to register a new incoming crop arrival lot (Aawak & Dheri / آمد و ڈھیری).
 class AddConsignmentLotPage extends StatefulWidget {
-  const AddConsignmentLotPage({super.key});
+  final String? initialVehicleNumber;
+  final int? initialBags;
+  final double? initialWeightKg;
+
+  const AddConsignmentLotPage({
+    super.key,
+    this.initialVehicleNumber,
+    this.initialBags,
+    this.initialWeightKg,
+  });
 
   @override
   State<AddConsignmentLotPage> createState() => _AddConsignmentLotPageState();
@@ -36,6 +45,16 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
     super.initState();
     final randomSuffix = (DateTime.now().millisecondsSinceEpoch % 900) + 100;
     _lotNumCtrl = TextEditingController(text: 'DH-$randomSuffix');
+    if (widget.initialVehicleNumber != null &&
+        widget.initialVehicleNumber!.isNotEmpty) {
+      _vehicleCtrl.text = widget.initialVehicleNumber!;
+    }
+    if (widget.initialBags != null && widget.initialBags! > 0) {
+      _bagsCtrl.text = widget.initialBags.toString();
+    }
+    if (widget.initialWeightKg != null && widget.initialWeightKg! > 0) {
+      _weightCtrl.text = widget.initialWeightKg!.toStringAsFixed(1);
+    }
   }
 
   @override
