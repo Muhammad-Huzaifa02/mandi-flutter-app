@@ -8,7 +8,9 @@ import 'package:provider/provider.dart';
 
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/scale_service.dart';
+import 'package:mandi/core/utils/thermal_receipt_service.dart';
 import 'package:mandi/core/utils/weighbridge_slip_pdf_generator.dart';
+import 'package:mandi/core/widgets/thermal_print_preview_dialog.dart';
 import 'package:mandi/data/models/weighbridge_ticket_model.dart';
 import 'package:mandi/modules/consignment/views/add_consignment_lot_page.dart';
 import 'package:mandi/modules/weighbridge/providers/weighbridge_provider.dart';
@@ -107,6 +109,57 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
         );
       }
     }
+  }
+
+  void _printThermalTicketSlip(
+    String shopName,
+    WeighbridgeTicket ticket,
+  ) {
+    final shop = context.read<ShopContextProvider>().currentShop;
+    final lines = [
+      '*** ${shopName.toUpperCase()} ***',
+      if (shop?.city != null && shop!.city.isNotEmpty) 'Mandi: ${shop.city}',
+      if (shop?.phone != null && shop!.phone.isNotEmpty) 'Ph: ${shop.phone}',
+      '--------------------------------',
+      '*** DHARAM KANDA / دھرم کنڈا ***',
+      'Ticket #: ${ticket.ticketNumber}',
+      'Vehicle: ${ticket.vehicleNumber} (${ticket.vehicleType.labelEnglish})',
+      'Party: ${ticket.partyName.isNotEmpty ? ticket.partyName : "Walk-in"}',
+      'Commodity: ${ticket.commodityName}',
+      if (ticket.driverName.isNotEmpty) 'Driver: ${ticket.driverName}',
+      if (ticket.bagCount > 0) 'Bags: ${ticket.bagCount} Bags',
+      '--------------------------------',
+      '1st Gross Wt: ${ticket.grossWeightKg.toStringAsFixed(0)} KG (${ticket.grossMaunds.toStringAsFixed(2)}M)',
+      '2nd Tare Wt:  ${ticket.tareWeightKg.toStringAsFixed(0)} KG (${ticket.tareMaunds.toStringAsFixed(2)}M)',
+      'Net Weight:   ${ticket.computedNetWeightKg.toStringAsFixed(0)} KG (${ticket.netMaunds.toStringAsFixed(2)}M)',
+      if (ticket.deductionKg > 0)
+        'Katoti:       -${ticket.deductionKg.toStringAsFixed(0)} KG (${ticket.deductionReason})',
+      '================================',
+      'FINAL WEIGHT: ${ticket.computedFinalWeightKg.toStringAsFixed(0)} KG',
+      '              (${ticket.maunds.toStringAsFixed(2)} Maunds)',
+      'Kanda Fee:    Rs. ${ticket.kandaFee.toStringAsFixed(0)}',
+      '--------------------------------',
+      'Driver: ________  Incharge: ________',
+      '*** Certified Mandi Weighment ***',
+    ];
+
+    ThermalPrintPreviewDialog.show(
+      context: context,
+      title: 'Kanda Thermal Slip',
+      subtitle: 'Ticket #${ticket.ticketNumber} • ${ticket.vehicleNumber}',
+      previewLines: lines,
+      onPrint: (rollWidth, copies) async {
+        for (int i = 0; i < copies; i++) {
+          await ThermalReceiptService.printWeighbridgeSlip(
+            ticket: ticket,
+            shopName: shopName,
+            shopPhone: shop?.phone,
+            shopCity: shop?.city,
+            rollWidthMm: rollWidth,
+          );
+        }
+      },
+    );
   }
 
   void _openRecordGrossDialog() {
@@ -786,10 +839,17 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                         ),
                       ),
                       const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () => _printThermalTicketSlip(shopName, ticket),
+                        icon: const Icon(Icons.receipt_long, size: 18),
+                        tooltip: 'Print 58mm/80mm Thermal Slip (تھرمل پرچی)',
+                        color: Colors.blueGrey.shade800,
+                      ),
+                      const SizedBox(width: 4),
                       ElevatedButton.icon(
                         onPressed: () => _printTicketSlip(shopName, ticket),
                         icon: const Icon(Icons.print, size: 14),
-                        label: const Text('Print Slip (پرچی)'),
+                        label: const Text('Print A4 (پرچی)'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: MColors.primary,
                           foregroundColor: Colors.white,

@@ -243,13 +243,24 @@ flutter run \
 
 ## 🖨️ Thermal POS & PDF Printing
 
-### Thermal Receipts
-- Supports **80mm Standard POS** and **58mm Mobile Bluetooth Roll** printers.
-- Configure roll paper width and receipt footer note in **Shop Settings**.
-- Uses `ThermalReceiptService.printThermalSlip` for direct printing.
+### 🧾 Munshi Handheld Mobile Bluetooth & POS Thermal Receipts
+- **Multi-Document Thermal Engine**: 1-click printing for all daily field operations:
+  1. **Sales Invoices (*سیلز بل*)**: Itemized bags, KG, Maunds, commission, expenses, and pending balance.
+  2. **Auction Winning Boli Slips (*بولی پرچہ*)**: Lot #, farmer, winning bidder, winning rate (Rs./Mann), and gross auction value.
+  3. **Dharam Kanda Weighbridge Slips (*دھرم کنڈا وزن رسید*)**: Vehicle #, 1st gross, 2nd tare, deductions, and certified final billable weight.
+  4. **Cash Khata Payment Receipts (*نقدی وصولی پرچہ*)**: Previous balance, cash received, and remaining ledger balance.
+  5. **Farmer Advance Loan Deductions (*ایڈوانس کٹوتی پرچہ*)**: Principal, accrued markup, auction recovery sum, and remaining loan.
+  6. **Hardware Test Receipts (*ٹیسٹ پرنٹ*)**: 58mm / 80mm column alignment and line feed verification in Shop Settings.
+- **ESC/POS Command Byte Generator (`EscPosCommandBuilder`)**: Raw byte protocol generator with text alignment, bold, double-size, tabular space padding (32-column 58mm mobile roll vs 48-column 80mm desktop roll), and partial/full paper cutting.
+- **Realistic Thermal Preview Dialog (`ThermalPrintPreviewDialog`)**: Realistic paper-textured preview with serrated tear bottom border, live 58mm/80mm toggle, copies selector, and instant print layout.
 
 ### A4 PDF Reports
 - Full A4 invoices via `InvoicePdfGenerator`.
+- Daily Auction Boli Sheet & Lot Slips via `BoliSheetPdfGenerator`.
+- Certified Kanda Certificates & Daily Weighbridge Registers via `WeighbridgeSlipPdfGenerator`.
+- Farmer Pre-Harvest Statements & Portfolio Registers via `FarmerAdvancePdfGenerator`.
+- Godown & Bardana Ledger Reports via `StorageAndBardanaPdfGenerator`.
+- Cheque Register & Post-Dated Cheque Portfolios via `ChequeRegisterPdfGenerator`.
 - Ledger account statements via `LedgerPdfGenerator`.
 - Executive financial reports generated via `ReportsPage`.
 

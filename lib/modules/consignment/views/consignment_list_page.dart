@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/boli_sheet_pdf_generator.dart';
+import 'package:mandi/core/utils/thermal_receipt_service.dart';
+import 'package:mandi/core/widgets/thermal_print_preview_dialog.dart';
 import 'package:mandi/data/models/consignment_lot_model.dart';
 import 'package:mandi/modules/consignment/providers/consignment_provider.dart';
 import 'package:mandi/modules/consignment/views/add_consignment_lot_page.dart';
@@ -338,6 +340,52 @@ class _ConsignmentLotCard extends StatelessWidget {
     this.shopCity,
   });
 
+  void _printThermalBoliSlip(BuildContext context) {
+    final weightMaunds = lot.maunds;
+    final winningRate = lot.ratePerMaund;
+    final grossTotal = lot.estimatedTotal;
+
+    final lines = [
+      '*** ${shopName.toUpperCase()} ***',
+      if (shopCity != null && shopCity!.isNotEmpty) 'Mandi: $shopCity',
+      if (shopPhone != null && shopPhone!.isNotEmpty) 'Ph: $shopPhone',
+      '--------------------------------',
+      '*** AUCTION BOLI SLIP / بولی پرچہ ***',
+      'Lot #: ${lot.lotNumber}',
+      'Farmer: ${lot.supplierName.isNotEmpty ? lot.supplierName : "Direct Farmer"}',
+      if (lot.vehicleNumber.isNotEmpty) 'Vehicle #: ${lot.vehicleNumber}',
+      'Crop: ${lot.productName.isNotEmpty ? lot.productName : "Standard Lot"}',
+      'Bags: ${lot.bagCount} Bags',
+      'Weight: ${lot.weightKg.toStringAsFixed(0)} KG (${weightMaunds.toStringAsFixed(2)} Mann)',
+      '--------------------------------',
+      'Winner: ${lot.winningBuyerName.isNotEmpty ? lot.winningBuyerName : "Open / In Auction"}',
+      'Winning Rate: Rs.${winningRate.toStringAsFixed(0)}/Mann',
+      '================================',
+      'GROSS TOTAL: Rs.${grossTotal.toStringAsFixed(0)}',
+      '--------------------------------',
+      'Munshi: ________  Buyer: ________',
+      '*** Mandi Auction Slip ***',
+    ];
+
+    ThermalPrintPreviewDialog.show(
+      context: context,
+      title: 'Auction Boli Slip',
+      subtitle: 'Lot #${lot.lotNumber} • ${lot.productName}',
+      previewLines: lines,
+      onPrint: (rollWidth, copies) async {
+        for (int i = 0; i < copies; i++) {
+          await ThermalReceiptService.printBoliSlip(
+            lot: lot,
+            shopName: shopName,
+            shopPhone: shopPhone,
+            shopCity: shopCity,
+            rollWidthMm: rollWidth,
+          );
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GlassCard(
@@ -403,6 +451,11 @@ class _ConsignmentLotCard extends StatelessWidget {
                         fontSize: 9,
                       ),
                     ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.receipt_long, size: 18),
+                    tooltip: 'Print Thermal Boli Slip (تھرمل پرچی)',
+                    onPressed: () => _printThermalBoliSlip(context),
                   ),
                   IconButton(
                     icon: const Icon(Icons.print_outlined, size: 18),

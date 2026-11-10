@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/core/theme/theme_provider.dart';
+import 'package:mandi/core/utils/thermal_receipt_service.dart';
+import 'package:mandi/core/widgets/thermal_print_preview_dialog.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
@@ -348,6 +350,49 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
                   labelText: 'Receipt Footer Note',
                   hintText: 'e.g. *** Thank You For Doing Business With Us! ***',
                 ),
+              ),
+              const SizedBox(height: MSpacing.md),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.print_rounded, size: 18),
+                label: Text(
+                    'Print Test Thermal Receipt (${_printerRollWidth.toStringAsFixed(0)}mm) / ٹیسٹ پرنٹ'),
+                onPressed: () {
+                  final shop = context.read<ShopContextProvider>().currentShop;
+                  final shopName = shop?.name ?? 'Mandi Commission Shop';
+                  ThermalPrintPreviewDialog.show(
+                    context: context,
+                    title: 'Printer Hardware Test Slip',
+                    subtitle:
+                        '${_printerRollWidth.toStringAsFixed(0)}mm ESC/POS Alignment Test',
+                    initialRollWidth: _printerRollWidth,
+                    previewLines: [
+                      '*** ${shopName.toUpperCase()} ***',
+                      'Mandi: ${_city.text.isNotEmpty ? _city.text : "City Market"}',
+                      'Ph: ${_phone.text.isNotEmpty ? _phone.text : "0300-1234567"}',
+                      '--------------------------------',
+                      'TEST PRINT / ٹیسٹ پرنٹ',
+                      'Roll Width: ${_printerRollWidth.toStringAsFixed(0)}mm',
+                      'Columns: ${_printerRollWidth == 58 ? "32 Chars" : "48 Chars"}',
+                      'Status: READY & ONLINE',
+                      '--------------------------------',
+                      '12345678901234567890123456789012',
+                      'Left Item                   Right Val',
+                      'Bold Key                    Bold Val',
+                      '================================',
+                      '*** Printer Test Successful! ***',
+                    ],
+                    onPrint: (width, copies) async {
+                      for (int i = 0; i < copies; i++) {
+                        await ThermalReceiptService.printTestSlip(
+                          shopName: shopName,
+                          shopPhone: _phone.text,
+                          shopCity: _city.text,
+                          rollWidthMm: width,
+                        );
+                      }
+                    },
+                  );
+                },
               ),
 
               const SizedBox(height: MSpacing.lg),
