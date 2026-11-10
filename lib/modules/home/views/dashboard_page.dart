@@ -25,6 +25,7 @@ import 'package:mandi/modules/banking/views/bank_ledger_page.dart';
 import 'package:mandi/modules/storage/views/storage_and_bardana_page.dart';
 import 'package:mandi/modules/weighbridge/views/weighbridge_page.dart';
 import 'package:mandi/modules/advances/views/farmer_advance_page.dart';
+import 'package:mandi/modules/cross_border/views/cross_border_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -538,6 +539,17 @@ class DashboardPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (_) => const FarmerAdvancePage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('create_purchase') ||
+                    shopCtx.hasPermission('manage_products'))
+                  _ManageTile(
+                    icon: Icons.public_rounded,
+                    label: 'Border Trade (سرحدی مال)',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const CrossBorderPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_roles'))

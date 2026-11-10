@@ -19,6 +19,7 @@ import 'package:mandi/modules/banking/views/bank_ledger_page.dart';
 import 'package:mandi/modules/storage/views/storage_and_bardana_page.dart';
 import 'package:mandi/modules/weighbridge/views/weighbridge_page.dart';
 import 'package:mandi/modules/advances/views/farmer_advance_page.dart';
+import 'package:mandi/modules/cross_border/views/cross_border_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -593,6 +594,70 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Pre-harvest cash, fertilizer/seed financing & auction recovery deductions',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Cross-Border Trade Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.teal.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const CrossBorderPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.public_rounded,
+                      color: Colors.tealAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Cross-Border Mandi Trade',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'سرحدی تجارت و کسٹم',
+                              style: MText.caption.copyWith(
+                                color: Colors.tealAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Afghan/Iran import cargo, USD/AFN/IRR currency ledger & customs clearance',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),

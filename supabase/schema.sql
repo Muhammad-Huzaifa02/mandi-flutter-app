@@ -617,6 +617,50 @@ create table if not exists public.farmer_advance_recoveries (
 create index if not exists idx_advance_recoveries_advance on public.farmer_advance_recoveries(advance_id);
 create index if not exists idx_advance_recoveries_shop on public.farmer_advance_recoveries(shop_id);
 
+-- 7g. CROSS_BORDER_SHIPMENTS (پاک افغان و پاک ایران سرحدی تجارت اور کرنسی کھاتہ)
+create table if not exists public.cross_border_shipments (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  shipment_number             text not null default '',
+  origin_country              text not null default 'Afghanistan', -- Afghanistan, Iran, CentralAsia, Other
+  origin_city                 text not null default '',
+  border_crossing             text not null default 'Torkham', -- Torkham, Chaman, Taftan, Gabd_Rimdan, Khunjerab, Other
+  vehicle_number              text not null default '',
+  driver_name                 text not null default '',
+  driver_phone                text not null default '',
+  customs_gd_number           text not null default '', -- Goods Declaration (GD) Number
+  customs_clearance_date      timestamptz,
+  clearing_agent_name         text not null default '',
+  supplier_id                 uuid references public.suppliers(id) on delete set null,
+  supplier_name               text not null default '',
+  commodity                   text not null default '',
+  package_type                text not null default 'Wooden Crate', -- Wooden Crate, Carton Box, Sack, Reusable Bin
+  package_count               integer not null default 0,
+  gross_weight_kg             numeric(12,2) not null default 0,
+  currency                    text not null default 'USD', -- USD, AFN, IRR, PKR
+  exchange_rate_to_pkr        numeric(12,4) not null default 1.0,
+  foreign_contract_amount     numeric(14,2) not null default 0,
+  base_pkr_amount             numeric(14,2) not null default 0,
+  customs_duty_pkr            numeric(12,2) not null default 0,
+  border_freight_pkr          numeric(12,2) not null default 0,
+  clearing_charges_pkr        numeric(12,2) not null default 0,
+  other_expenses_pkr          numeric(12,2) not null default 0,
+  total_landed_cost_pkr       numeric(14,2) not null default 0,
+  paid_to_supplier_foreign    numeric(14,2) not null default 0,
+  remaining_supplier_foreign  numeric(14,2) not null default 0,
+  status                      text not null default 'in_transit', -- in_transit, cleared_at_border, arrived_in_mandi, auctioned, settled
+  consignment_lot_id          uuid references public.consignment_lots(id) on delete set null,
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_cross_border_shop on public.cross_border_shipments(shop_id);
+create index if not exists idx_cross_border_status on public.cross_border_shipments(shop_id, status);
+create index if not exists idx_cross_border_country on public.cross_border_shipments(shop_id, origin_country);
+create index if not exists idx_cross_border_created on public.cross_border_shipments(shop_id, created_at desc);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1101,6 +1145,7 @@ alter table public.bardana_transactions   enable row level security;
 alter table public.weighbridge_tickets    enable row level security;
 alter table public.farmer_advances        enable row level security;
 alter table public.farmer_advance_recoveries enable row level security;
+alter table public.cross_border_shipments enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -1519,6 +1564,25 @@ create policy "farmer_advance_recoveries: authorized staff can write" on public.
     public.has_permission(shop_id, 'manage_inventory') or
     public.has_permission(shop_id, 'create_purchase') or
     public.has_permission(shop_id, 'view_ledger')
+  );
+
+drop policy if exists "cross_border_shipments: members can read" on public.cross_border_shipments;
+create policy "cross_border_shipments: members can read" on public.cross_border_shipments
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "cross_border_shipments: authorized staff can write" on public.cross_border_shipments;
+create policy "cross_border_shipments: authorized staff can write" on public.cross_border_shipments
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'manage_products')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'manage_products')
   );
 
 -- ============================================================================

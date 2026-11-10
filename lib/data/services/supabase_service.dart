@@ -771,6 +771,61 @@ class SupabaseService {
     }).eq('id', advanceId).eq('shop_id', shopId);
   }
 
+  // ── Cross-Border Mandi Trade (پاک افغان و پاک ایران سرحدی تجارت) ─────────────
+
+  static Stream<List<Map<String, dynamic>>> crossBorderShipmentsStream(
+          String shopId) =>
+      _client
+          .from('cross_border_shipments')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('created_at', ascending: false);
+
+  static Future<List<Map<String, dynamic>>> getCrossBorderShipments(
+      String shopId) async {
+    final rows = await _client
+        .from('cross_border_shipments')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createCrossBorderShipment(
+      Map<String, dynamic> data) async {
+    final res = await _client
+        .from('cross_border_shipments')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateCrossBorderShipment({
+    required String id,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    final updateData = Map<String, dynamic>.from(data);
+    updateData['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('cross_border_shipments')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteCrossBorderShipment({
+    required String id,
+    required String shopId,
+  }) async {
+    await _client
+        .from('cross_border_shipments')
+        .delete()
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
   // ── Invoices ─────────────────────────────────────────────────────────────
 
   static Stream<List<Map<String, dynamic>>> invoicesStream(String shopId) =>

@@ -96,6 +96,29 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Overdue Risk Monitoring & Portfolio Metrics**: Real-time KPI summary tracking Total Disbursed Capital, Accumulated Markup, Recovered Capital, and Outstanding Exposure with overdue aging flags.
 - **Official A4 Verification Statements & Shop Registers**: One-tap PDF export of itemized Farmer Statements (*کھاد بیج و ایڈوانس پرچہ*) with farmer thumbprint / signature lines and comprehensive Shop Portfolio Registers (`FarmerAdvancePdfGenerator`).
 
+### 🖨️ Munshi Mobile Bluetooth Thermal Printer (ESC/POS 58mm & 80mm) (*منشی تھرمل پرنٹر اور فوری پرچہ جات*)
+- **Native ESC/POS Byte Builder**: Low-level ESC/POS command stream generator (`EscPosCommandBuilder`) supporting 58mm (32 columns) and 80mm (48 columns) paper rolls, bold/double-height typography, aligned table rows, dashed dividers, and auto paper cut commands.
+- **6-Document Printing Suite (`ThermalReceiptService`)**: Instant 1-click receipts formatted with serrated tear preview dialog (`ThermalPrintPreviewDialog`) for:
+  1. **Sales Invoices**: Itemized sales slips with weight in Maunds & KG, rate, commission, expenses, and buyer balances.
+  2. **Boli / Dheri Winning Slips (*بولی پرچہ*)**: Lot arrivals, vehicle numbers, bag counts, and winning buyer bids.
+  3. **Weighbridge Kanda Slips (*دھرم کنڈا رسید*)**: Gross, Tare, and certified Net billable weights.
+  4. **Cash Khata Payment Receipts (*وصولی پرچہ*)**: Instant payment voucher with previous and remaining ledger balances.
+  5. **Farmer Advance Loan Deductions (*ایڈوانس کٹوتی پرچہ*)**: Harvest auction recovery receipts.
+  6. **Hardware Test Slips (*ٹیسٹ پرنٹ*)**: Alignment and print-head diagnostic pattern.
+
+### 🌐 Multi-Currency & Cross-Border Mandi Trade (*پاک افغان و پاک ایران سرحدی تجارت اور کرنسی کھاتہ*)
+- **Regional Import Transit Corridors**: Dedicated international trade hub (`CrossBorderPage`, `CrossBorderProvider`) managing fruit and vegetable cargo originating from **Afghanistan** 🇦🇫, **Iran** 🇮🇷, and Central Asia (Pomegranates/انار, Grapes/انگور, Apples/سیب, Dates/کھجور, Melons/خربوزہ).
+- **Major Border Checkpoints**: Built-in routing and clearance tracking across **Torkham** (*طورخم*), **Chaman** (*چمن*), **Taftan** (*تفتان*), **Gabd-Rimdan** (*گبد ریمدان*), and **Khunjerab** (*خنجراب*).
+- **Dual-Currency Contract Valuation**: Multi-currency engine converting foreign trade currencies (**USD $**, **AFN ؋**, **IRR ﷼**) into base Pakistani Rupee (PKR) at custom negotiated exchange rates.
+- **Comprehensive Landed Cost Economics**: Aggregates base cargo cost with customs import tariffs (Customs GD #), cross-border freight carriage, clearing agent port fees, and cold chain/tolls:
+  $$\text{Base PKR} = \text{Foreign Contract Amount} \times \text{Exchange Rate}$$
+  $$\text{Total Border Surcharges} = \text{Customs Duty} + \text{Border Freight} + \text{Clearing Charges} + \text{Other}$$
+  $$\text{Total Mandi Landed Cost} = \text{Base PKR} + \text{Total Border Surcharges}$$
+  $$\text{Cost Per Maund (40 KG)} = \frac{\text{Total Landed Cost}}{\text{Gross Weight in KG} / 40.0}$$
+- **Foreign Supplier Settlement Ledger**: Monitors payments to foreign exporters, remaining foreign currency debt, and PKR liability exposure with interactive payment recording.
+- **1-Click Consignment Lot Bridge**: Instantly generates an auction consignment lot (*آمد و ڈھیری*) from arrived cross-border cargo with pre-filled vehicle, weight, and bag numbers.
+- **Official Printable Manifests & Registers**: High-resolution A4 Single Cargo Manifest & Customs Statements and Landscape A4 Border Transit Registers (`CrossBorderPdfGenerator`).
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -124,6 +147,8 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Godown & Bardana Ledger** | Warehouse/cold store capacity tracking, inward batch rent proration, Jute/Plastic sack revolving ledger, security deposits, and A4 PDF reports. |
 | **Weighbridge & Kanda** | Vehicle gross/tare weighment, moisture/trash deductions, live digital scale simulation, certified kanda slips, and 1-click consignment lot bridge. |
 | **Farmer Advances & Inputs** | Pre-harvest cash & input (DAP/Urea, seed, spray) financing, markup calculation, harvest auction recoveries, and A4 statements. |
+| **Thermal Printer Engine** | Raw ESC/POS bytecode generator, 58mm/80mm roll formatting, simulated tear preview, 6-document receipt suite (Invoices, Boli slips, Kanda tickets, Cash Khata vouchers, Advance deductions). |
+| **Cross-Border Mandi Trade** | Pak-Afghan & Pak-Iran transit fruit/vegetable cargo tracking, dual-currency valuation (USD/AFN/IRR to PKR), border checkpoints (Torkham, Chaman, Taftan), customs tariffs & freight landed cost, supplier debt settlement, A4 cargo manifest & register. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |
