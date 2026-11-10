@@ -86,6 +86,16 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Printable Official Kanda Certificate Slips & Registers**: High-resolution printable PDF Kanda Slips and full Daily Weighbridge Registers (`WeighbridgeSlipPdfGenerator`).
 - **Direct Bridge to Consignment Lots**: 1-click shortcut to pre-populate incoming Consignment Arrival (*ڈھیری پرچہ*) with certified vehicle number, party, crop, bags, and net weight.
 
+### 🌾 Farmer Advance Crop Loans & Markup Ledger (*زمیندار ایڈوانس اور کھاد بیج کھاتہ*)
+- **Multi-Category Pre-Harvest Financing**: Tracks cash loans and essential farming inputs (Fertilizer DAP/Urea, Certified Seed, Pesticide Spray, Diesel Fuel, Machinery) with item quantities, unit rates, and total disbursed value.
+- **Mandi Markup / Profit Mathematical Engine**: Supports custom annual interest / markup rates with auto-calculated profit, total payable, and remaining balance based on loan maturity days:
+  $$\text{Markup (منافع / سود)} = \text{Principal} \times \left(\frac{\text{Rate}}{100}\right) \times \left(\frac{\text{Days}}{365}\right)$$
+  $$\text{Total Payable} = \text{Principal} + \text{Markup}$$
+  $$\text{Remaining Balance} = \text{Total Payable} - \text{Recovered Amount}$$
+- **Automatic Crop Harvest Auction Recoveries (*کٹائی پر ایڈوانس کی کٹوتی*)**: Interactive recovery modal (`RecordAdvanceRecoveryDialog`) linking loan repayments directly to consignment lot auction proceeds (*ڈھیری نیلامی*) with quick percentage presets (100%, 50%, 25%) or cash repayments.
+- **Overdue Risk Monitoring & Portfolio Metrics**: Real-time KPI summary tracking Total Disbursed Capital, Accumulated Markup, Recovered Capital, and Outstanding Exposure with overdue aging flags.
+- **Official A4 Verification Statements & Shop Registers**: One-tap PDF export of itemized Farmer Statements (*کھاد بیج و ایڈوانس پرچہ*) with farmer thumbprint / signature lines and comprehensive Shop Portfolio Registers (`FarmerAdvancePdfGenerator`).
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -113,6 +123,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Bank & Cheques (PDC Ledger)** | Commercial accounts management, post-dated cheque (*PDC*) portfolio, clearing lifecycle, bounced cheque alerts, and A4 printable register. |
 | **Godown & Bardana Ledger** | Warehouse/cold store capacity tracking, inward batch rent proration, Jute/Plastic sack revolving ledger, security deposits, and A4 PDF reports. |
 | **Weighbridge & Kanda** | Vehicle gross/tare weighment, moisture/trash deductions, live digital scale simulation, certified kanda slips, and 1-click consignment lot bridge. |
+| **Farmer Advances & Inputs** | Pre-harvest cash & input (DAP/Urea, seed, spray) financing, markup calculation, harvest auction recoveries, and A4 statements. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

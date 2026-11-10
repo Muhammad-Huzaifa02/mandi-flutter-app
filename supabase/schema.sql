@@ -569,6 +569,54 @@ create index if not exists idx_weighbridge_vehicle on public.weighbridge_tickets
 create index if not exists idx_weighbridge_status on public.weighbridge_tickets(shop_id, status);
 create index if not exists idx_weighbridge_created on public.weighbridge_tickets(shop_id, created_at desc);
 
+-- 7f. FARMER_ADVANCES & ADVANCE_RECOVERIES (زمیندار ایڈوانس اور کھاد بیج کھاتہ)
+create table if not exists public.farmer_advances (
+  id                      uuid primary key default gen_random_uuid(),
+  shop_id                 uuid not null references public.shops(id) on delete cascade,
+  supplier_id             uuid not null references public.suppliers(id) on delete cascade,
+  farmer_name             text not null default '',
+  farmer_phone            text not null default '',
+  advance_type            text not null default 'cash', -- cash, fertilizer, seed, pesticide, diesel, other
+  description             text not null default '',
+  principal_amount        numeric(12,2) not null default 0,
+  markup_percent          numeric(5,2) not null default 0,
+  markup_amount           numeric(12,2) not null default 0,
+  total_payable           numeric(12,2) not null default 0,
+  recovered_amount        numeric(12,2) not null default 0,
+  remaining_balance       numeric(12,2) not null default 0,
+  disbursement_date       timestamptz not null default now(),
+  expected_harvest_date   timestamptz,
+  target_crop             text not null default '',
+  status                  text not null default 'active', -- active, partially_recovered, fully_recovered, written_off
+  payment_method          text not null default 'cash', -- cash, bank_transfer, cheque
+  bank_account_id         uuid references public.bank_accounts(id) on delete set null,
+  notes                   text not null default '',
+  created_by              uuid references auth.users(id),
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now()
+);
+
+create index if not exists idx_farmer_advances_shop on public.farmer_advances(shop_id);
+create index if not exists idx_farmer_advances_supplier on public.farmer_advances(shop_id, supplier_id);
+create index if not exists idx_farmer_advances_status on public.farmer_advances(shop_id, status);
+
+create table if not exists public.farmer_advance_recoveries (
+  id                      uuid primary key default gen_random_uuid(),
+  shop_id                 uuid not null references public.shops(id) on delete cascade,
+  advance_id              uuid not null references public.farmer_advances(id) on delete cascade,
+  consignment_lot_id      uuid references public.consignment_lots(id) on delete set null,
+  invoice_id              uuid references public.invoices(id) on delete set null,
+  recovered_amount        numeric(12,2) not null default 0,
+  recovery_date           timestamptz not null default now(),
+  recovery_method         text not null default 'consignment_deduction', -- consignment_deduction, cash_payment, bank_transfer
+  notes                   text not null default '',
+  created_by              uuid references auth.users(id),
+  created_at              timestamptz not null default now()
+);
+
+create index if not exists idx_advance_recoveries_advance on public.farmer_advance_recoveries(advance_id);
+create index if not exists idx_advance_recoveries_shop on public.farmer_advance_recoveries(shop_id);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1051,6 +1099,8 @@ alter table public.storage_locations      enable row level security;
 alter table public.storage_allocations    enable row level security;
 alter table public.bardana_transactions   enable row level security;
 alter table public.weighbridge_tickets    enable row level security;
+alter table public.farmer_advances        enable row level security;
+alter table public.farmer_advance_recoveries enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -1432,6 +1482,43 @@ create policy "weighbridge_tickets: authorized staff can write" on public.weighb
     public.has_permission(shop_id, 'manage_inventory') or
     public.has_permission(shop_id, 'create_purchase') or
     public.has_permission(shop_id, 'create_invoice')
+  );
+
+drop policy if exists "farmer_advances: members can read" on public.farmer_advances;
+create policy "farmer_advances: members can read" on public.farmer_advances
+  for select using (
+    public.is_shop_member(shop_id) or
+    supplier_id in (select id from public.suppliers where user_id = auth.uid())
+  );
+
+drop policy if exists "farmer_advances: authorized staff can write" on public.farmer_advances;
+create policy "farmer_advances: authorized staff can write" on public.farmer_advances
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'view_ledger')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'view_ledger')
+  );
+
+drop policy if exists "farmer_advance_recoveries: members can read" on public.farmer_advance_recoveries;
+create policy "farmer_advance_recoveries: members can read" on public.farmer_advance_recoveries
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "farmer_advance_recoveries: authorized staff can write" on public.farmer_advance_recoveries;
+create policy "farmer_advance_recoveries: authorized staff can write" on public.farmer_advance_recoveries
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'view_ledger')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'view_ledger')
   );
 
 -- ============================================================================

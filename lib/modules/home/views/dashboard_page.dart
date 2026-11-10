@@ -24,6 +24,7 @@ import 'package:mandi/modules/customers/views/payment_recovery_page.dart';
 import 'package:mandi/modules/banking/views/bank_ledger_page.dart';
 import 'package:mandi/modules/storage/views/storage_and_bardana_page.dart';
 import 'package:mandi/modules/weighbridge/views/weighbridge_page.dart';
+import 'package:mandi/modules/advances/views/farmer_advance_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -525,6 +526,18 @@ class DashboardPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (_) => const WeighbridgePage()),
+                    ),
+                  ),
+                if (shopCtx.hasPermission('manage_suppliers') ||
+                    shopCtx.hasPermission('view_ledger') ||
+                    shopCtx.hasPermission('create_purchase'))
+                  _ManageTile(
+                    icon: Icons.agriculture_rounded,
+                    label: 'Farmer Advances (پیشگی)',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const FarmerAdvancePage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('manage_roles'))

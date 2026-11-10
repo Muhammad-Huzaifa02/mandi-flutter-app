@@ -670,6 +670,107 @@ class SupabaseService {
     }).eq('id', id).eq('shop_id', shopId);
   }
 
+  // ── Farmer Pre-Harvest Advances (زمیندار پیشگی قرضہ کھاتہ) ────────────────
+
+  static Stream<List<Map<String, dynamic>>> farmerAdvancesStream(
+          String shopId) =>
+      _client
+          .from('farmer_advances')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('disbursement_date', ascending: false);
+
+  static Future<List<Map<String, dynamic>>> getFarmerAdvances(
+      String shopId) async {
+    final rows = await _client
+        .from('farmer_advances')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('disbursement_date', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Stream<List<Map<String, dynamic>>> farmerAdvanceRecoveriesStream(
+          String advanceId) =>
+      _client
+          .from('farmer_advance_recoveries')
+          .stream(primaryKey: ['id'])
+          .eq('advance_id', advanceId)
+          .order('recovery_date', ascending: false);
+
+  static Future<String> createFarmerAdvance(
+      Map<String, dynamic> data) async {
+    final res = await _client
+        .from('farmer_advances')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateFarmerAdvance({
+    required String id,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    final updateData = Map<String, dynamic>.from(data);
+    updateData['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('farmer_advances')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> recordAdvanceRecovery({
+    required String advanceId,
+    required String shopId,
+    required double recoveryAmount,
+    String? consignmentLotId,
+    String? invoiceId,
+    String recoveryMethod = 'consignment_deduction',
+    String notes = '',
+  }) async {
+    final now = DateTime.now();
+
+    // 1. Insert recovery audit row
+    await _client.from('farmer_advance_recoveries').insert({
+      'shop_id': shopId,
+      'advance_id': advanceId,
+      'consignment_lot_id': consignmentLotId,
+      'invoice_id': invoiceId,
+      'recovered_amount': recoveryAmount,
+      'recovery_date': now.toIso8601String(),
+      'recovery_method': recoveryMethod,
+      'notes': notes,
+    });
+
+    // 2. Fetch current advance to compute new recovered_amount and balance
+    final advanceRow = await _client
+        .from('farmer_advances')
+        .select('total_payable, recovered_amount')
+        .eq('id', advanceId)
+        .eq('shop_id', shopId)
+        .single();
+
+    final totalPayable =
+        (advanceRow['total_payable'] as num?)?.toDouble() ?? 0.0;
+    final currentRecovered =
+        (advanceRow['recovered_amount'] as num?)?.toDouble() ?? 0.0;
+    final newRecovered = currentRecovered + recoveryAmount;
+    final newBalance =
+        (totalPayable - newRecovered).clamp(0.0, double.infinity);
+    final newStatus =
+        newBalance <= 0 ? 'fully_recovered' : 'partially_recovered';
+
+    await _client.from('farmer_advances').update({
+      'recovered_amount': newRecovered,
+      'remaining_balance': newBalance,
+      'status': newStatus,
+      'updated_at': now.toIso8601String(),
+    }).eq('id', advanceId).eq('shop_id', shopId);
+  }
+
   // ── Invoices ─────────────────────────────────────────────────────────────
 
   static Stream<List<Map<String, dynamic>>> invoicesStream(String shopId) =>

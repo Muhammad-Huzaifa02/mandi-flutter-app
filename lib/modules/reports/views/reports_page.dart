@@ -18,6 +18,7 @@ import 'package:mandi/modules/reports/views/roznamcha_page.dart';
 import 'package:mandi/modules/banking/views/bank_ledger_page.dart';
 import 'package:mandi/modules/storage/views/storage_and_bardana_page.dart';
 import 'package:mandi/modules/weighbridge/views/weighbridge_page.dart';
+import 'package:mandi/modules/advances/views/farmer_advance_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -528,6 +529,70 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Vehicle gross/tare weighment, deductions & certified kanda slips',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Farmer Advances Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.green.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const FarmerAdvancePage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.green.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.agriculture_rounded,
+                      color: Colors.greenAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Farmer Advances & Inputs',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'کھاد بیج و ایڈوانس',
+                              style: MText.caption.copyWith(
+                                color: Colors.greenAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Pre-harvest cash, fertilizer/seed financing & auction recovery deductions',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),
