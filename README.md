@@ -126,6 +126,19 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Delivery Receipts & Audit Trail**: Real-time delivery status monitoring (`sent`, `delivered`, `failed`, `pending`) with telecom message IDs, error reason capturing, and 1-tap retry dispatch.
 - **Integrated Khata Recovery Dispatch**: Direct "Gateway SMS" dispatch button built into the Payment Recovery Hub (`PaymentRecoveryPage`, `SendReminderDialog`).
 
+### 🏢 Multi-Shop Consolidated Balance Sheet & Inter-Shop Stock Transfer (*بین المانڈی مشترکہ گوشوارہ و اسٹاک منتقلی*)
+- **Multi-Branch Enterprise Aggregation**: High-level consolidated financial overview (`MultiShopHubPage`, `MultiShopProvider`, `ConsolidatedBalanceSheet`) synthesizing real-time data across all branches owned by the Mandi merchant group:
+  - **Total Enterprise Turnover & Sales Volume** (*مجموعی مال بکری*)
+  - **Net Operating Profit & Commission Pool** (*خالص کمیشن منافع*)
+  - **Total Customer Receivables & Supplier Payables Exposure** (*بقایا جات گاہک و زمیندار*)
+  - **Enterprise Stock Assets & Net Network Equity** (*مجموعی اثاثہ جات اور خالص ایکویٹی*)
+- **Inter-Shop Stock Transfer Engine**: Secure inventory relocation workflow between branches (`inter_shop_transfers` table) tracking commodity, package count, weight in KG, and Mandi Maunds ($\text{KG} / 40.0$).
+- **Transit Freight & Landed Cost Economics**: Computes total delivered cost including inter-city truck carriage ($\text{Delivered Cost} = \text{Stock Value} + \text{Transit Freight}$) and effective landed cost per Maund at the receiving branch.
+- **Consignment Transit Lifecycle**: Manages status progression (`in_transit`, `received`, `cancelled`) with vehicle number, driver phone, dispatch timestamps, and receiving branch 1-click receipt confirmation.
+- **Landscape A4 PDF Reports & Transit Gate Passes**: 1-click PDF generation for:
+  1. **Consolidated Multi-Branch Balance Sheet**: Professional Landscape A4 report with group KPI banner, individual branch comparison table, and executive signature blocks.
+  2. **Inter-Shop Stock Transfer Gate Pass & Delivery Challan**: Official A4 transit gate pass (`ConsolidatedBalanceSheetPdfGenerator`) with source and destination details, carrier info, commodity quantities, and verification seals.
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.

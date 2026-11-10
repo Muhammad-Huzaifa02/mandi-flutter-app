@@ -27,6 +27,7 @@ import 'package:mandi/modules/weighbridge/views/weighbridge_page.dart';
 import 'package:mandi/modules/advances/views/farmer_advance_page.dart';
 import 'package:mandi/modules/cross_border/views/cross_border_page.dart';
 import 'package:mandi/modules/sms/views/sms_gateway_page.dart';
+import 'package:mandi/modules/transfers/views/multi_shop_hub_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -560,6 +561,15 @@ class DashboardPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const SmsGatewayPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.hub_outlined,
+                  label: 'Multi-Shop (مشترکہ کھاتہ)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const MultiShopHubPage()),
                   ),
                 ),
                 if (shopCtx.hasPermission('manage_roles'))

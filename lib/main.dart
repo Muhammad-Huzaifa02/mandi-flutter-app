@@ -27,6 +27,7 @@ import 'package:mandi/modules/weighbridge/providers/weighbridge_provider.dart';
 import 'package:mandi/modules/advances/providers/farmer_advance_provider.dart';
 import 'package:mandi/modules/cross_border/providers/cross_border_provider.dart';
 import 'package:mandi/modules/sms/providers/sms_provider.dart';
+import 'package:mandi/modules/transfers/providers/multi_shop_provider.dart';
 import 'package:mandi/routes/app_root.dart';
 
 Future<void> main() async {
@@ -131,6 +132,14 @@ class MandiApp extends StatelessWidget {
           create: (_) => SmsProvider(),
           update: (_, shopCtx, smsProvider) =>
               smsProvider!..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, MultiShopProvider>(
+          create: (_) => MultiShopProvider(),
+          update: (_, shopCtx, multiShopProvider) =>
+              multiShopProvider!..updateShopContext(
+                activeShopId: shopCtx.currentShopId,
+                availableShops: shopCtx.availableShops,
+              ),
         ),
       ],
       child: Consumer2<ThemeProvider, LocaleProvider>(

@@ -709,6 +709,39 @@ create index if not exists idx_sms_logs_status on public.sms_logs(shop_id, statu
 create index if not exists idx_sms_logs_event on public.sms_logs(shop_id, event_type);
 create index if not exists idx_sms_logs_created on public.sms_logs(shop_id, created_at desc);
 
+-- 7i. INTER_SHOP_STOCK_TRANSFERS (بین المانڈی اسٹاک منتقلی اور برانچ کھاتہ)
+create table if not exists public.inter_shop_transfers (
+  id                          uuid primary key default gen_random_uuid(),
+  transfer_number             text not null default '',
+  source_shop_id              uuid not null references public.shops(id) on delete cascade,
+  destination_shop_id         uuid not null references public.shops(id) on delete cascade,
+  product_id                  uuid references public.products(id) on delete set null,
+  commodity_name              text not null default '',
+  quantity_kg                 numeric(12,2) not null default 0,
+  quantity_maunds             numeric(12,2) not null default 0,
+  package_type                text not null default 'Bag', -- Bag, Crate, Carton, Loose
+  package_count               integer not null default 0,
+  unit_cost_pkr               numeric(12,2) not null default 0,
+  total_value_pkr             numeric(14,2) not null default 0,
+  transit_freight_pkr         numeric(12,2) not null default 0,
+  vehicle_number              text not null default '',
+  driver_name                 text not null default '',
+  driver_phone                text not null default '',
+  dispatched_at               timestamptz not null default now(),
+  received_at                 timestamptz,
+  status                      text not null default 'in_transit', -- in_transit, received, cancelled
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now(),
+  constraint chk_diff_shops check (source_shop_id <> destination_shop_id)
+);
+
+create index if not exists idx_transfers_source on public.inter_shop_transfers(source_shop_id);
+create index if not exists idx_transfers_destination on public.inter_shop_transfers(destination_shop_id);
+create index if not exists idx_transfers_status on public.inter_shop_transfers(source_shop_id, destination_shop_id, status);
+create index if not exists idx_transfers_created on public.inter_shop_transfers(source_shop_id, created_at desc);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1196,6 +1229,7 @@ alter table public.farmer_advance_recoveries enable row level security;
 alter table public.cross_border_shipments enable row level security;
 alter table public.sms_gateway_settings   enable row level security;
 alter table public.sms_logs               enable row level security;
+alter table public.inter_shop_transfers   enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -1660,6 +1694,24 @@ drop policy if exists "sms_logs: members can write" on public.sms_logs;
 create policy "sms_logs: members can write" on public.sms_logs
   for all using (public.is_shop_member(shop_id))
   with check (public.is_shop_member(shop_id));
+
+drop policy if exists "inter_shop_transfers: members can read" on public.inter_shop_transfers;
+create policy "inter_shop_transfers: members can read" on public.inter_shop_transfers
+  for select using (
+    public.is_shop_member(source_shop_id) or
+    public.is_shop_member(destination_shop_id)
+  );
+
+drop policy if exists "inter_shop_transfers: members can write" on public.inter_shop_transfers;
+create policy "inter_shop_transfers: members can write" on public.inter_shop_transfers
+  for all using (
+    public.is_shop_member(source_shop_id) or
+    public.is_shop_member(destination_shop_id)
+  )
+  with check (
+    public.is_shop_member(source_shop_id) or
+    public.is_shop_member(destination_shop_id)
+  );
 
 -- ============================================================================
 -- 10. STORAGE BUCKETS

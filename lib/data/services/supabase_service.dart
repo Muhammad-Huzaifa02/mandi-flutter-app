@@ -1130,4 +1130,131 @@ class SupabaseService {
         .eq('id', logId)
         .eq('shop_id', shopId);
   }
+
+  // ── Inter-Shop Transfers (بین المانڈی اسٹاک منتقلی) ──────────────────────────
+
+  static Stream<List<Map<String, dynamic>>> interShopTransfersStream(
+      String shopId) {
+    return _client
+        .from('inter_shop_transfers')
+        .stream(primaryKey: ['id'])
+        .order('dispatched_at', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getInterShopTransfersForShop(
+      String shopId) async {
+    final rows = await _client
+        .from('inter_shop_transfers')
+        .select('*')
+        .or('source_shop_id.eq.$shopId,destination_shop_id.eq.$shopId')
+        .order('dispatched_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createInterShopTransfer(
+      Map<String, dynamic> data) async {
+    final res = await _client
+        .from('inter_shop_transfers')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateInterShopTransferStatus({
+    required String transferId,
+    required String status,
+    DateTime? receivedAt,
+  }) async {
+    final updateData = <String, dynamic>{
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (receivedAt != null) {
+      updateData['received_at'] = receivedAt.toIso8601String();
+    }
+    await _client
+        .from('inter_shop_transfers')
+        .update(updateData)
+        .eq('id', transferId);
+  }
+
+  // ── Consolidated Multi-Branch Financial Queries ─────────────────────────
+
+  static Future<Map<String, double>> getShopFinancialMetrics(
+      String shopId) async {
+    // 1. Invoices (Sales & Commission)
+    final invoiceRows = await _client
+        .from('invoices')
+        .select('subtotal, commission_amount, status')
+        .eq('shop_id', shopId)
+        .neq('status', 'cancelled');
+
+    double totalSales = 0.0;
+    double totalCommission = 0.0;
+    for (final row in invoiceRows) {
+      totalSales += (row['subtotal'] as num?)?.toDouble() ?? 0.0;
+      totalCommission +=
+          (row['commission_amount'] as num?)?.toDouble() ?? 0.0;
+    }
+
+    // 2. Expenses
+    final expenseRows = await _client
+        .from('expenses')
+        .select('amount')
+        .eq('shop_id', shopId);
+
+    double totalExpenses = 0.0;
+    for (final row in expenseRows) {
+      totalExpenses += (row['amount'] as num?)?.toDouble() ?? 0.0;
+    }
+
+    // 3. Customer Receivables
+    final customerRows = await _client
+        .from('customers')
+        .select('running_balance')
+        .eq('shop_id', shopId)
+        .gt('running_balance', 0);
+
+    double totalReceivables = 0.0;
+    for (final row in customerRows) {
+      totalReceivables +=
+          (row['running_balance'] as num?)?.toDouble() ?? 0.0;
+    }
+
+    // 4. Supplier Payables
+    final supplierRows = await _client
+        .from('suppliers')
+        .select('running_balance')
+        .eq('shop_id', shopId)
+        .gt('running_balance', 0);
+
+    double totalPayables = 0.0;
+    for (final row in supplierRows) {
+      totalPayables +=
+          (row['running_balance'] as num?)?.toDouble() ?? 0.0;
+    }
+
+    // 5. Stock Value
+    final productRows = await _client
+        .from('products')
+        .select('current_stock, unit_price')
+        .eq('shop_id', shopId);
+
+    double totalStockValue = 0.0;
+    for (final row in productRows) {
+      final stock = (row['current_stock'] as num?)?.toDouble() ?? 0.0;
+      final price = (row['unit_price'] as num?)?.toDouble() ?? 0.0;
+      totalStockValue += (stock * price);
+    }
+
+    return {
+      'totalSales': totalSales,
+      'totalCommission': totalCommission,
+      'totalExpenses': totalExpenses,
+      'totalReceivables': totalReceivables,
+      'totalPayables': totalPayables,
+      'totalStockValue': totalStockValue,
+    };
+  }
 }
