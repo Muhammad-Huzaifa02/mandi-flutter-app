@@ -66,6 +66,13 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Bounced Cheque Audit Trail**: Record return memos and reasons (Insufficient Funds, Signature Mismatch, Stopped Payment) with immediate financial alerts.
 - **Printable A4 Landscape Cheque Register**: Export itemized cheque books and PDC portfolios with comprehensive summary KPIs to printable PDF.
 
+### 🏭 Godown, Cold Storage & Bardana Ledger (*گودام، کولڈ سٹوریج اور باردانہ کھاتہ*)
+- **Multi-Facility Capacity & Utilization**: Monitor on-site Mandi Godowns (*منڈی گودام*), commercial Cold Stores (*کولڈ سٹوریج*), and Shop Front auction platforms (*دکان / پھڑ*) with total bag capacity, current occupancy, and remaining space gauges.
+- **Batch Storage & Accrued Rent Proration**: Inward batch allocation linking crops, lots, and farmers with automated Mandi Maund conversion ($KG / 40.0$), storage duration counter, and daily prorated rent calculation.
+- **Bardana (Sacks & Crates) Packaging Ledger**: Comprehensive revolving packaging asset ledger tracking traditional **Jute Sacks** (*پٹ سن بوری*), **Woven Plastic (PP) Bags** (*تھیلا*), **Wooden Crates** (*لکڑی کی پیٹی*), and **Plastic Reusable Crates** (*پلاسٹک کریٹ*).
+- **Security Deposit & Overdue Return Tracking**: Manage unit security deposit rates, total refundable deposit liabilities, damaged/torn write-offs, and automated overdue return alerts.
+- **Landscape A4 PDF Reports**: Export high-resolution printable Godown stock allocation rosters and Bardana ledger statements (`StorageAndBardanaPdfGenerator`).
+
 ### 📊 Analytics & Financial Reports
 - **Interactive Financial Charts**: Sales vs Mandi Commission line charts using `fl_chart`.
 - **Date Range Filters**: Filter reports by **All Time, Today, This Week, This Month, or Custom Date Range**.
@@ -96,6 +103,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Payment Recovery (Taqaza)** | Debtor khata severity tracker, aging threshold filters, automated Urdu/English WhatsApp & SMS payment reminders with bank/Raast accounts. |
 | **Daily Cash Book (Roznamcha)** | Daily morning drawer opening cash, cash sales, khata recoveries, disbursements, operating expenses, and closing balance with A4 PDF printing. |
 | **Bank & Cheques (PDC Ledger)** | Commercial accounts management, post-dated cheque (*PDC*) portfolio, clearing lifecycle, bounced cheque alerts, and A4 printable register. |
+| **Godown & Bardana Ledger** | Warehouse/cold store capacity tracking, inward batch rent proration, Jute/Plastic sack revolving ledger, security deposits, and A4 PDF reports. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

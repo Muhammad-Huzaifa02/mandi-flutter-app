@@ -16,6 +16,7 @@ import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
 import 'package:mandi/modules/reports/views/roznamcha_page.dart';
 import 'package:mandi/modules/banking/views/bank_ledger_page.dart';
+import 'package:mandi/modules/storage/views/storage_and_bardana_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -398,6 +399,70 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Track Post-Dated Cheques (PDC), clearance statuses & bank balances',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Godowns & Bardana Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.teal.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const StorageAndBardanaPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.warehouse_outlined,
+                      color: Colors.tealAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Godowns & Bardana',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'گودام و باردانہ',
+                              style: MText.caption.copyWith(
+                                color: Colors.tealAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Monitor Cold Stores, warehouse batches & gunny sacks circulation',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),

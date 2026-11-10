@@ -461,6 +461,77 @@ create index if not exists idx_cheques_due on public.cheques(shop_id, due_date a
 create index if not exists idx_cheques_status on public.cheques(shop_id, status);
 
 -- ============================================================================
+-- 7d. STORAGE_LOCATIONS, STORAGE_ALLOCATIONS & BARDANA_TRANSACTIONS
+--     Tracks Godowns, Cold Stores, batch stock allocations, and gunny bag /
+--     sack / crate (باردانہ) ledger between farmers and buyers.
+-- ============================================================================
+create table if not exists public.storage_locations (
+  id                      uuid primary key default gen_random_uuid(),
+  shop_id                 uuid not null references public.shops(id) on delete cascade,
+  name                    text not null,
+  location_type           text not null default 'godown' check (location_type in ('godown', 'cold_storage', 'shop_pharr')),
+  address                 text not null default '',
+  contact_person          text not null default '',
+  phone                   text not null default '',
+  capacity_bags           integer not null default 0,
+  current_bags            integer not null default 0,
+  monthly_rent_per_bag    numeric not null default 0,
+  is_active               boolean not null default true,
+  notes                   text not null default '',
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now()
+);
+
+create index if not exists idx_storage_locations_shop on public.storage_locations(shop_id);
+
+create table if not exists public.storage_allocations (
+  id                      uuid primary key default gen_random_uuid(),
+  shop_id                 uuid not null references public.shops(id) on delete cascade,
+  storage_location_id     uuid not null references public.storage_locations(id) on delete cascade,
+  product_id              uuid references public.products(id) on delete set null,
+  product_name            text not null default '',
+  lot_number              text not null default '',
+  party_name              text not null default '',
+  bag_count               integer not null default 0,
+  weight_kg               numeric not null default 0,
+  inward_date             timestamptz not null default now(),
+  outward_date            timestamptz,
+  status                  text not null default 'in_store' check (status in ('in_store', 'dispatched', 'released', 'partially_dispatched')),
+  rent_rate_per_bag       numeric not null default 0,
+  total_rent_charged      numeric not null default 0,
+  notes                   text not null default '',
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now()
+);
+
+create index if not exists idx_storage_allocations_shop on public.storage_allocations(shop_id);
+create index if not exists idx_storage_allocations_loc on public.storage_allocations(storage_location_id);
+
+create table if not exists public.bardana_transactions (
+  id                      uuid primary key default gen_random_uuid(),
+  shop_id                 uuid not null references public.shops(id) on delete cascade,
+  party_type              text not null default 'supplier' check (party_type in ('supplier', 'customer', 'other')),
+  party_id                uuid,
+  party_name              text not null default '',
+  bardana_type            text not null default 'jute' check (bardana_type in ('jute', 'plastic_pp', 'wooden_crate', 'plastic_crate', 'other')),
+  direction               text not null default 'issued' check (direction in ('issued', 'returned', 'purchased', 'damaged')),
+  bag_count               integer not null default 0,
+  unit_deposit_rate       numeric not null default 0,
+  total_deposit_amount    numeric not null default 0,
+  transaction_date        timestamptz not null default now(),
+  due_return_date         timestamptz,
+  status                  text not null default 'pending' check (status in ('pending', 'returned', 'settled', 'forfeited')),
+  notes                   text not null default '',
+  created_by              uuid references auth.users(id),
+  created_at              timestamptz not null default now(),
+  updated_at              timestamptz not null default now()
+);
+
+create index if not exists idx_bardana_transactions_shop on public.bardana_transactions(shop_id);
+create index if not exists idx_bardana_party on public.bardana_transactions(shop_id, party_id);
+create index if not exists idx_bardana_status on public.bardana_transactions(shop_id, status);
+
+-- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
 --    membership. Runs as the calling user (not security definer) because
@@ -938,6 +1009,9 @@ alter table public.notifications         enable row level security;
 alter table public.consignment_lots       enable row level security;
 alter table public.bank_accounts          enable row level security;
 alter table public.cheques                enable row level security;
+alter table public.storage_locations      enable row level security;
+alter table public.storage_allocations    enable row level security;
+alter table public.bardana_transactions   enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -1243,6 +1317,61 @@ create policy "cheques: authorized staff can write" on public.cheques
     public.has_permission(shop_id, 'create_receipt') or
     public.has_permission(shop_id, 'view_ledger') or
     public.has_permission(shop_id, 'create_purchase')
+  );
+
+drop policy if exists "storage_locations: members can read" on public.storage_locations;
+create policy "storage_locations: members can read" on public.storage_locations
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "storage_locations: authorized staff can write" on public.storage_locations;
+create policy "storage_locations: authorized staff can write" on public.storage_locations
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_purchase')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_purchase')
+  );
+
+drop policy if exists "storage_allocations: members can read" on public.storage_allocations;
+create policy "storage_allocations: members can read" on public.storage_allocations
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "storage_allocations: authorized staff can write" on public.storage_allocations;
+create policy "storage_allocations: authorized staff can write" on public.storage_allocations
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase')
+  );
+
+drop policy if exists "bardana_transactions: members can read" on public.bardana_transactions;
+create policy "bardana_transactions: members can read" on public.bardana_transactions
+  for select using (
+    public.is_shop_member(shop_id) or
+    party_id in (select id from public.suppliers where user_id = auth.uid()) or
+    party_id in (select id from public.customers where user_id = auth.uid())
+  );
+
+drop policy if exists "bardana_transactions: authorized staff can write" on public.bardana_transactions;
+create policy "bardana_transactions: authorized staff can write" on public.bardana_transactions
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'view_ledger')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'view_ledger')
   );
 
 -- ============================================================================

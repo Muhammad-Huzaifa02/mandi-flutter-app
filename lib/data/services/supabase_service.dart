@@ -474,6 +474,126 @@ class SupabaseService {
     }).eq('id', id).eq('shop_id', shopId);
   }
 
+  // ── Godowns, Cold Storage & Bardana (گودام و باردانہ) ─────────────────────
+
+  static Stream<List<Map<String, dynamic>>> storageLocationsStream(
+          String shopId) =>
+      _client
+          .from('storage_locations')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('name', ascending: true);
+
+  static Future<List<Map<String, dynamic>>> getStorageLocations(
+          String shopId) =>
+      _client
+          .from('storage_locations')
+          .select()
+          .eq('shop_id', shopId)
+          .order('name', ascending: true);
+
+  static Future<String> addStorageLocation(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('storage_locations')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateStorageLocation({
+    required String id,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    await _client
+        .from('storage_locations')
+        .update(data)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteStorageLocation({
+    required String id,
+    required String shopId,
+  }) async {
+    await _client
+        .from('storage_locations')
+        .delete()
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Stream<List<Map<String, dynamic>>> storageAllocationsStream(
+          String shopId) =>
+      _client
+          .from('storage_allocations')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('inward_date', ascending: false);
+
+  static Future<String> addStorageAllocation(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('storage_allocations')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateStorageAllocationStatus({
+    required String id,
+    required String shopId,
+    required String status,
+    DateTime? outwardDate,
+    double? totalRentCharged,
+  }) async {
+    final updateData = <String, dynamic>{
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (outwardDate != null) {
+      updateData['outward_date'] = outwardDate.toIso8601String();
+    }
+    if (totalRentCharged != null) {
+      updateData['total_rent_charged'] = totalRentCharged;
+    }
+    await _client
+        .from('storage_allocations')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Stream<List<Map<String, dynamic>>> bardanaTransactionsStream(
+          String shopId) =>
+      _client
+          .from('bardana_transactions')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('transaction_date', ascending: false);
+
+  static Future<String> addBardanaTransaction(
+      Map<String, dynamic> data) async {
+    final res = await _client
+        .from('bardana_transactions')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateBardanaStatus({
+    required String id,
+    required String shopId,
+    required String status,
+  }) async {
+    await _client.from('bardana_transactions').update({
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', id).eq('shop_id', shopId);
+  }
+
   // ── Invoices ─────────────────────────────────────────────────────────────
 
   static Stream<List<Map<String, dynamic>>> invoicesStream(String shopId) =>
