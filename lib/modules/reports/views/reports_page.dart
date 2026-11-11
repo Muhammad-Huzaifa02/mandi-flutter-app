@@ -28,6 +28,7 @@ import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
 import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
 import 'package:mandi/modules/fleet/views/fleet_logistics_page.dart';
 import 'package:mandi/modules/quality/views/quality_lab_page.dart';
+import 'package:mandi/modules/inventory_labels/views/inventory_labels_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -1178,6 +1179,70 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Moisture refraction katoti slips, grain grading certificates & cold room HACCP temperature logs',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Barcode & QR Lot Inventory Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.blueAccent.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const InventoryLabelsPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.blueAccent.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.qr_code_2_rounded,
+                      color: Colors.lightBlueAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Barcode & QR Pallet Tracking',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'بارکوڈ و کیو آر لیبلز',
+                              style: MText.caption.copyWith(
+                                color: Colors.lightBlueAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Pallet stack placards, Code128 1D barcodes, 2D QR tags, 4-up adhesive stickers & warehouse rosters',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),

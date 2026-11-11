@@ -212,6 +212,20 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
   - **Official A4 Portrait Certificate of Analysis / Moisture Katoti Slip**: Detailed lab certificate with sample metrics, deduction breakdown table, net certified Maunds, and tri-party signature blocks (Inspector, Transporter, Commission Agent).
   - **Landscape A4 Cold Room Temperature Audit Register**: Multi-chamber environmental audit log sheet with alert badges, device IDs, and remediation history.
 
+### 🏷️ Multi-Language Barcode / QR Lot Inventory & Pallet Stacking (*بارکوڈ اور کیو آر انوینٹری لیبلز اور پیلیٹ اسٹیکنگ*)
+- **Dual-Layer Identification (1D Barcode & 2D QR Code)**: Integrated scanning suite (`InventoryLabelsPage`, `InventoryLabelProvider`, `InventoryLabel`) producing both:
+  - **1D Code128 Barcodes**: Alphanumeric warehouse tags (`MND-LBL-0001`) compatible with standard handheld laser and USB/Bluetooth inventory scanners.
+  - **High-Density 2D QR Codes**: Structured JSON verification payloads encoding shop ID, tracking code, crop name, bag count, net weight KG, Mandi Maunds, quality grade, and bay location for instant camera validation.
+- **Packaging Tare & Mandi Maund Math (`InventoryLabel.computeWeightMath`)**:
+  - Automatically prorates packaging tare for **Jute Sacks (1.0 KG/bag)**, **PP Woven Bags (0.15 KG/bag)**, **Wooden Crates (1.8 KG/box)**, **Reusable Plastic Crates (1.4 KG/crate)**, or **Bulk Loose Goods (0.0 KG)**.
+  - Computes Net Certified Weight in KG and Mandi Maunds ($\text{Net Maunds} = \text{Net KG} / 40.0$).
+- **Scan & Verification Terminal (`ScanVerifyLabelDialog`)**:
+  - Handheld scanner simulator allowing warehouse munshis to scan barcode/QR tags, instantly verify pallet specs, and toggle inventory status (**Active Stock** vs **Dispatched / Sold**).
+- **Official Printable Placards & Adhesive Sticker Sheets (`InventoryLabelPdfGenerator`)**:
+  - **Official A4 Landscape Pallet Placard**: High-contrast, large-typography warehouse placard with shop header, bold crop title, location badge, dual barcode/QR widgets, and signature stamps.
+  - **Multi-Up 4-Per-Page Adhesive Sticker Sheets**: Compact 2x2 sticker sheet for thermal sticker rolls or standard A4 sticky sheets.
+  - **Master Warehouse Pallet & Lot Roster**: Landscape A4 stock inventory report with summary statistics and complete stack audit trails.
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -250,6 +264,7 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Staff Attendance & Payroll** | Daily staff attendance register (Present/Absent/Half-Day/Leave), overtime proration, mathematical net wage deductions engine, voucher approval & disbursement, printable A4 pay slips and registers. |
 | **Fleet & Logistics** | Vehicle fleet asset register, freight trip bilty dispatching, fuel/diesel expense logging, carrier P&L registers, printable A4 transport bilty challans. |
 | **Quality Lab & Cold Chain** | Moisture testing (% detection), refraction deduction math, certified grade assignment (Super, FAQ, Substandard), HACCP cold room temperature & humidity logs, printable A4 Certificate of Analysis. |
+| **Barcode & QR Tracking** | Code128 1D barcodes, 2D QR lot tags, pallet stack placards, packaging tare math, mobile camera verification terminal, 4-up adhesive sticker sheets. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

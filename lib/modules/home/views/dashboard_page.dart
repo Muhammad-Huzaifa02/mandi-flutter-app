@@ -34,6 +34,7 @@ import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
 import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
 import 'package:mandi/modules/fleet/views/fleet_logistics_page.dart';
 import 'package:mandi/modules/quality/views/quality_lab_page.dart';
+import 'package:mandi/modules/inventory_labels/views/inventory_labels_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -630,6 +631,15 @@ class DashboardPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const QualityLabPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.qr_code_2_rounded,
+                  label: 'Barcode & QR (بارکوڈ لیبلز)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const InventoryLabelsPage()),
                   ),
                 ),
                 if (shopCtx.hasPermission('manage_roles'))

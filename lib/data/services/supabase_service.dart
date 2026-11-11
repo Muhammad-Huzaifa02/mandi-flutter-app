@@ -1753,4 +1753,65 @@ class SupabaseService {
         .single();
     return res['id'] as String;
   }
+
+  // ===========================================================================
+  // INVENTORY LABELS & PALLET BARCODE/QR TRACKING
+  // ===========================================================================
+
+  static Stream<List<Map<String, dynamic>>> inventoryLabelsStream(
+      String shopId, {String? labelType, String? status}) {
+    return _client
+        .from('inventory_labels')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getInventoryLabels(
+      String shopId, {String? labelType, String? status}) async {
+    var query = _client.from('inventory_labels').select('*').eq('shop_id', shopId);
+    if (labelType != null && labelType.isNotEmpty) {
+      query = query.eq('label_type', labelType);
+    }
+    if (status != null && status.isNotEmpty) {
+      query = query.eq('status', status);
+    }
+    final rows = await query.order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createInventoryLabel(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('inventory_labels')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateInventoryLabelStatus({
+    required String id,
+    required String shopId,
+    required String status,
+  }) async {
+    await _client
+        .from('inventory_labels')
+        .update({
+          'status': status,
+          'updated_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteInventoryLabel({
+    required String id,
+    required String shopId,
+  }) async {
+    await _client
+        .from('inventory_labels')
+        .delete()
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
 }
