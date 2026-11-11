@@ -1383,4 +1383,154 @@ class SupabaseService {
       'updated_at': now.toIso8601String(),
     }).eq('id', customerId).eq('shop_id', shopId);
   }
+
+  // ============================================================================
+  // MANDI COMMODITY RATES (منڈی روزانہ ریٹ لسٹ اور مارکیٹ انڈیکس)
+  // ============================================================================
+
+  static Stream<List<Map<String, dynamic>>> mandiRatesStream(String shopId) =>
+      _client
+          .from('mandi_commodity_rates')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('rate_date', ascending: false);
+
+  static Future<List<Map<String, dynamic>>> getMandiRates(String shopId) async {
+    final rows = await _client
+        .from('mandi_commodity_rates')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('rate_date', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createMandiRate(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('mandi_commodity_rates')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateMandiRate({
+    required String id,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    final updateData = Map<String, dynamic>.from(data);
+    updateData['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('mandi_commodity_rates')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteMandiRate({
+    required String id,
+    required String shopId,
+  }) async {
+    await _client
+        .from('mandi_commodity_rates')
+        .delete()
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> markMandiRatesBroadcastSent({
+    required String shopId,
+    required String rateDate,
+  }) async {
+    await _client.from('mandi_commodity_rates').update({
+      'broadcast_sent_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('shop_id', shopId).eq('rate_date', rateDate);
+  }
+
+  // ============================================================================
+  // STAFF ATTENDANCE & PAYROLL (عملہ حاضری اور تنخواہ کھاتہ)
+  // ============================================================================
+
+  static Stream<List<Map<String, dynamic>>> staffAttendanceStream(
+          String shopId, String attendanceDate) =>
+      _client
+          .from('staff_attendance')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .eq('attendance_date', attendanceDate);
+
+  static Future<List<Map<String, dynamic>>> getStaffAttendance(
+      String shopId, String attendanceDate) async {
+    final rows = await _client
+        .from('staff_attendance')
+        .select('*')
+        .eq('shop_id', shopId)
+        .eq('attendance_date', attendanceDate);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<void> upsertStaffAttendance(Map<String, dynamic> data) async {
+    final payload = Map<String, dynamic>.from(data);
+    payload['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('staff_attendance')
+        .upsert(payload, onConflict: 'shop_id,member_id,attendance_date');
+  }
+
+  static Stream<List<Map<String, dynamic>>> staffPayrollStream(
+          String shopId, String monthYear) =>
+      _client
+          .from('staff_payroll')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .eq('month_year', monthYear)
+          .order('created_at', ascending: false);
+
+  static Future<List<Map<String, dynamic>>> getStaffPayroll(
+      String shopId, String monthYear) async {
+    final rows = await _client
+        .from('staff_payroll')
+        .select('*')
+        .eq('shop_id', shopId)
+        .eq('month_year', monthYear)
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createStaffPayroll(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('staff_payroll')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateStaffPayrollStatus({
+    required String payrollId,
+    required String shopId,
+    required String status,
+    String paymentMethod = 'cash',
+    String voucherNumber = '',
+    String notes = '',
+  }) async {
+    final updateData = <String, dynamic>{
+      'status': status,
+      'payment_method': paymentMethod,
+      'notes': notes,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (voucherNumber.isNotEmpty) {
+      updateData['voucher_number'] = voucherNumber;
+    }
+    if (status == 'paid') {
+      updateData['paid_at'] = DateTime.now().toIso8601String();
+    }
+    await _client
+        .from('staff_payroll')
+        .update(updateData)
+        .eq('id', payrollId)
+        .eq('shop_id', shopId);
+  }
 }

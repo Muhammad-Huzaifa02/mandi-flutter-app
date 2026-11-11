@@ -24,6 +24,8 @@ import 'package:mandi/modules/sms/views/sms_gateway_page.dart';
 import 'package:mandi/modules/transfers/views/multi_shop_hub_page.dart';
 import 'package:mandi/modules/voice_notes/views/voice_notes_hub_page.dart';
 import 'package:mandi/modules/loyalty/views/customer_loyalty_page.dart';
+import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
+import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -918,6 +920,134 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Seasonal trading volume targets, rebate tiers, automated credit notes & A4 vouchers',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Mandi Rate Board & Price Intelligence Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.teal.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const MandiRateBoardPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.trending_up,
+                      color: Colors.tealAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Daily Mandi Rate Board',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'روزانہ منڈی ریٹ لسٹ',
+                              style: MText.caption.copyWith(
+                                color: Colors.tealAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Market price trends, arrivals volume, WhatsApp broadcast & A4 morning notice prints',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Munshi Staff Attendance & Payroll Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.indigo.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const StaffPayrollPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.indigo.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.badge_outlined,
+                      color: Colors.indigoAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Staff Attendance & Payroll',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'عملہ حاضری و تنخواہ کھاتہ',
+                              style: MText.caption.copyWith(
+                                color: Colors.indigoAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Daily biometric attendance, overtime hours, advance recoveries & official A4 salary slips',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),

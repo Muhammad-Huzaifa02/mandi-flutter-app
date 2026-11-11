@@ -800,6 +800,86 @@ create index if not exists idx_customer_rebates_customer on public.customer_loya
 create index if not exists idx_customer_rebates_status on public.customer_loyalty_rebates(shop_id, status);
 create index if not exists idx_customer_rebates_created on public.customer_loyalty_rebates(shop_id, created_at desc);
 
+-- 7l. MANDI_COMMODITY_RATES (منڈی روزانہ ریٹ لسٹ اور براڈکاسٹ)
+create table if not exists public.mandi_commodity_rates (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  commodity_name              text not null default '',
+  variety                     text not null default '', -- e.g. "Super Kernel", "Kisan 1121", "Desi"
+  rate_date                   date not null default current_date,
+  min_rate_per_maund          numeric(12,2) not null default 0,
+  max_rate_per_maund          numeric(12,2) not null default 0,
+  modal_rate_per_maund        numeric(12,2) not null default 0,
+  previous_modal_rate         numeric(12,2) not null default 0,
+  price_change_pkr            numeric(10,2) not null default 0,
+  price_change_percent        numeric(5,2) not null default 0,
+  market_trend                text not null default 'stable', -- bullish, bearish, stable
+  arrivals_maunds             numeric(10,2) not null default 0,
+  quality_grade               text not null default 'Grade A',
+  notes                       text not null default '',
+  broadcast_sent_at           timestamptz,
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_commodity_rates_shop on public.mandi_commodity_rates(shop_id);
+create index if not exists idx_commodity_rates_date on public.mandi_commodity_rates(shop_id, rate_date desc);
+create index if not exists idx_commodity_rates_name on public.mandi_commodity_rates(shop_id, commodity_name);
+
+-- 7m. STAFF_ATTENDANCE & PAYROLL (عملہ حاضری اور تنخواہ کھاتہ)
+create table if not exists public.staff_attendance (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  member_id                   uuid not null references public.shop_memberships(id) on delete cascade,
+  staff_name                  text not null default '',
+  attendance_date             date not null default current_date,
+  status                      text not null default 'present', -- present, absent, half_day, leave
+  check_in_time               timestamptz,
+  check_out_time              timestamptz,
+  overtime_hours              numeric(4,2) not null default 0,
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now(),
+  constraint uq_staff_daily_att unique(shop_id, member_id, attendance_date)
+);
+
+create index if not exists idx_attendance_shop on public.staff_attendance(shop_id);
+create index if not exists idx_attendance_member on public.staff_attendance(shop_id, member_id);
+create index if not exists idx_attendance_date on public.staff_attendance(shop_id, attendance_date desc);
+
+create table if not exists public.staff_payroll (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  member_id                   uuid not null references public.shop_memberships(id) on delete cascade,
+  staff_name                  text not null default '',
+  month_year                  text not null default '', -- e.g. "November 2026"
+  base_monthly_salary         numeric(12,2) not null default 0,
+  days_present                integer not null default 0,
+  days_absent                 integer not null default 0,
+  days_half_day               integer not null default 0,
+  overtime_hours              numeric(6,2) not null default 0,
+  overtime_allowance_pkr      numeric(12,2) not null default 0,
+  bonus_incentive_pkr         numeric(12,2) not null default 0,
+  advance_salary_deduction_pkr numeric(12,2) not null default 0,
+  absentee_deduction_pkr      numeric(12,2) not null default 0,
+  net_payable_salary_pkr      numeric(12,2) not null default 0,
+  status                      text not null default 'draft', -- draft, approved, paid
+  payment_method              text not null default 'cash', -- cash, bank_transfer, cheque
+  paid_at                     timestamptz,
+  voucher_number              text not null default '',
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_payroll_shop on public.staff_payroll(shop_id);
+create index if not exists idx_payroll_member on public.staff_payroll(shop_id, member_id);
+create index if not exists idx_payroll_month on public.staff_payroll(shop_id, month_year);
+create index if not exists idx_payroll_status on public.staff_payroll(shop_id, status);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1800,6 +1880,55 @@ create policy "customer_loyalty_rebates: authorized staff can write" on public.c
     public.has_permission(shop_id, 'create_invoice') or
     public.has_permission(shop_id, 'view_ledger') or
     public.has_permission(shop_id, 'create_receipt')
+  );
+
+drop policy if exists "mandi_commodity_rates: members can read" on public.mandi_commodity_rates;
+create policy "mandi_commodity_rates: members can read" on public.mandi_commodity_rates
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "mandi_commodity_rates: authorized staff can write" on public.mandi_commodity_rates;
+create policy "mandi_commodity_rates: authorized staff can write" on public.mandi_commodity_rates
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'manage_products') or
+    public.has_permission(shop_id, 'create_invoice')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'manage_products') or
+    public.has_permission(shop_id, 'create_invoice')
+  );
+
+drop policy if exists "staff_attendance: members can read" on public.staff_attendance;
+create policy "staff_attendance: members can read" on public.staff_attendance
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "staff_attendance: authorized staff can write" on public.staff_attendance;
+create policy "staff_attendance: authorized staff can write" on public.staff_attendance
+  for all using (
+    public.has_permission(shop_id, 'manage_employees') or
+    public.has_permission(shop_id, 'manage_settings')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_employees') or
+    public.has_permission(shop_id, 'manage_settings')
+  );
+
+drop policy if exists "staff_payroll: members can read" on public.staff_payroll;
+create policy "staff_payroll: members can read" on public.staff_payroll
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "staff_payroll: authorized staff can write" on public.staff_payroll;
+create policy "staff_payroll: authorized staff can write" on public.staff_payroll
+  for all using (
+    public.has_permission(shop_id, 'manage_employees') or
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'view_ledger')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_employees') or
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'view_ledger')
   );
 
 -- ============================================================================

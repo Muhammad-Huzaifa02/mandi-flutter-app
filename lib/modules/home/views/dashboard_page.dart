@@ -30,6 +30,8 @@ import 'package:mandi/modules/sms/views/sms_gateway_page.dart';
 import 'package:mandi/modules/transfers/views/multi_shop_hub_page.dart';
 import 'package:mandi/modules/voice_notes/views/voice_notes_hub_page.dart';
 import 'package:mandi/modules/loyalty/views/customer_loyalty_page.dart';
+import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
+import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -590,6 +592,24 @@ class DashboardPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const CustomerLoyaltyPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.trending_up,
+                  label: 'Rate Board (ریٹ لسٹ)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const MandiRateBoardPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.badge_outlined,
+                  label: 'Staff Payroll (تنخواہ کھاتہ)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const StaffPayrollPage()),
                   ),
                 ),
                 if (shopCtx.hasPermission('manage_roles'))

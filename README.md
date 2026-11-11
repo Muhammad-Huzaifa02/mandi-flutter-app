@@ -154,6 +154,25 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Automatic Credit Note Issuance & Khata Deduction**: Generates unique credit notes (`CRN-YYYY-XXXX`) and automatically deducts the approved rebate amount from the buyer's running debit balance.
 - **Printable A4 Credit Note Voucher (`LoyaltyRebatePdfGenerator`)**: High-resolution official Credit Note with trading turnover base, incentive rate, net credit amount, and merchant seal blocks.
 
+### 📈 Mandi Price Intelligence & Daily Rate Board Broadcast (*منڈی روزانہ ریٹ لسٹ اور براڈکاسٹ*)
+- **Daily Commodity Rate Board (`MandiRateBoardPage`, `MandiRateProvider`)**: Live commodity index tracking daily minimum, maximum, and modal transaction rates per Maund (40 KG) and per KG ($Modal / 40.0$) across key commodities (Wheat/گندم, Rice Super Kernel, Basmati 1121, Cotton/پھٹی, Corn/مکئی, Potato/آلو, Onion/پیاز).
+- **Automated Trend & Price Change Engine**: Real-time trend calculation (`MandiCommodityRate.computeTrendMetrics`) determining price delta and percentage change ($\Delta \text{ PKR}$ and $\% \text{ change}$) classifying trends into **Bullish ▲ (*تیزی*)**, **Bearish ▼ (*مندی*)**, or **Stable ▬ (*مستحکم*)**.
+- **Mandi Arrivals (Aawak / آمد)**: Daily arrival volume tracking in Mandi Maunds with quality grading (Grade A, Grade B, Grade C).
+- **Multi-Channel Text Broadcast Engine**: One-tap formatted broadcast generator (`generateBroadcastMessage`) for instant WhatsApp and SMS dispatch to farmer grower groups, commission buyers, and transporters with date, rates, and market trend symbols.
+- **Official A4 Morning Rate Sheet PDF (`MandiRateBoardPdfGenerator`)**: Printable morning notice board bulletin with shop header, rate matrix, trend badges, and market committee stamp areas.
+
+### 👥 Munshi Staff Attendance & Payroll Ledger (*عملہ حاضری، اوور ٹائم اور تنخواہ کھاتہ*)
+- **Daily Staff Attendance Register (`StaffPayrollPage`, `StaffPayrollProvider`)**: Real-time biometric / manual staff attendance tracking for shop employees with presence status (**Present / حاضر**, **Absent / غیر حاضر**, **Half Day / نصف دن**, **Leave / رخصت**) and one-tap "Mark All Present" shortcut.
+- **Overtime Tracking**: Hours-based overtime recording with automated $1.5\times$ hourly rate allowance computation ($\text{Hourly Rate} = (\text{Base} / 30) / 8$).
+- **Mathematical Payroll Calculation Engine (`StaffPayrollVoucher.computePayrollBreakdown`)**:
+  - Daily wage proration based on standard 30-day month ($\text{Daily} = \text{Base} / 30$).
+  - Absenteeism deduction: $(\text{Days Absent} \times \text{Daily Wage}) + (\text{Half Days} \times 0.5 \times \text{Daily Wage})$.
+  - Advance salary loan recoveries & seasonal bonus incentives.
+  - Net wage formula:
+    $$\text{Net Payable} = \text{Base} + \text{Overtime Allowance} + \text{Bonus} - \text{Absentee Deduction} - \text{Advance Deduction}$$
+- **Disbursement Lifecycle & Multi-Method Payouts**: Status progression (`draft`, `approved`, `paid`) with support for **Cash**, **Bank Transfer**, or **Cheque** disbursement vouchers.
+- **A4 Printable Salary Pay Slips & Registers (`StaffPayrollPdfGenerator`)**: High-resolution individual Staff Salary Pay Slip vouchers with itemized earnings & deductions, alongside Landscape A4 Monthly Wage Disbursement Registers.
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -188,6 +207,8 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Multi-Shop & Transfers** | Multi-branch consolidated balance sheet, enterprise equity aggregation, inter-shop consignment stock transfers with Maund math, transit freight, and printable gate pass delivery challans. |
 | **Munshi Voice Notes** | Verbal voice recording, Mandi keyword parser (party names, amounts, maunds, bags), entity attachment (invoices, boli, khata), and audio memo hub. |
 | **Customer Loyalty & Rebates** | Seasonal turnover targets, tiered volume rebates (Standard, Silver, Gold, Platinum), automated credit note issuance to running khata, and printable A4 vouchers. |
+| **Mandi Price Intelligence** | Daily commodity rate index, min/max/modal pricing per Maund and KG ($Modal / 40.0$), trend indicators (Bullish/Bearish/Stable), arrivals volume, WhatsApp & SMS broadcast engine, printable A4 morning bulletin. |
+| **Staff Attendance & Payroll** | Daily staff attendance register (Present/Absent/Half-Day/Leave), overtime proration, mathematical net wage deductions engine, voucher approval & disbursement, printable A4 pay slips and registers. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |
