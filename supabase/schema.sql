@@ -742,6 +742,64 @@ create index if not exists idx_transfers_destination on public.inter_shop_transf
 create index if not exists idx_transfers_status on public.inter_shop_transfers(source_shop_id, destination_shop_id, status);
 create index if not exists idx_transfers_created on public.inter_shop_transfers(source_shop_id, created_at desc);
 
+-- 7j. AUDIO_VOICE_NOTES (منشی صوتی نوٹس اور آواز سے کھاتہ اندراج)
+create table if not exists public.audio_voice_notes (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  title                       text not null default '',
+  audio_url                   text not null default '',
+  storage_path                text not null default '',
+  duration_seconds            integer not null default 0,
+  file_size_bytes             integer not null default 0,
+  mime_type                   text not null default 'audio/m4a',
+  transcription_text          text not null default '',
+  detected_party_type         text not null default 'none', -- none, customer, supplier
+  party_id                    uuid,
+  party_name                  text not null default '',
+  entity_type                 text not null default 'general', -- general, invoice, consignment_lot, weighbridge, khata_payment
+  entity_id                   uuid,
+  parsed_amount_pkr           numeric(12,2) not null default 0,
+  parsed_maunds               numeric(10,2) not null default 0,
+  status                      text not null default 'pending', -- pending, processed, archived
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_audio_notes_shop on public.audio_voice_notes(shop_id);
+create index if not exists idx_audio_notes_status on public.audio_voice_notes(shop_id, status);
+create index if not exists idx_audio_notes_entity on public.audio_voice_notes(shop_id, entity_type, entity_id);
+create index if not exists idx_audio_notes_created on public.audio_voice_notes(shop_id, created_at desc);
+
+-- 7k. CUSTOMER_LOYALTY_REBATES (گاہک رعایت، والیم بونس اور سالانہ انعامات)
+create table if not exists public.customer_loyalty_rebates (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  customer_id                 uuid not null references public.customers(id) on delete cascade,
+  customer_name               text not null default '',
+  customer_phone              text not null default '',
+  program_name                text not null default 'Seasonal Volume Rebate',
+  season_year                 text not null default '',
+  qualifying_maunds           numeric(12,2) not null default 0,
+  qualifying_turnover_pkr     numeric(14,2) not null default 0,
+  tier_level                  text not null default 'standard', -- standard, silver, gold, platinum
+  rebate_percentage           numeric(5,2) not null default 0,
+  rebate_amount_pkr           numeric(12,2) not null default 0,
+  credit_note_number          text not null default '',
+  status                      text not null default 'accruing', -- accruing, approved, credited, cancelled
+  credited_at                 timestamptz,
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_customer_rebates_shop on public.customer_loyalty_rebates(shop_id);
+create index if not exists idx_customer_rebates_customer on public.customer_loyalty_rebates(shop_id, customer_id);
+create index if not exists idx_customer_rebates_status on public.customer_loyalty_rebates(shop_id, status);
+create index if not exists idx_customer_rebates_created on public.customer_loyalty_rebates(shop_id, created_at desc);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1711,6 +1769,37 @@ create policy "inter_shop_transfers: members can write" on public.inter_shop_tra
   with check (
     public.is_shop_member(source_shop_id) or
     public.is_shop_member(destination_shop_id)
+  );
+
+drop policy if exists "audio_voice_notes: members can read" on public.audio_voice_notes;
+create policy "audio_voice_notes: members can read" on public.audio_voice_notes
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "audio_voice_notes: members can write" on public.audio_voice_notes;
+create policy "audio_voice_notes: members can write" on public.audio_voice_notes
+  for all using (public.is_shop_member(shop_id))
+  with check (public.is_shop_member(shop_id));
+
+drop policy if exists "customer_loyalty_rebates: members can read" on public.customer_loyalty_rebates;
+create policy "customer_loyalty_rebates: members can read" on public.customer_loyalty_rebates
+  for select using (
+    public.is_shop_member(shop_id) or
+    customer_id in (select id from public.customers where user_id = auth.uid())
+  );
+
+drop policy if exists "customer_loyalty_rebates: authorized staff can write" on public.customer_loyalty_rebates;
+create policy "customer_loyalty_rebates: authorized staff can write" on public.customer_loyalty_rebates
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_receipt')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_receipt')
   );
 
 -- ============================================================================

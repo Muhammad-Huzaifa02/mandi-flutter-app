@@ -22,6 +22,8 @@ import 'package:mandi/modules/advances/views/farmer_advance_page.dart';
 import 'package:mandi/modules/cross_border/views/cross_border_page.dart';
 import 'package:mandi/modules/sms/views/sms_gateway_page.dart';
 import 'package:mandi/modules/transfers/views/multi_shop_hub_page.dart';
+import 'package:mandi/modules/voice_notes/views/voice_notes_hub_page.dart';
+import 'package:mandi/modules/loyalty/views/customer_loyalty_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -788,6 +790,134 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Multi-branch enterprise balance sheet, branch equity & inter-shop stock transfers with gate pass',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Munshi Voice Notes Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.red.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const VoiceNotesHubPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.red.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.mic_rounded,
+                      color: Colors.redAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Munshi Voice Notes',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'صوتی نوٹس اور ڈکٹیشن',
+                              style: MText.caption.copyWith(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Verbal voice recording, Mandi keyword parser & quick khata dictation memos',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Customer Loyalty & Volume Rebate Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.amber.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const CustomerLoyaltyPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.amber.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.stars_rounded,
+                      color: Colors.amberAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Customer Loyalty & Volume Rebates',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'گاہک رعایت اور والیم بونس',
+                              style: MText.caption.copyWith(
+                                color: Colors.amberAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Seasonal trading volume targets, rebate tiers, automated credit notes & A4 vouchers',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),

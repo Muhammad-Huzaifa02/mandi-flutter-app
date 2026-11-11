@@ -139,6 +139,21 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
   1. **Consolidated Multi-Branch Balance Sheet**: Professional Landscape A4 report with group KPI banner, individual branch comparison table, and executive signature blocks.
   2. **Inter-Shop Stock Transfer Gate Pass & Delivery Challan**: Official A4 transit gate pass (`ConsolidatedBalanceSheetPdfGenerator`) with source and destination details, carrier info, commodity quantities, and verification seals.
 
+### 🎙️ Munshi Offline Audio-Voice Note & Ledger Dictation (*منشی صوتی نوٹس اور آواز سے کھاتہ اندراج*)
+- **Voice Recording Engine**: Audio note architecture with live duration timer, waveform state indicator, and local/cloud storage linking (`AudioNoteProvider`, `AudioVoiceNote`).
+- **Smart Mandi Dictation Parser (`VoiceDictationParser`)**: Automatically extracts party honorifics (*چوہدری، ملک، حاجی، میاں، سیٹھ*), numeric monetary figures (e.g. 20 ہزار، 1 لاکھ، Rs 50,000), crop Maunds ($KG / 40.0$), bag counts, and suspected business intent (cash receipt vs auction boli).
+- **Entity Attachment**: Attach voice recordings directly to Sales Invoices, Consignment Lots (*ڈھیری*), Customer Khata entries, or Dharam Kanda weighbridge tickets.
+- **Voice Notes Hub (`VoiceNotesHubPage`)**: Searchable repository to review unposted audio memos, mark as processed, archive, or delete.
+
+### 🌟 Customer Loyalty, Volume Rebate & Seasonal Brokerage Incentives (*گاہک رعایت، والیم بونس اور سالانہ انعامات*)
+- **Seasonal Volume Tier Milestones**: Define and track trading turnover milestones:
+  - **Standard**: `<1,000` Maunds (0.5% default incentive)
+  - **Silver (سلور)**: `1,000 - 4,999` Maunds (1.0% default incentive)
+  - **Gold (گولڈ)**: `5,000 - 9,999` Maunds (2.0% default incentive)
+  - **Platinum (پلاٹینم)**: `10,000+` Maunds (3.0% default incentive)
+- **Automatic Credit Note Issuance & Khata Deduction**: Generates unique credit notes (`CRN-YYYY-XXXX`) and automatically deducts the approved rebate amount from the buyer's running debit balance.
+- **Printable A4 Credit Note Voucher (`LoyaltyRebatePdfGenerator`)**: High-resolution official Credit Note with trading turnover base, incentive rate, net credit amount, and merchant seal blocks.
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -170,6 +185,9 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Thermal Printer Engine** | Raw ESC/POS bytecode generator, 58mm/80mm roll formatting, simulated tear preview, 6-document receipt suite (Invoices, Boli slips, Kanda tickets, Cash Khata vouchers, Advance deductions). |
 | **Cross-Border Mandi Trade** | Pak-Afghan & Pak-Iran transit fruit/vegetable cargo tracking, dual-currency valuation (USD/AFN/IRR to PKR), border checkpoints (Torkham, Chaman, Taftan), customs tariffs & freight landed cost, supplier debt settlement, A4 cargo manifest & register. |
 | **SMS Gateway & Alerts** | Multi-provider telecom integration (Twilio, Pakistani Telco, HTTP webhook, Mock), GSM-7/Unicode part calculator, automatic event-driven dispatch triggers (invoices, receipts, boli, weighbridge), delivery audit logs, and direct recovery hub sending. |
+| **Multi-Shop & Transfers** | Multi-branch consolidated balance sheet, enterprise equity aggregation, inter-shop consignment stock transfers with Maund math, transit freight, and printable gate pass delivery challans. |
+| **Munshi Voice Notes** | Verbal voice recording, Mandi keyword parser (party names, amounts, maunds, bags), entity attachment (invoices, boli, khata), and audio memo hub. |
+| **Customer Loyalty & Rebates** | Seasonal turnover targets, tiered volume rebates (Standard, Silver, Gold, Platinum), automated credit note issuance to running khata, and printable A4 vouchers. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

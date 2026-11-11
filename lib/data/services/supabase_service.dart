@@ -1257,4 +1257,130 @@ class SupabaseService {
       'totalStockValue': totalStockValue,
     };
   }
+
+  // ── Audio Voice Notes (صوتی نوٹس اور آواز سے اندراج) ──────────────────────────
+
+  static Stream<List<Map<String, dynamic>>> audioVoiceNotesStream(String shopId) {
+    return _client
+        .from('audio_voice_notes')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getAudioVoiceNotes(String shopId) async {
+    final rows = await _client
+        .from('audio_voice_notes')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createAudioVoiceNote(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('audio_voice_notes')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateAudioVoiceNoteStatus({
+    required String noteId,
+    required String shopId,
+    required String status,
+    String? entityType,
+    String? entityId,
+    String? notes,
+  }) async {
+    final updateData = <String, dynamic>{
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (entityType != null) updateData['entity_type'] = entityType;
+    if (entityId != null) updateData['entity_id'] = entityId;
+    if (notes != null) updateData['notes'] = notes;
+
+    await _client
+        .from('audio_voice_notes')
+        .update(updateData)
+        .eq('id', noteId)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteAudioVoiceNote(String noteId, String shopId) async {
+    await _client
+        .from('audio_voice_notes')
+        .delete()
+        .eq('id', noteId)
+        .eq('shop_id', shopId);
+  }
+
+  // ── Customer Loyalty & Volume Rebates (گاہک رعایت و والیم بونس) ─────────────
+
+  static Stream<List<Map<String, dynamic>>> customerLoyaltyRebatesStream(
+      String shopId) {
+    return _client
+        .from('customer_loyalty_rebates')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getCustomerLoyaltyRebates(
+      String shopId) async {
+    final rows = await _client
+        .from('customer_loyalty_rebates')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createCustomerLoyaltyRebate(
+      Map<String, dynamic> data) async {
+    final res = await _client
+        .from('customer_loyalty_rebates')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> creditRebateToCustomerKhata({
+    required String rebateId,
+    required String shopId,
+    required String customerId,
+    required double rebateAmount,
+    required String creditNoteNumber,
+    String notes = '',
+  }) async {
+    final now = DateTime.now();
+
+    // 1. Mark rebate as credited
+    await _client.from('customer_loyalty_rebates').update({
+      'status': 'credited',
+      'credited_at': now.toIso8601String(),
+      'credit_note_number': creditNoteNumber,
+      'notes': notes,
+      'updated_at': now.toIso8601String(),
+    }).eq('id', rebateId).eq('shop_id', shopId);
+
+    // 2. Adjust customer running balance (subtract rebate credit from receivables)
+    final cust = await _client
+        .from('customers')
+        .select('running_balance')
+        .eq('id', customerId)
+        .eq('shop_id', shopId)
+        .single();
+
+    final currentBal = (cust['running_balance'] as num?)?.toDouble() ?? 0.0;
+    final updatedBal = currentBal - rebateAmount;
+
+    await _client.from('customers').update({
+      'running_balance': updatedBal,
+      'updated_at': now.toIso8601String(),
+    }).eq('id', customerId).eq('shop_id', shopId);
+  }
 }
