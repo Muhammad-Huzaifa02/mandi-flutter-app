@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/partner_capital_model.dart';
 import 'package:mandi/modules/partner_capital/providers/partner_capital_provider.dart';
@@ -51,16 +52,16 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'Shop Partners & Profit Sharing (شراکت داری کھاتہ)',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          AppStrings.tr(context, 'partner_capital_title'),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.teal[800],
         foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.print, color: Colors.white),
-            tooltip: 'Print Equity Report (A4 PDF)',
+            tooltip: 'Print Equity Report',
             onPressed: partners.isEmpty ? null : () => _printReport(provider, shopName, shopPhone),
           ),
         ],
@@ -75,7 +76,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
               children: [
                 Expanded(
                   child: _buildKpiCard(
-                    title: 'Total Partners / حصہ دار',
+                    title: AppStrings.tr(context, 'total_partners'),
                     value: '${partners.length}',
                     subtitle: '${provider.totalProfitRatio.toStringAsFixed(1)}% Allocated',
                     icon: Icons.groups,
@@ -85,7 +86,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildKpiCard(
-                    title: 'Total Firm Capital / کل سرمایہ',
+                    title: AppStrings.tr(context, 'total_firm_capital'),
                     value: 'Rs. ${_currencyFmt.format(provider.totalShopCapital)}',
                     subtitle: 'Current Partner Equity',
                     icon: Icons.account_balance,
@@ -95,7 +96,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildKpiCard(
-                    title: 'Total Drawings / ذاتی خرچ',
+                    title: AppStrings.tr(context, 'total_drawings'),
                     value: 'Rs. ${_currencyFmt.format(provider.totalShopDrawings)}',
                     subtitle: 'Cumulative Drawings',
                     icon: Icons.money_off,

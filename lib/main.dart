@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -240,6 +241,15 @@ class MandiApp extends StatelessWidget {
           ),
           themeMode: themeProvider.themeMode,
           locale: localeProvider.locale,
+          supportedLocales: const [
+            Locale('en', ''),
+            Locale('ur', ''),
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           builder: (context, child) {
             final mediaQuery = MediaQuery.of(context);
             // Standardize text scaling across diverse Android displays (small, normal, large, accessibility zoom).

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/data/models/gate_pass_model.dart';
 import 'package:mandi/modules/gate_pass/providers/gate_pass_provider.dart';
 import 'package:mandi/modules/gate_pass/dialogs/issue_gate_pass_dialog.dart';
@@ -65,9 +66,9 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Gate Pass & Token Queue (گیٹ پاس و ٹوکن لائن)',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          AppStrings.tr(context, 'gate_pass_title'),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.teal[800],
         foregroundColor: Colors.white,
@@ -77,16 +78,16 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
           indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(icon: Icon(Icons.tv), text: 'Unloading Board (پھڑ بورڈ)'),
-            Tab(icon: Icon(Icons.confirmation_num), text: 'Inward Tokens (ٹوکنز)'),
-            Tab(icon: Icon(Icons.exit_to_app), text: 'Gate-Out (گیٹ آؤٹ پاس)'),
+          tabs: [
+            Tab(icon: const Icon(Icons.tv), text: AppStrings.tr(context, 'unloading_board_tab')),
+            Tab(icon: const Icon(Icons.confirmation_num), text: AppStrings.tr(context, 'inward_tokens_tab')),
+            Tab(icon: const Icon(Icons.exit_to_app), text: AppStrings.tr(context, 'gate_out_tab')),
           ],
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle, color: Colors.amberAccent, size: 28),
-            tooltip: 'نیا ٹوکن جاری کریں (Issue Token)',
+            tooltip: AppStrings.tr(context, 'issue_token_btn'),
             onPressed: () => showDialog(
               context: context,
               builder: (_) => const IssueGatePassDialog(),
@@ -111,7 +112,10 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
           builder: (_) => const IssueGatePassDialog(),
         ),
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('نیا ٹوکن (New Token)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: Text(
+          AppStrings.tr(context, 'issue_token_btn'),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.teal[800],
       ),
     );

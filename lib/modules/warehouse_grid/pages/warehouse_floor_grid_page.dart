@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/warehouse_grid_model.dart';
 import 'package:mandi/modules/warehouse_grid/providers/warehouse_grid_provider.dart';
@@ -56,9 +57,9 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        title: const Text(
-          'Visual 2D Godown Grid (گودام تصویری نقشہ)',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          AppStrings.tr(context, 'warehouse_grid_title'),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.teal[800],
         foregroundColor: Colors.white,
@@ -85,9 +86,9 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                   children: [
                     const Icon(Icons.warehouse, color: Colors.teal),
                     const SizedBox(width: 10),
-                    const Text(
-                      'Chamber / سیکشن:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    Text(
+                      '${AppStrings.tr(context, 'select_chamber')}:',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -123,7 +124,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
               children: [
                 Expanded(
                   child: _buildKpiCard(
-                    title: 'Total Capacity / گنجائش',
+                    title: AppStrings.tr(context, 'total_capacity'),
                     value: '${_numberFmt.format(provider.totalCapacityBags)} Bags',
                     subtitle: '${provider.bays.length} Total Bays',
                     icon: Icons.grid_view,
@@ -133,7 +134,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildKpiCard(
-                    title: 'Stored Stock / موجودہ مال',
+                    title: AppStrings.tr(context, 'stored_stock'),
                     value: '${_numberFmt.format(provider.totalStoredBags)} Bags',
                     subtitle: '${provider.overallOccupancyPercent.toStringAsFixed(1)}% Full',
                     icon: Icons.inventory_2,
@@ -143,7 +144,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildKpiCard(
-                    title: 'Active Bays / زیر استعمال',
+                    title: AppStrings.tr(context, 'active_bays'),
                     value: '${provider.occupiedBaysCount} / ${provider.bays.length}',
                     subtitle: '${provider.emptyBaysCount} Empty',
                     icon: Icons.check_circle_outline,

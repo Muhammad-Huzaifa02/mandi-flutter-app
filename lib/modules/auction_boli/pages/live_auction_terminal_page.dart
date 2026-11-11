@@ -8,6 +8,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/modules/auction_boli/providers/auction_boli_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
@@ -226,21 +227,21 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A), // Deep Slate Navy TV Theme
       appBar: AppBar(
-        title: const Text(
-          'Live Auction Floor Terminal (لائیو نیلامی بولی اسکرین)',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          AppStrings.tr(context, 'auction_terminal_title'),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: const Color(0xFF1E293B),
         elevation: 2,
         actions: [
           IconButton(
             icon: const Icon(Icons.add_box_outlined, color: Colors.amberAccent),
-            tooltip: 'نئی ڈھیری شروع کریں (New Heap)',
+            tooltip: AppStrings.tr(context, 'new_heap'),
             onPressed: () => _showNewLotDialog(context, boliProvider),
           ),
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white70),
-            tooltip: 'ری سیٹ (Reset)',
+            tooltip: AppStrings.tr(context, 'reset'),
             onPressed: () => boliProvider.resetAuction(),
           ),
         ],
@@ -384,7 +385,9 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
           child: Column(
             children: [
               Text(
-                isLocked ? '🎉 SOLD! بولی مکمل ہو گئی' : 'CURRENT HIGHEST BID / موجودہ بلند ترین بولی',
+                isLocked
+                    ? AppStrings.tr(context, 'auction_sold')
+                    : AppStrings.tr(context, 'current_highest_bid'),
                 style: TextStyle(
                   color: isLocked ? Colors.greenAccent : Colors.tealAccent,
                   fontWeight: FontWeight.bold,
@@ -413,9 +416,9 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                         letterSpacing: -1,
                       ),
                     ),
-                    const Text(
-                      ' / Maund (من)',
-                      style: TextStyle(color: Colors.white70, fontSize: 18),
+                    Text(
+                      ' / ${AppStrings.tr(context, 'maunds')}',
+                      style: const TextStyle(color: Colors.white70, fontSize: 18),
                     ),
                   ],
                 ),

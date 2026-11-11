@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/modules/farmer_passbook/providers/farmer_passbook_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
@@ -102,21 +103,21 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'Farmer Digital Passbook (زمیندار پاس بک)',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          AppStrings.tr(context, 'farmer_passbook_title'),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         backgroundColor: Colors.teal[800],
         foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code, color: Colors.amberAccent),
-            tooltip: 'Print QR ID Card (شناختی کارڈ)',
+            tooltip: AppStrings.tr(context, 'print_qr_card'),
             onPressed: farmer == null ? null : () => _printIdCard(passbookProvider, shopName, shopPhone),
           ),
           IconButton(
             icon: const Icon(Icons.print, color: Colors.white),
-            tooltip: 'Print Passbook Slip (پرچی پرنٹ)',
+            tooltip: AppStrings.tr(context, 'print_passbook_slip'),
             onPressed: farmer == null ? null : () => _printPassbookSlip(passbookProvider, shopName, shopPhone),
           ),
         ],
@@ -136,9 +137,9 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                   children: [
                     const Icon(Icons.person_search, color: Colors.teal),
                     const SizedBox(width: 10),
-                    const Text(
-                      'Select Farmer / زمیندار:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    Text(
+                      '${AppStrings.tr(context, 'select_farmer')}:',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -220,7 +221,9 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          isPayable ? 'واجب الادا (Payable)' : 'پیشگی بقایا (Advance)',
+                          isPayable
+                              ? AppStrings.tr(context, 'payable_to_farmer')
+                              : AppStrings.tr(context, 'advance_receivable'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -231,9 +234,9 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'CURRENT KHATA BALANCE / موجودہ خالص بیلنس',
-                    style: TextStyle(
+                  Text(
+                    AppStrings.tr(context, 'current_khata_balance'),
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/services/supabase_service.dart';
@@ -72,13 +73,8 @@ class DashboardPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Switch Mandi Shop',
+                          AppStrings.tr(sheetCtx, 'switch_mandi_shop'),
                           style: MText.titleLg.copyWith(color: Colors.white),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'تبدیل غلہ منڈی دکان',
-                          style: MText.caption.copyWith(color: MColors.gold),
                         ),
                       ],
                     ),
@@ -93,7 +89,7 @@ class DashboardPage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: MSpacing.md),
                     child: Text(
-                      'No other shops available for this account.',
+                      AppStrings.tr(sheetCtx, 'no_other_shops'),
                       style: MText.bodyMd.copyWith(color: Colors.grey),
                     ),
                   )
@@ -316,11 +312,12 @@ class DashboardPage extends StatelessWidget {
           if (shopCtx.hasMultipleShops)
             IconButton(
               icon: const Icon(Icons.swap_horiz_rounded),
-              tooltip: 'Switch Shop (تبدیل دکان)',
+              tooltip: AppStrings.tr(context, 'switch_shop'),
               onPressed: () => _showShopSwitcherBottomSheet(context),
             ),
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: AppStrings.tr(context, 'logout'),
             onPressed: () {
               auth.signOut();
               shopCtx.clear();
@@ -355,7 +352,7 @@ class DashboardPage extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text('Welcome, ${shopCtx.currentMember?.name ?? ''}',
+                            Text('${AppStrings.tr(context, 'welcome')}, ${shopCtx.currentMember?.name ?? ''}',
                                 style: MText.titleLg.copyWith(color: Colors.white)),
                             const SizedBox(width: 6),
                             const Icon(Icons.edit_outlined,
@@ -363,7 +360,7 @@ class DashboardPage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 2),
-                        Text('Role: ${shopCtx.currentRole?.name ?? '—'}',
+                        Text('${AppStrings.tr(context, 'role')}: ${shopCtx.currentRole?.name ?? '—'}',
                             style: MText.bodySm
                                 .copyWith(color: MColors.textOnDarkSub)),
                       ],
@@ -374,7 +371,7 @@ class DashboardPage extends StatelessWidget {
             ),
 
             const SizedBox(height: MSpacing.xl),
-            Text('Manage',
+            Text(AppStrings.tr(context, 'manage'),
                 style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
 
@@ -385,7 +382,7 @@ class DashboardPage extends StatelessWidget {
                 if (shopCtx.hasPermission('manage_employees'))
                   _ManageTile(
                     icon: Icons.badge_outlined,
-                    label: 'Employees',
+                    label: AppStrings.tr(context, 'employees'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -395,7 +392,7 @@ class DashboardPage extends StatelessWidget {
                 if (shopCtx.hasPermission('manage_customers'))
                   _ManageTile(
                     icon: Icons.people_alt_outlined,
-                    label: 'Customers',
+                    label: AppStrings.tr(context, 'customers'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -405,7 +402,7 @@ class DashboardPage extends StatelessWidget {
                 if (shopCtx.hasPermission('manage_suppliers'))
                   _ManageTile(
                     icon: Icons.local_shipping_outlined,
-                    label: 'Suppliers',
+                    label: AppStrings.tr(context, 'suppliers'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -416,7 +413,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('manage_suppliers'))
                   _ManageTile(
                     icon: Icons.assignment_outlined,
-                    label: 'Purchases',
+                    label: AppStrings.tr(context, 'purchases'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -428,7 +425,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('create_invoice'))
                   _ManageTile(
                     icon: Icons.gavel_outlined,
-                    label: 'Consignments',
+                    label: AppStrings.tr(context, 'consignments'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -439,7 +436,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('manage_inventory'))
                   _ManageTile(
                     icon: Icons.grass_outlined,
-                    label: 'Products',
+                    label: AppStrings.tr(context, 'products'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -450,7 +447,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('view_ledger'))
                   _ManageTile(
                     icon: Icons.receipt_long_outlined,
-                    label: 'Invoices',
+                    label: AppStrings.tr(context, 'invoices'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -460,7 +457,7 @@ class DashboardPage extends StatelessWidget {
                 if (shopCtx.hasPermission('manage_expenses'))
                   _ManageTile(
                     icon: Icons.account_balance_wallet_outlined,
-                    label: 'Expenses',
+                    label: AppStrings.tr(context, 'expenses'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -471,7 +468,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('view_ledger'))
                   _ManageTile(
                     icon: Icons.payments_outlined,
-                    label: 'Payments',
+                    label: AppStrings.tr(context, 'payments'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -482,7 +479,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('view_ledger'))
                   _ManageTile(
                     icon: Icons.campaign_outlined,
-                    label: 'Recovery',
+                    label: AppStrings.tr(context, 'recovery'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -493,7 +490,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('view_analytics'))
                   _ManageTile(
                     icon: Icons.bar_chart_outlined,
-                    label: 'Reports',
+                    label: AppStrings.tr(context, 'reports'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ReportsPage()),
@@ -503,7 +500,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('view_ledger'))
                   _ManageTile(
                     icon: Icons.menu_book_outlined,
-                    label: 'Roznamcha',
+                    label: AppStrings.tr(context, 'roznamcha'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -515,7 +512,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('view_reports'))
                   _ManageTile(
                     icon: Icons.account_balance_outlined,
-                    label: 'Bank & Cheques',
+                    label: AppStrings.tr(context, 'bank_and_cheques'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -526,7 +523,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('view_ledger'))
                   _ManageTile(
                     icon: Icons.warehouse_outlined,
-                    label: 'Godown & Bardana',
+                    label: AppStrings.tr(context, 'godown_and_bardana'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -538,7 +535,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('create_invoice'))
                   _ManageTile(
                     icon: Icons.scale_rounded,
-                    label: 'Weighbridge (دھرم کنڈا)',
+                    label: AppStrings.tr(context, 'weighbridge'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -550,7 +547,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('create_purchase'))
                   _ManageTile(
                     icon: Icons.agriculture_rounded,
-                    label: 'Farmer Advances (پیشگی)',
+                    label: AppStrings.tr(context, 'farmer_advances'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -561,7 +558,7 @@ class DashboardPage extends StatelessWidget {
                     shopCtx.hasPermission('manage_products'))
                   _ManageTile(
                     icon: Icons.public_rounded,
-                    label: 'Border Trade (سرحدی مال)',
+                    label: AppStrings.tr(context, 'border_trade'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -570,7 +567,7 @@ class DashboardPage extends StatelessWidget {
                   ),
                 _ManageTile(
                   icon: Icons.sms_rounded,
-                  label: 'SMS Gateway (ایس ایم ایس)',
+                  label: AppStrings.tr(context, 'sms_gateway'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -579,7 +576,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.hub_outlined,
-                  label: 'Multi-Shop (مشترکہ کھاتہ)',
+                  label: AppStrings.tr(context, 'multi_shop'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -588,7 +585,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.mic_rounded,
-                  label: 'Voice Notes (صوتی نوٹس)',
+                  label: AppStrings.tr(context, 'voice_notes'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -597,7 +594,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.stars_rounded,
-                  label: 'Loyalty & Rebates (رعایت)',
+                  label: AppStrings.tr(context, 'loyalty_and_rebates'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -606,7 +603,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.trending_up,
-                  label: 'Rate Board (ریٹ لسٹ)',
+                  label: AppStrings.tr(context, 'rate_board'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -615,7 +612,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.badge_outlined,
-                  label: 'Staff Payroll (تنخواہ کھاتہ)',
+                  label: AppStrings.tr(context, 'staff_payroll'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -624,7 +621,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.local_shipping_rounded,
-                  label: 'Fleet & Bilty (ٹرانسپورٹ کھاتہ)',
+                  label: AppStrings.tr(context, 'fleet_and_bilty'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -633,7 +630,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.biotech_rounded,
-                  label: 'Quality Lab (جنس کوالٹی لیب)',
+                  label: AppStrings.tr(context, 'quality_lab'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -642,7 +639,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.qr_code_2_rounded,
-                  label: 'Barcode & QR (بارکوڈ لیبلز)',
+                  label: AppStrings.tr(context, 'barcode_and_qr'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -651,7 +648,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.sync_problem_rounded,
-                  label: 'Offline Sync (آف لائن ڈیٹا)',
+                  label: AppStrings.tr(context, 'offline_sync'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -660,7 +657,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.campaign_rounded,
-                  label: 'Rate Broadcast (ریٹ براڈکاسٹ)',
+                  label: AppStrings.tr(context, 'rate_broadcast'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -669,7 +666,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.gavel_rounded,
-                  label: 'Live Auction (لائیو نیلامی بولی)',
+                  label: AppStrings.tr(context, 'live_auction'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -678,7 +675,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.confirmation_num_rounded,
-                  label: 'Gate Pass & Token (گیٹ پاس)',
+                  label: AppStrings.tr(context, 'gate_pass'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -687,7 +684,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.menu_book_rounded,
-                  label: 'Farmer Passbook (زمیندار پاس بک)',
+                  label: AppStrings.tr(context, 'farmer_passbook'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -696,7 +693,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.handshake_rounded,
-                  label: 'Shop Partners (شراکت داری کھاتہ)',
+                  label: AppStrings.tr(context, 'shop_partners'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -705,7 +702,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 _ManageTile(
                   icon: Icons.grid_on_rounded,
-                  label: 'Warehouse 2D Grid (گودام نقشہ)',
+                  label: AppStrings.tr(context, 'warehouse_2d_grid'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -715,7 +712,7 @@ class DashboardPage extends StatelessWidget {
                 if (shopCtx.hasPermission('manage_roles'))
                   _ManageTile(
                     icon: Icons.shield_outlined,
-                    label: 'Roles',
+                    label: AppStrings.tr(context, 'roles'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -724,7 +721,7 @@ class DashboardPage extends StatelessWidget {
                   ),
                 _ManageTile(
                   icon: Icons.history_outlined,
-                  label: 'Audit Logs',
+                  label: AppStrings.tr(context, 'audit_logs'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -734,7 +731,7 @@ class DashboardPage extends StatelessWidget {
                 if (shopCtx.hasPermission('manage_settings'))
                   _ManageTile(
                     icon: Icons.settings_outlined,
-                    label: 'Settings',
+                    label: AppStrings.tr(context, 'settings'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
