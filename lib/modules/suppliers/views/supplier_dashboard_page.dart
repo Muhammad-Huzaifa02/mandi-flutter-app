@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
@@ -13,6 +13,9 @@ import 'package:mandi/modules/products/views/product_list_page.dart';
 import 'package:mandi/modules/products/views/add_edit_supplier_product_page.dart';
 import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dart';
 import 'package:mandi/modules/payments/views/payment_list_page.dart';
+import 'package:mandi/modules/farmer_passbook/pages/farmer_passbook_page.dart';
+import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
+import 'package:mandi/modules/gate_pass/pages/gate_pass_page.dart';
 
 /// Shown when the signed-in account's role in the active shop is
 /// 'supplier' (see lib/routes/dashboard_router.dart).
@@ -194,7 +197,7 @@ Thank you!
             ),
 
             const SizedBox(height: MSpacing.xl),
-            Text('Supply Operations',
+            Text('Farmer & Crop Services (زمیندار سروسز)',
                 style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
             Wrap(
@@ -202,8 +205,35 @@ Thank you!
               runSpacing: MSpacing.sm,
               children: [
                 _SupplierTile(
+                  icon: Icons.menu_book_rounded,
+                  label: AppStrings.tr(context, 'farmer_passbook'),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const FarmerPassbookPage()),
+                  ),
+                ),
+                _SupplierTile(
+                  icon: Icons.confirmation_num_rounded,
+                  label: AppStrings.tr(context, 'gate_pass'),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const GatePassPage()),
+                  ),
+                ),
+                _SupplierTile(
+                  icon: Icons.trending_up,
+                  label: AppStrings.tr(context, 'rate_board'),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const MandiRateBoardPage()),
+                  ),
+                ),
+                _SupplierTile(
                   icon: Icons.add_business_outlined,
-                  label: 'Offer Product',
+                  label: 'Offer Crop',
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -214,7 +244,7 @@ Thank you!
                 ),
                 _SupplierTile(
                   icon: Icons.assignment_outlined,
-                  label: 'Purchase Orders',
+                  label: AppStrings.tr(context, 'purchases'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -223,7 +253,7 @@ Thank you!
                 ),
                 _SupplierTile(
                   icon: Icons.inventory_2_outlined,
-                  label: 'Products',
+                  label: AppStrings.tr(context, 'products'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const ProductListPage()),
@@ -233,7 +263,7 @@ Thank you!
             ),
 
             const SizedBox(height: MSpacing.lg),
-            Text('My Account',
+            Text('My Account (میرا کھاتہ)',
                 style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
             Wrap(
@@ -242,7 +272,7 @@ Thank you!
               children: [
                 _SupplierTile(
                   icon: Icons.account_balance_wallet_outlined,
-                  label: 'Payments',
+                  label: AppStrings.tr(context, 'payments'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const PaymentListPage()),
@@ -250,17 +280,7 @@ Thank you!
                 ),
                 _SupplierTile(
                   icon: Icons.menu_book_outlined,
-                  label: 'Ledger',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => SupplierDetailPage(supplier: mySupplier),
-                    ),
-                  ),
-                ),
-                _SupplierTile(
-                  icon: Icons.person_outline,
-                  label: 'Profile',
+                  label: 'Khata Ledger',
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(

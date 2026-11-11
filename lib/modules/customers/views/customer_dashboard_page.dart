@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/customer_model.dart';
@@ -11,6 +11,8 @@ import 'package:mandi/modules/customers/views/customer_detail_page.dart';
 import 'package:mandi/modules/products/views/product_list_page.dart';
 import 'package:mandi/modules/invoices/views/invoice_list_page.dart';
 import 'package:mandi/modules/payments/views/payment_list_page.dart';
+import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
+import 'package:mandi/modules/gate_pass/pages/gate_pass_page.dart';
 
 /// Shown when the signed-in account's role in the active shop is
 /// 'customer' (see lib/routes/dashboard_router.dart).
@@ -136,24 +138,50 @@ class CustomerDashboardPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('My Outstanding Balance',
-                      style: MText.labelMd.copyWith(color: Colors.white70)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('My Outstanding Balance (بقایا رقم)',
+                          style: MText.labelMd.copyWith(color: Colors.white70)),
+                      Icon(
+                        myCustomer.runningBalance > 0
+                            ? Icons.warning_amber_rounded
+                            : Icons.check_circle_outline,
+                        color: myCustomer.runningBalance > 0
+                            ? MColors.gold
+                            : Colors.greenAccent,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: MSpacing.xs),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Rs. ${myCustomer.runningBalance.toStringAsFixed(0)}',
+                      style: MText.titleLg.copyWith(
+                        color: myCustomer.runningBalance > 0
+                            ? MColors.danger
+                            : Colors.greenAccent,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: MSpacing.xs),
                   Text(
-                    'Rs. ${myCustomer.runningBalance.toStringAsFixed(0)}',
-                    style: MText.titleLg.copyWith(
-                      color: myCustomer.runningBalance > 0
-                          ? MColors.danger
-                          : Colors.greenAccent,
-                      fontSize: 24,
-                    ),
+                    myCustomer.runningBalance > 0
+                        ? 'Payable to ${shop?.name ?? "Mandi Shop"}'
+                        : 'No pending dues',
+                    style: MText.caption.copyWith(color: MColors.textOnDarkSub),
                   ),
                 ],
               ),
             ),
 
             const SizedBox(height: MSpacing.xl),
-            Text('Shop', style: MText.titleLg.copyWith(color: Colors.white)),
+            Text('Quick Buyer Services (خریدار سہولیات)',
+                style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),
             Wrap(
               spacing: MSpacing.sm,
@@ -161,7 +189,7 @@ class CustomerDashboardPage extends StatelessWidget {
               children: [
                 _CustomerTile(
                   icon: Icons.storefront_outlined,
-                  label: 'Products',
+                  label: AppStrings.tr(context, 'products'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const ProductListPage()),
@@ -169,10 +197,44 @@ class CustomerDashboardPage extends StatelessWidget {
                 ),
                 _CustomerTile(
                   icon: Icons.receipt_long_outlined,
-                  label: 'Invoices',
+                  label: AppStrings.tr(context, 'invoices'),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const InvoiceListPage()),
+                  ),
+                ),
+                _CustomerTile(
+                  icon: Icons.payments_outlined,
+                  label: AppStrings.tr(context, 'payments'),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PaymentListPage()),
+                  ),
+                ),
+                _CustomerTile(
+                  icon: Icons.trending_up,
+                  label: AppStrings.tr(context, 'rate_board'),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MandiRateBoardPage()),
+                  ),
+                ),
+                _CustomerTile(
+                  icon: Icons.confirmation_num_rounded,
+                  label: AppStrings.tr(context, 'gate_pass'),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const GatePassPage()),
+                  ),
+                ),
+                _CustomerTile(
+                  icon: Icons.account_circle_outlined,
+                  label: 'My Khata',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CustomerDetailPage(customer: myCustomer),
+                    ),
                   ),
                 ),
               ],

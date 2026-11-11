@@ -12,6 +12,9 @@ import 'package:mandi/modules/customers/views/customer_list_page.dart';
 import 'package:mandi/modules/suppliers/views/supplier_list_page.dart';
 import 'package:mandi/modules/products/views/product_list_page.dart';
 import 'package:mandi/modules/invoices/views/invoice_list_page.dart';
+import 'package:mandi/modules/customers/providers/customer_provider.dart';
+import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
+import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
 import 'package:mandi/modules/expenses/views/expense_list_page.dart';
 import 'package:mandi/modules/payments/views/payment_list_page.dart';
 import 'package:mandi/modules/reports/views/reports_page.dart';
@@ -271,6 +274,20 @@ class DashboardPage extends StatelessWidget {
     final auth = context.read<AuthProvider>();
     final shop = shopCtx.currentShop;
 
+    final customerProv = context.watch<CustomerProvider>();
+    final supplierProv = context.watch<SupplierProvider>();
+    final invoiceProv = context.watch<InvoiceProvider>();
+
+    final totalReceivables = customerProv.customers.fold<double>(
+      0.0,
+      (sum, c) => sum + (c.runningBalance > 0 ? c.runningBalance : 0.0),
+    );
+    final totalPayables = supplierProv.suppliers.fold<double>(
+      0.0,
+      (sum, s) => sum + (s.runningBalance > 0 ? s.runningBalance : 0.0),
+    );
+    final totalInvoicesCount = invoiceProv.invoices.length;
+
     return Scaffold(
       appBar: AppBar(
         title: InkWell(
@@ -376,7 +393,125 @@ class DashboardPage extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: MSpacing.xl),
+            // Role-based Executive KPI Metric Row (Visible to Owners, Managers, Accountants)
+            if (shopCtx.hasPermission('view_reports') ||
+                shopCtx.hasPermission('view_ledger') ||
+                shopCtx.currentRole?.id == 'owner') ...[
+              const SizedBox(height: MSpacing.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: GlassCard(
+                      padding: const EdgeInsets.all(MSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Receivables (وصولی)',
+                                style: MText.caption.copyWith(color: Colors.white70),
+                              ),
+                              const Icon(Icons.trending_up, color: Colors.greenAccent, size: 16),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'Rs. ${totalReceivables.toStringAsFixed(0)}',
+                              style: MText.titleMd.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '${customerProv.customers.length} Customers',
+                            style: MText.caption.copyWith(color: MColors.textOnDarkSub, fontSize: 9.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: GlassCard(
+                      padding: const EdgeInsets.all(MSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Payables (ادائیگی)',
+                                style: MText.caption.copyWith(color: Colors.white70),
+                              ),
+                              const Icon(Icons.trending_down, color: Colors.amberAccent, size: 16),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'Rs. ${totalPayables.toStringAsFixed(0)}',
+                              style: MText.titleMd.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '${supplierProv.suppliers.length} Suppliers',
+                            style: MText.caption.copyWith(color: MColors.textOnDarkSub, fontSize: 9.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: GlassCard(
+                      padding: const EdgeInsets.all(MSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Bills (بلز)',
+                                style: MText.caption.copyWith(color: Colors.white70),
+                              ),
+                              const Icon(Icons.receipt, color: Colors.lightBlueAccent, size: 16),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '$totalInvoicesCount Invoices',
+                              style: MText.titleMd.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            'This Season',
+                            style: MText.caption.copyWith(color: MColors.textOnDarkSub, fontSize: 9.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            const SizedBox(height: MSpacing.lg),
             Text(AppStrings.tr(context, 'manage'),
                 style: MText.titleLg.copyWith(color: Colors.white)),
             const SizedBox(height: MSpacing.sm),

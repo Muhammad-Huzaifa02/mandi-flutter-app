@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print, unused_local_variable, depend_on_referenced_packages
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:image/image.dart' as img;
