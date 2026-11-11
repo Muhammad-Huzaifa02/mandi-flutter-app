@@ -37,6 +37,11 @@ import 'package:mandi/modules/quality/views/quality_lab_page.dart';
 import 'package:mandi/modules/inventory_labels/views/inventory_labels_page.dart';
 import 'package:mandi/modules/offline_sync/views/offline_sync_page.dart';
 import 'package:mandi/modules/broadcast/views/broadcast_hub_page.dart';
+import 'package:mandi/modules/auction_boli/pages/live_auction_terminal_page.dart';
+import 'package:mandi/modules/gate_pass/pages/gate_pass_page.dart';
+import 'package:mandi/modules/farmer_passbook/pages/farmer_passbook_page.dart';
+import 'package:mandi/modules/partner_capital/pages/partner_capital_page.dart';
+import 'package:mandi/modules/warehouse_grid/pages/warehouse_floor_grid_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -660,6 +665,51 @@ class DashboardPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const BroadcastHubPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.gavel_rounded,
+                  label: 'Live Auction (لائیو نیلامی بولی)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const LiveAuctionTerminalPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.confirmation_num_rounded,
+                  label: 'Gate Pass & Token (گیٹ پاس)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const GatePassPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.menu_book_rounded,
+                  label: 'Farmer Passbook (زمیندار پاس بک)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const FarmerPassbookPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.handshake_rounded,
+                  label: 'Shop Partners (شراکت داری کھاتہ)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const PartnerCapitalPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.grid_on_rounded,
+                  label: 'Warehouse 2D Grid (گودام نقشہ)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const WarehouseFloorGridPage()),
                   ),
                 ),
                 if (shopCtx.hasPermission('manage_roles'))

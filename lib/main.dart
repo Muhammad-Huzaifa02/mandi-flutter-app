@@ -37,6 +37,11 @@ import 'package:mandi/modules/quality/providers/quality_provider.dart';
 import 'package:mandi/modules/inventory_labels/providers/inventory_label_provider.dart';
 import 'package:mandi/modules/offline_sync/providers/offline_sync_provider.dart';
 import 'package:mandi/modules/broadcast/providers/broadcast_provider.dart';
+import 'package:mandi/modules/auction_boli/providers/auction_boli_provider.dart';
+import 'package:mandi/modules/gate_pass/providers/gate_pass_provider.dart';
+import 'package:mandi/modules/farmer_passbook/providers/farmer_passbook_provider.dart';
+import 'package:mandi/modules/partner_capital/providers/partner_capital_provider.dart';
+import 'package:mandi/modules/warehouse_grid/providers/warehouse_grid_provider.dart';
 import 'package:mandi/routes/app_root.dart';
 
 Future<void> main() async {
@@ -194,6 +199,31 @@ class MandiApp extends StatelessWidget {
           create: (_) => BroadcastProvider(),
           update: (_, shopCtx, broadcastProvider) =>
               (broadcastProvider ?? BroadcastProvider())..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, AuctionBoliProvider>(
+          create: (_) => AuctionBoliProvider(),
+          update: (_, shopCtx, boliProvider) =>
+              (boliProvider ?? AuctionBoliProvider())..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, GatePassProvider>(
+          create: (_) => GatePassProvider(),
+          update: (_, shopCtx, gateProvider) =>
+              (gateProvider ?? GatePassProvider())..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, FarmerPassbookProvider>(
+          create: (_) => FarmerPassbookProvider(),
+          update: (_, shopCtx, passbookProvider) =>
+              (passbookProvider ?? FarmerPassbookProvider())..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, PartnerCapitalProvider>(
+          create: (_) => PartnerCapitalProvider(),
+          update: (_, shopCtx, partnerProvider) =>
+              (partnerProvider ?? PartnerCapitalProvider())..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, WarehouseGridProvider>(
+          create: (_) => WarehouseGridProvider(),
+          update: (_, shopCtx, gridProvider) =>
+              (gridProvider ?? WarehouseGridProvider())..updateShop(shopCtx.currentShopId),
         ),
       ],
       child: Consumer2<ThemeProvider, LocaleProvider>(

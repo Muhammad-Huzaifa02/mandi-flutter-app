@@ -1116,6 +1116,94 @@ create index if not exists idx_broadcast_subscribers_shop on public.broadcast_su
 create index if not exists idx_broadcast_subscribers_active on public.broadcast_subscribers(shop_id, is_active);
 create index if not exists idx_broadcast_subscribers_platform on public.broadcast_subscribers(shop_id, platform);
 
+-- 7s. GATE_PASSES & QUEUE TOKENS (منڈی گیٹ پاس اور ٹوکن سسٹم)
+create table if not exists public.gate_passes (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  token_number                text not null default '', -- e.g. "TKN-001"
+  vehicle_number              text not null default '', -- e.g. "FD-8921"
+  vehicle_type                text not null default 'tractor_trolley', -- tractor_trolley, mazda_truck, shehzore, pickup_dala, rickshaw_loader
+  driver_name                 text not null default '',
+  driver_phone                text not null default '',
+  farmer_name                 text not null default '',
+  commodity_name              text not null default '',
+  estimated_bags              integer not null default 0,
+  assigned_platform           text not null default 'Pharr 1', -- Pharr 1, Pharr 2, Bay A, Bay B
+  status                      text not null default 'in_queue', -- in_queue, weighing_in, unloading, weighing_out, cleared
+  entry_time                  timestamptz not null default now(),
+  exit_time                   timestamptz,
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_gate_passes_shop on public.gate_passes(shop_id);
+create index if not exists idx_gate_passes_token on public.gate_passes(shop_id, token_number);
+create index if not exists idx_gate_passes_status on public.gate_passes(shop_id, status);
+create index if not exists idx_gate_passes_date on public.gate_passes(shop_id, entry_time desc);
+
+-- 7t. SHOP_PARTNERS & PARTNER_TRANSACTIONS (شراکت داری اور منافع تقسیم کھاتہ)
+create table if not exists public.shop_partners (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  name                        text not null default '',
+  phone                       text not null default '',
+  cnic                        text not null default '',
+  profit_share_percent        numeric(5,2) not null default 0.0, -- e.g. 50.0%
+  opening_capital             numeric(14,2) not null default 0.0,
+  current_capital             numeric(14,2) not null default 0.0,
+  is_active                   boolean not null default true,
+  notes                       text not null default '',
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_shop_partners_shop on public.shop_partners(shop_id);
+create index if not exists idx_shop_partners_active on public.shop_partners(shop_id, is_active);
+
+create table if not exists public.partner_transactions (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  partner_id                  uuid not null references public.shop_partners(id) on delete cascade,
+  transaction_type            text not null default 'drawing', -- capital_injection, drawing, profit_distribution, salary_allowance
+  amount                      numeric(14,2) not null default 0.0,
+  payment_method              text not null default 'cash', -- cash, bank_transfer, cheque
+  transaction_date            timestamptz not null default now(),
+  voucher_number              text not null default '',
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_partner_txns_shop on public.partner_transactions(shop_id);
+create index if not exists idx_partner_txns_partner on public.partner_transactions(shop_id, partner_id);
+create index if not exists idx_partner_txns_date on public.partner_transactions(shop_id, transaction_date desc);
+
+-- 7u. WAREHOUSE_GRID_BAYS (گودام اور کولڈ سٹوریج کا 2D تصویری نقشہ)
+create table if not exists public.warehouse_grid_bays (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  storage_id                  uuid references public.storage_locations(id) on delete cascade,
+  chamber_name                text not null default 'Chamber 1',
+  bay_code                    text not null default 'A-01', -- e.g. "A-01", "B-04"
+  row_index                   integer not null default 0,
+  col_index                   integer not null default 0,
+  max_capacity_bags           integer not null default 200,
+  current_bags                integer not null default 0,
+  crop_name                   text not null default '',
+  variety                     text not null default '',
+  farmer_name                 text not null default '',
+  lot_code                    text not null default '',
+  inward_date                 timestamptz,
+  notes                       text not null default '',
+  updated_at                  timestamptz not null default now(),
+  constraint uq_shop_bay unique(shop_id, chamber_name, bay_code)
+);
+
+create index if not exists idx_warehouse_bays_shop on public.warehouse_grid_bays(shop_id);
+create index if not exists idx_warehouse_bays_chamber on public.warehouse_grid_bays(shop_id, chamber_name);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1613,6 +1701,10 @@ alter table public.inventory_labels       enable row level security;
 alter table public.sync_audit_logs        enable row level security;
 alter table public.broadcast_campaigns    enable row level security;
 alter table public.broadcast_subscribers  enable row level security;
+alter table public.gate_passes            enable row level security;
+alter table public.shop_partners          enable row level security;
+alter table public.partner_transactions   enable row level security;
+alter table public.warehouse_grid_bays    enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -2335,6 +2427,72 @@ create policy "broadcast_subscribers: authorized staff can write" on public.broa
     public.has_permission(shop_id, 'manage_settings') or
     public.has_permission(shop_id, 'manage_customers') or
     public.has_permission(shop_id, 'manage_suppliers')
+  );
+
+drop policy if exists "gate_passes: members can read" on public.gate_passes;
+create policy "gate_passes: members can read" on public.gate_passes
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "gate_passes: authorized staff can write" on public.gate_passes;
+create policy "gate_passes: authorized staff can write" on public.gate_passes
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_purchase')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_purchase')
+  );
+
+drop policy if exists "shop_partners: members can read" on public.shop_partners;
+create policy "shop_partners: members can read" on public.shop_partners
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "shop_partners: authorized staff can write" on public.shop_partners;
+create policy "shop_partners: authorized staff can write" on public.shop_partners
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'view_ledger')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'view_ledger')
+  );
+
+drop policy if exists "partner_transactions: members can read" on public.partner_transactions;
+create policy "partner_transactions: members can read" on public.partner_transactions
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "partner_transactions: authorized staff can write" on public.partner_transactions;
+create policy "partner_transactions: authorized staff can write" on public.partner_transactions
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_receipt')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'view_ledger') or
+    public.has_permission(shop_id, 'create_receipt')
+  );
+
+drop policy if exists "warehouse_grid_bays: members can read" on public.warehouse_grid_bays;
+create policy "warehouse_grid_bays: members can read" on public.warehouse_grid_bays
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "warehouse_grid_bays: authorized staff can write" on public.warehouse_grid_bays;
+create policy "warehouse_grid_bays: authorized staff can write" on public.warehouse_grid_bays
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_purchase')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_purchase')
   );
 
 -- ============================================================================

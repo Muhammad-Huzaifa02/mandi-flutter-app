@@ -1937,4 +1937,228 @@ class SupabaseService {
         .eq('id', id)
         .eq('shop_id', shopId);
   }
+
+  // --------------------------------------------------------------------------
+  // MANDI GATE PASS & INWARD QUEUE (گیٹ پاس، ٹوکن اور ٹریکٹر لائن نمبر)
+  // --------------------------------------------------------------------------
+
+  static Stream<List<Map<String, dynamic>>> gatePassesStream(
+      String shopId, {String? status}) {
+    if (status != null && status.isNotEmpty) {
+      return _client
+          .from('gate_passes')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .eq('status', status)
+          .order('inward_time', ascending: false);
+    }
+    return _client
+        .from('gate_passes')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('inward_time', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getGatePasses(
+      String shopId, {String? status}) async {
+    var query = _client.from('gate_passes').select('*').eq('shop_id', shopId);
+    if (status != null && status.isNotEmpty) {
+      query = query.eq('status', status);
+    }
+    final rows = await query.order('inward_time', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createGatePass(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('gate_passes')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateGatePassStatus({
+    required String id,
+    required String shopId,
+    required String status,
+    String? assignedPlatform,
+    double? grossWeight,
+    double? tareWeight,
+    double? netWeight,
+    DateTime? outwardTime,
+  }) async {
+    final updateData = <String, dynamic>{
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (assignedPlatform != null) updateData['assigned_platform'] = assignedPlatform;
+    if (grossWeight != null) updateData['gross_weight_kg'] = grossWeight;
+    if (tareWeight != null) updateData['tare_weight_kg'] = tareWeight;
+    if (netWeight != null) updateData['net_weight_kg'] = netWeight;
+    if (outwardTime != null) {
+      updateData['outward_time'] = outwardTime.toIso8601String();
+    }
+
+    await _client
+        .from('gate_passes')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteGatePass(String id, String shopId) async {
+    await _client
+        .from('gate_passes')
+        .delete()
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  // --------------------------------------------------------------------------
+  // MULTI-PARTNER SHOP CAPITAL & PROFIT SHARING (شراکت داری اور منافع کھاتہ)
+  // --------------------------------------------------------------------------
+
+  static Stream<List<Map<String, dynamic>>> shopPartnersStream(String shopId) {
+    return _client
+        .from('shop_partners')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('name', ascending: true);
+  }
+
+  static Future<List<Map<String, dynamic>>> getShopPartners(String shopId) async {
+    final rows = await _client
+        .from('shop_partners')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('name', ascending: true);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createShopPartner(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('shop_partners')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateShopPartner(
+      String id, String shopId, Map<String, dynamic> data) async {
+    final updateData = Map<String, dynamic>.from(data);
+    updateData['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('shop_partners')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Stream<List<Map<String, dynamic>>> partnerTransactionsStream(
+      String shopId, {String? partnerId}) {
+    if (partnerId != null && partnerId.isNotEmpty) {
+      return _client
+          .from('partner_transactions')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .eq('partner_id', partnerId)
+          .order('transaction_date', ascending: false);
+    }
+    return _client
+        .from('partner_transactions')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('transaction_date', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getPartnerTransactions(
+      String shopId, {String? partnerId}) async {
+    var query = _client.from('partner_transactions').select('*').eq('shop_id', shopId);
+    if (partnerId != null && partnerId.isNotEmpty) {
+      query = query.eq('partner_id', partnerId);
+    }
+    final rows = await query.order('transaction_date', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createPartnerTransaction(
+      Map<String, dynamic> data, {required double partnerNewCapital, double? partnerNewDrawings}) async {
+    final res = await _client
+        .from('partner_transactions')
+        .insert(data)
+        .select('id')
+        .single();
+
+    final partnerId = data['partner_id'] as String;
+    final shopId = data['shop_id'] as String;
+
+    final partnerUpdate = <String, dynamic>{
+      'current_capital': partnerNewCapital,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (partnerNewDrawings != null) {
+      partnerUpdate['total_drawings'] = partnerNewDrawings;
+    }
+
+    await _client
+        .from('shop_partners')
+        .update(partnerUpdate)
+        .eq('id', partnerId)
+        .eq('shop_id', shopId);
+
+    return res['id'] as String;
+  }
+
+  // --------------------------------------------------------------------------
+  // VISUAL 2D GODOWN & WAREHOUSE GRID BAYS (گودام کا تصویری نقشہ)
+  // --------------------------------------------------------------------------
+
+  static Stream<List<Map<String, dynamic>>> warehouseGridBaysStream(
+      String shopId, {String? chamberCode}) {
+    if (chamberCode != null && chamberCode.isNotEmpty) {
+      return _client
+          .from('warehouse_grid_bays')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .eq('chamber_code', chamberCode)
+          .order('bay_code', ascending: true);
+    }
+    return _client
+        .from('warehouse_grid_bays')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('bay_code', ascending: true);
+  }
+
+  static Future<List<Map<String, dynamic>>> getWarehouseGridBays(
+      String shopId, {String? chamberCode}) async {
+    var query = _client.from('warehouse_grid_bays').select('*').eq('shop_id', shopId);
+    if (chamberCode != null && chamberCode.isNotEmpty) {
+      query = query.eq('chamber_code', chamberCode);
+    }
+    final rows = await query.order('bay_code', ascending: true);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> upsertWarehouseGridBay(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('warehouse_grid_bays')
+        .upsert(data, onConflict: 'shop_id, chamber_code, bay_code')
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateWarehouseGridBay(
+      String id, String shopId, Map<String, dynamic> data) async {
+    final updateData = Map<String, dynamic>.from(data);
+    updateData['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('warehouse_grid_bays')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
 }

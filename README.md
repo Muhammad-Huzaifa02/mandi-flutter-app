@@ -297,6 +297,11 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Barcode & QR Tracking** | Code128 1D barcodes, 2D QR lot tags, pallet stack placards, packaging tare math, mobile camera verification terminal, 4-up adhesive sticker sheets. |
 | **Offline Sync Engine** | Local mutation queues, conflict detection & resolution modal, offline simulation mode, automatic queue drain on reconnect, and A4 audit certificates. |
 | **Mandi Bhav Broadcast & Bot** | Daily Urdu/English rate bulletins, WhatsApp deep linking, Telegram Bot API & public channel broadcast, subscriber directory, and A4 certificates. |
+| **Live Auction Terminal** | TV/tablet live bidding floor terminal, quick-increment bid buttons (+Rs. 10/25/50/100), buyer paddle selection, gavel strike (ایک، دو، تین — ہو گیا!) with instant sound cue, thermal Boli slip printing, atomic sales invoice stock deduction. |
+| **Mandi Gate Pass & Queue** | Sequential daily tokens (TKN-001), vehicle inward slip, public TV unloading queue board with Urdu callout announcements, 2-stage tare weighment, gate-out security clearance pass. |
+| **Farmer Digital Passbook** | Credit-card size CR80 Farmer QR Identity Card, high-contrast Urdu passbook statement (Maunds, auction value, deductions, balance), Urdu voice narration button (کھاتے کا صوتی خلاصہ). |
+| **Shop Partners & Equity** | Partner capital contributions, configurable profit-sharing ratios (50/30/20), monthly drawings (ذاتی خرچ), automated net commission profit distribution wizard, printable A4 equity ledger. |
+| **Warehouse 2D Grid Matrix** | 2D graphical chamber and bay layout (A1-A6, B1-B6, C1-C6, D1-D6), visual color-coded occupancy (Empty, Partial, Full, Overdue >90d), tap-to-inspect bay modal, stock relocation action. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

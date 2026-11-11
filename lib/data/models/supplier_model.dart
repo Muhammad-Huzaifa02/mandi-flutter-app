@@ -71,3 +71,6 @@ class Supplier {
         createdAt: createdAt,
       );
 }
+
+typedef SupplierModel = Supplier;
+
