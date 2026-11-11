@@ -232,6 +232,39 @@ class AppTheme {
               width: 1.2),
         ),
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: isDark ? const Color(0xFF14241C) : Colors.white,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.15)
+                : Colors.grey.shade200,
+            width: 1.2,
+          ),
+        ),
+        titleTextStyle: MText.titleLg.copyWith(
+          color: isDark ? Colors.white : MColors.textPrimary,
+          fontWeight: FontWeight.bold,
+        ),
+        contentTextStyle: MText.bodyMd.copyWith(
+          color: isDark ? MColors.textOnDarkSub : MColors.textSecondary,
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: isDark ? const Color(0xFF14241C) : Colors.white,
+        modalBackgroundColor: isDark ? const Color(0xFF14241C) : Colors.white,
+        elevation: 10,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 4,
+      ),
     );
   }
 

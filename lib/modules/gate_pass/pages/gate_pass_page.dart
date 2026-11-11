@@ -232,55 +232,89 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 6),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-        side: const BorderSide(color: Colors.teal, width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.teal.shade700, width: 1.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 420;
+            final tokenBadge = Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.teal.shade800,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 pass.tokenNumber,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            );
+
+            final details = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${pass.vehicleNumber} (${pass.driverName})',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  'Farmer: ${pass.farmerName} | ${pass.commodityName} (${pass.estimatedBags} Bags)',
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (pass.assignedPlatform != null)
                   Text(
-                    '${pass.vehicleNumber} (${pass.driverName})',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    'Platform: ${pass.assignedPlatform}',
+                    style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 12),
                   ),
-                  Text(
-                    'Farmer: ${pass.farmerName} | ${pass.commodityName} (${pass.estimatedBags} Bags)',
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
-                  ),
-                  if (pass.assignedPlatform != null)
-                    Text(
-                      'Platform: ${pass.assignedPlatform}',
-                      style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 12),
-                    ),
-                ],
-              ),
-            ),
-            ElevatedButton.icon(
+              ],
+            );
+
+            final tareButton = ElevatedButton.icon(
               onPressed: () => showDialog(
                 context: context,
                 builder: (_) => RecordWeighmentDialog(gatePass: pass),
               ),
-              icon: const Icon(Icons.scale, size: 16, color: Colors.white),
-              label: const Text('کنڈا وزن (Tare)', style: TextStyle(color: Colors.white, fontSize: 12)),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal[800]),
-            ),
-          ],
+              icon: const Icon(Icons.scale, size: 15, color: Colors.white),
+              label: const Text('کنڈا وزن (Tare)', style: TextStyle(color: Colors.white, fontSize: 11.5)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal[800],
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              ),
+            );
+
+            if (isNarrow) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      tokenBadge,
+                      const SizedBox(width: 8),
+                      Expanded(child: details),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Align(alignment: Alignment.centerRight, child: tareButton),
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                tokenBadge,
+                const SizedBox(width: 12),
+                Expanded(child: details),
+                const SizedBox(width: 8),
+                tareButton,
+              ],
+            );
+          },
         ),
       ),
     );
