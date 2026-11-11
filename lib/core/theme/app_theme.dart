@@ -104,25 +104,39 @@ class MRadius {
   static final full = BorderRadius.circular(999);
 }
 
+/// Standardized Layout & Widget Dimensional Constants for responsive rendering
+class AppDimensions {
+  static const double cardRadius = 16.0;
+  static const double tileWidth = 92.0;
+  static const double tileMinHeight = 96.0;
+  static const double kpiCardMinHeight = 84.0;
+  static const double buttonHeight = 48.0;
+  static const double iconSizeSm = 18.0;
+  static const double iconSizeMd = 24.0;
+  static const double iconSizeLg = 32.0;
+}
+
 class MText {
   static const _font = 'Poppins';
 
+  static const displayLg = TextStyle(
+      fontFamily: _font, fontSize: 28, fontWeight: FontWeight.w700, height: 1.2);
   static const displayMd = TextStyle(
-      fontFamily: _font, fontSize: 26, fontWeight: FontWeight.w700);
+      fontFamily: _font, fontSize: 24, fontWeight: FontWeight.w700, height: 1.25);
   static const titleLg = TextStyle(
-      fontFamily: _font, fontSize: 20, fontWeight: FontWeight.w600);
+      fontFamily: _font, fontSize: 19, fontWeight: FontWeight.w600, height: 1.3);
   static const titleMd = TextStyle(
-      fontFamily: _font, fontSize: 17, fontWeight: FontWeight.w600);
+      fontFamily: _font, fontSize: 16, fontWeight: FontWeight.w600, height: 1.3);
   static const bodyMd = TextStyle(
-      fontFamily: _font, fontSize: 15, fontWeight: FontWeight.w400);
+      fontFamily: _font, fontSize: 14, fontWeight: FontWeight.w400, height: 1.4);
   static const bodySm = TextStyle(
-      fontFamily: _font, fontSize: 13, fontWeight: FontWeight.w400);
+      fontFamily: _font, fontSize: 12.5, fontWeight: FontWeight.w400, height: 1.4);
   static const labelMd = TextStyle(
-      fontFamily: _font, fontSize: 13, fontWeight: FontWeight.w600);
+      fontFamily: _font, fontSize: 12.5, fontWeight: FontWeight.w600, height: 1.3);
   static const labelSm = TextStyle(
-      fontFamily: _font, fontSize: 11, fontWeight: FontWeight.w500);
+      fontFamily: _font, fontSize: 11, fontWeight: FontWeight.w500, height: 1.2);
   static const caption = TextStyle(
-      fontFamily: _font, fontSize: 11, fontWeight: FontWeight.w400);
+      fontFamily: _font, fontSize: 10.5, fontWeight: FontWeight.w400, height: 1.2);
 }
 
 class AppTheme {

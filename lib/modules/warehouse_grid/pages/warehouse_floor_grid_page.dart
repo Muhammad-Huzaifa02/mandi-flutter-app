@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
+import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/warehouse_grid_model.dart';
 import 'package:mandi/modules/warehouse_grid/providers/warehouse_grid_provider.dart';
 import 'package:mandi/modules/warehouse_grid/dialogs/store_crop_in_bay_dialog.dart';
@@ -483,7 +484,8 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
     required MaterialColor color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      constraints: const BoxConstraints(minHeight: AppDimensions.kpiCardMinHeight),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -492,22 +494,39 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(title, style: TextStyle(color: Colors.grey.shade700, fontSize: 10), maxLines: 1),
+                child: Text(
+                  title,
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 9.5),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              Icon(icon, color: color.shade700, size: 16),
+              const SizedBox(width: 2),
+              Icon(icon, color: color.shade700, size: 15),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color.shade900),
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color.shade900),
+            ),
           ),
-          Text(subtitle, style: const TextStyle(color: Colors.black38, fontSize: 9)),
+          const SizedBox(height: 1),
+          Text(
+            subtitle,
+            style: const TextStyle(color: Colors.black45, fontSize: 8.5),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );

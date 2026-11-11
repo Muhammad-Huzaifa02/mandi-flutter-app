@@ -242,10 +242,12 @@ class MandiApp extends StatelessWidget {
           locale: localeProvider.locale,
           builder: (context, child) {
             final mediaQuery = MediaQuery.of(context);
+            // Standardize text scaling across diverse Android displays (small, normal, large, accessibility zoom).
+            // Clamping factor between 0.85 and 1.15 prevents RenderFlex overflows and card layout distortions.
             final clampedSystemFactor =
-                mediaQuery.textScaler.scale(1.0).clamp(0.85, 1.2);
+                mediaQuery.textScaler.scale(1.0).clamp(0.85, 1.15);
             final effectiveScale =
-                themeProvider.fontScale * clampedSystemFactor;
+                (themeProvider.fontScale * clampedSystemFactor).clamp(0.85, 1.25);
 
             return MediaQuery(
               data: mediaQuery.copyWith(

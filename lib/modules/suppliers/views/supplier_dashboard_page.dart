@@ -287,19 +287,30 @@ class _SupplierTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassCard(
       onTap: onTap,
-      borderRadius: 18,
+      borderRadius: AppDimensions.cardRadius,
       padding: const EdgeInsets.symmetric(
-          vertical: MSpacing.md, horizontal: MSpacing.xs),
-      child: SizedBox(
-        width: 80,
+          vertical: MSpacing.sm, horizontal: MSpacing.xs),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          minWidth: 80,
+          maxWidth: 96,
+          minHeight: 88,
+        ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: MColors.gold, size: 26),
-            const SizedBox(height: MSpacing.xs),
+            Icon(icon, color: MColors.gold, size: 24),
+            const SizedBox(height: 6),
             Text(
               label,
-              style: MText.labelMd.copyWith(color: Colors.white),
+              style: MText.caption.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
               textAlign: TextAlign.center,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ],

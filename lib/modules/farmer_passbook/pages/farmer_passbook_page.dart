@@ -241,22 +241,25 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Rs. ',
-                        style: TextStyle(color: Colors.white70, fontSize: 22, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        _currencyFmt.format(passbookProvider.runningBalance.abs()),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 42,
-                          fontWeight: FontWeight.w900,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Rs. ',
+                          style: TextStyle(color: Colors.white70, fontSize: 22, fontWeight: FontWeight.bold),
                         ),
-                      ),
-                    ],
+                        Text(
+                          _currencyFmt.format(passbookProvider.runningBalance.abs()),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 38,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(

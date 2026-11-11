@@ -393,29 +393,32 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  const Text(
-                    'Rs. ',
-                    style: TextStyle(color: Colors.white70, fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    _currencyFmt.format(provider.currentBidPerMaund),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 54,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    const Text(
+                      'Rs. ',
+                      style: TextStyle(color: Colors.white70, fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  const Text(
-                    ' / Maund (من)',
-                    style: TextStyle(color: Colors.white70, fontSize: 18),
-                  ),
-                ],
+                    Text(
+                      _currencyFmt.format(provider.currentBidPerMaund),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -1,
+                      ),
+                    ),
+                    const Text(
+                      ' / Maund (من)',
+                      style: TextStyle(color: Colors.white70, fontSize: 18),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 8),
               Text(

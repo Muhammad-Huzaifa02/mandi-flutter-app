@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
+import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/partner_capital_model.dart';
 import 'package:mandi/modules/partner_capital/providers/partner_capital_provider.dart';
 import 'package:mandi/modules/partner_capital/dialogs/add_partner_dialog.dart';
@@ -396,7 +397,8 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
     required MaterialColor color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      constraints: const BoxConstraints(minHeight: AppDimensions.kpiCardMinHeight),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -405,21 +407,39 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: TextStyle(color: Colors.grey.shade700, fontSize: 11)),
-              Icon(icon, color: color.shade700, size: 18),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 10.5),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(icon, color: color.shade700, size: 16),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: color.shade900),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color.shade900),
+            ),
           ),
           const SizedBox(height: 2),
-          Text(subtitle, style: const TextStyle(color: Colors.black38, fontSize: 10)),
+          Text(
+            subtitle,
+            style: const TextStyle(color: Colors.black45, fontSize: 9.5),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
