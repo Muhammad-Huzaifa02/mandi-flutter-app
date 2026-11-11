@@ -33,6 +33,7 @@ import 'package:mandi/modules/loyalty/views/customer_loyalty_page.dart';
 import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
 import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
 import 'package:mandi/modules/fleet/views/fleet_logistics_page.dart';
+import 'package:mandi/modules/quality/views/quality_lab_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -620,6 +621,15 @@ class DashboardPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const FleetLogisticsPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.biotech_rounded,
+                  label: 'Quality Lab (جنس کوالٹی لیب)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const QualityLabPage()),
                   ),
                 ),
                 if (shopCtx.hasPermission('manage_roles'))

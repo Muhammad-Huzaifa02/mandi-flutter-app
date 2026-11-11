@@ -197,6 +197,21 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
   - **Official A4 Portrait Trip Bilty / Delivery Challan**: Dual-language formal transport bilty with consignor, carrier, cargo weights, billing terms, advance paid, and driver/merchant signature seals.
   - **Landscape A4 Vehicle Profit & Loss Ledger**: Comprehensive vehicle register detailing all trips, gross freight revenue, total fuel liters & costs, net operational profit, and fleet profit margins.
 
+### 🔬 Cold Chain Moisture & Commodity Quality Inspection Lab (*جنس نمی، لیب کوالٹی گریڈنگ اور کولڈ چین لاگ*)
+- **Grain Moisture Meter & Refraction Lab Inspection (`QualityLabPage`, `QualityProvider`, `QualityInspection`)**: Dedicated testing hub for arriving grain lots (Wheat/گندم, Basmati Rice/چاول, Corn/مکئی, Sunflower/سورج مکھی, Canola/کینولا, Cotton/پھٹی) with sample weights (e.g. 500g), moisture % detection, and visual refraction analysis.
+- **Automated Mathematical Katoti / Deduction Engine (`QualityInspection.computeDeductions`)**:
+  - **Excess Moisture Deduction**: $\text{Excess Moisture} = \max(0.0, \text{Moisture \\%} - \text{Base Moisture \\%})$.
+  - **Refraction Impurities**: Foreign matter/dirt (1:1 deduction), broken grain ($0.5:1$ ratio), and damaged/discolored grain ($0.75:1$ ratio).
+  - **Net Certified Weight**:
+    $$\text{Total Katoti \\%} = \text{Excess Moisture} + \text{Foreign Matter} + (0.5 \times \text{Broken}) + (0.75 \times \text{Damaged})$$
+    $$\text{Deduction KG} = \text{Gross Weight KG} \times \left(\frac{\text{Total Katoti \\%}}{100.0}\right)$$
+    $$\text{Net Weight KG} = \text{Gross KG} - \text{Deduction KG}, \quad \text{Net Maunds} = \frac{\text{Net KG}}{40.0}$$
+- **Quality Grading Standards**: Automated classification into **Grade A (Super / Premium)**, **Grade B (Standard FAQ / اوسط)**, **Grade C (High Moisture / کٹوتی)**, or **Rejected / Unfit (*مسترد شدہ*)** based on threshold cutoffs.
+- **HACCP Cold Storage Temperature & Humidity Audit Register (`ColdChainLog`)**: Chamber environmental monitoring with safe temperature bands $[MinT, MaxT]$, auto status classification (**Optimal**, **Warning**, **Critical**), BLE sensor device tracking, and corrective action logging.
+- **Official A4 Printable Certificates & Logs (`QualityInspectionPdfGenerator`)**:
+  - **Official A4 Portrait Certificate of Analysis / Moisture Katoti Slip**: Detailed lab certificate with sample metrics, deduction breakdown table, net certified Maunds, and tri-party signature blocks (Inspector, Transporter, Commission Agent).
+  - **Landscape A4 Cold Room Temperature Audit Register**: Multi-chamber environmental audit log sheet with alert badges, device IDs, and remediation history.
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -233,6 +248,8 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Customer Loyalty & Rebates** | Seasonal turnover targets, tiered volume rebates (Standard, Silver, Gold, Platinum), automated credit note issuance to running khata, and printable A4 vouchers. |
 | **Mandi Price Intelligence** | Daily commodity rate index, min/max/modal pricing per Maund and KG ($Modal / 40.0$), trend indicators (Bullish/Bearish/Stable), arrivals volume, WhatsApp & SMS broadcast engine, printable A4 morning bulletin. |
 | **Staff Attendance & Payroll** | Daily staff attendance register (Present/Absent/Half-Day/Leave), overtime proration, mathematical net wage deductions engine, voucher approval & disbursement, printable A4 pay slips and registers. |
+| **Fleet & Logistics** | Vehicle fleet asset register, freight trip bilty dispatching, fuel/diesel expense logging, carrier P&L registers, printable A4 transport bilty challans. |
+| **Quality Lab & Cold Chain** | Moisture testing (% detection), refraction deduction math, certified grade assignment (Super, FAQ, Substandard), HACCP cold room temperature & humidity logs, printable A4 Certificate of Analysis. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |

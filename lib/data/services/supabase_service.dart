@@ -1662,4 +1662,95 @@ class SupabaseService {
         .single();
     return res['id'] as String;
   }
+
+  // ===========================================================================
+  // QUALITY INSPECTION & COLD CHAIN LAB
+  // ===========================================================================
+
+  static Stream<List<Map<String, dynamic>>> qualityInspectionsStream(
+      String shopId, {String? lotId}) {
+    if (lotId != null && lotId.isNotEmpty) {
+      return _client
+          .from('quality_inspections')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .eq('lot_id', lotId)
+          .order('inspection_date', ascending: false);
+    }
+    return _client
+        .from('quality_inspections')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('inspection_date', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getQualityInspections(
+      String shopId, {String? lotId}) async {
+    var query = _client.from('quality_inspections').select('*').eq('shop_id', shopId);
+    if (lotId != null && lotId.isNotEmpty) {
+      query = query.eq('lot_id', lotId);
+    }
+    final rows = await query.order('inspection_date', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createQualityInspection(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('quality_inspections')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateQualityInspectionStatus({
+    required String id,
+    required String shopId,
+    required String status,
+  }) async {
+    await _client
+        .from('quality_inspections')
+        .update({
+          'status': status,
+          'updated_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Stream<List<Map<String, dynamic>>> coldChainLogsStream(
+      String shopId, {String? chamberName}) {
+    if (chamberName != null && chamberName.isNotEmpty) {
+      return _client
+          .from('cold_chain_logs')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .eq('chamber_name', chamberName)
+          .order('recorded_at', ascending: false);
+    }
+    return _client
+        .from('cold_chain_logs')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('recorded_at', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getColdChainLogs(
+      String shopId, {String? chamberName}) async {
+    var query = _client.from('cold_chain_logs').select('*').eq('shop_id', shopId);
+    if (chamberName != null && chamberName.isNotEmpty) {
+      query = query.eq('chamber_name', chamberName);
+    }
+    final rows = await query.order('recorded_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createColdChainLog(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('cold_chain_logs')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
 }

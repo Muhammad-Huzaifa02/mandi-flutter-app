@@ -953,9 +953,7 @@ create table if not exists public.fleet_fuel_logs (
   updated_at                  timestamptz not null default now()
 );
 
-create index if not exists idx_fleet_fuel_shop on public.fleet_fuel_logs(shop_id);
-create index if not exists idx_fleet_fuel_vehicle on public.fleet_fuel_logs(shop_id, vehicle_id);
-create index if not exists idx_fleet_fuel_date on public.fleet_fuel_logs(shop_id, log_date desc);
+create index if not exists idx_fleet_fuel_shop on public.fleet_fuel_logs(shop_id);\ncreate index if not exists idx_fleet_fuel_vehicle on public.fleet_fuel_logs(shop_id, vehicle_id);\ncreate index if not exists idx_fleet_fuel_date on public.fleet_fuel_logs(shop_id, log_date desc);\n\n-- 7o. COMMODITY QUALITY INSPECTIONS & COLD CHAIN LAB (جنس نمی اور لیب کوالٹی گریڈنگ)\ncreate table if not exists public.quality_inspections (\n  id                          uuid primary key default gen_random_uuid(),\n  shop_id                     uuid not null references public.shops(id) on delete cascade,\n  lot_id                      uuid references public.consignment_lots(id) on delete set null,\n  certificate_number          text not null default '', -- e.g. \"QC-2611-001\"\n  inspection_date             timestamptz not null default now(),\n  commodity_name              text not null default '',\n  variety                     text not null default '',\n  vehicle_number              text not null default '',\n  party_name                  text not null default '',\n  sample_weight_grams         numeric(10,2) not null default 500.0,\n  moisture_percentage         numeric(5,2) not null default 0.0,\n  base_moisture_percentage    numeric(5,2) not null default 14.0,\n  foreign_matter_percentage   numeric(5,2) not null default 0.0,\n  broken_grain_percentage     numeric(5,2) not null default 0.0,\n  damaged_grain_percentage    numeric(5,2) not null default 0.0,\n  total_deduction_percentage  numeric(5,2) not null default 0.0,\n  gross_weight_kg             numeric(12,2) not null default 0.0,\n  deduction_weight_kg         numeric(12,2) not null default 0.0,\n  net_weight_kg               numeric(12,2) not null default 0.0,\n  net_weight_maunds           numeric(12,2) not null default 0.0,\n  quality_grade               text not null default 'grade_b', -- grade_a_super, grade_b_faq, grade_c_substandard, rejected\n  temperature_celsius         numeric(5,2),\n  humidity_percentage         numeric(5,2),\n  chamber_or_location         text not null default '',\n  tester_name                 text not null default '',\n  notes                       text not null default '',\n  status                      text not null default 'certified', -- pending, certified, rejected\n  created_by                  uuid references auth.users(id),\n  created_at                  timestamptz not null default now(),\n  updated_at                  timestamptz not null default now(),\n  constraint uq_shop_qc_cert unique(shop_id, certificate_number)\n);\n\ncreate index if not exists idx_quality_inspections_shop on public.quality_inspections(shop_id);\ncreate index if not exists idx_quality_inspections_cert on public.quality_inspections(shop_id, certificate_number);\ncreate index if not exists idx_quality_inspections_date on public.quality_inspections(shop_id, inspection_date desc);\ncreate index if not exists idx_quality_inspections_grade on public.quality_inspections(shop_id, quality_grade);\n\ncreate table if not exists public.cold_chain_logs (\n  id                          uuid primary key default gen_random_uuid(),\n  shop_id                     uuid not null references public.shops(id) on delete cascade,\n  storage_id                  uuid references public.storage_locations(id) on delete set null,\n  chamber_name                text not null default '',\n  recorded_at                 timestamptz not null default now(),\n  temperature_celsius         numeric(5,2) not null default 0.0,\n  humidity_percentage         numeric(5,2) not null default 0.0,\n  min_temp_threshold          numeric(5,2) not null default 0.0,\n  max_temp_threshold          numeric(5,2) not null default 4.0,\n  status                      text not null default 'optimal', -- optimal, warning, critical\n  sensor_device_id            text not null default '',\n  inspector_name              text not null default '',\n  corrective_action           text not null default '',\n  created_at                  timestamptz not null default now()\n);\n\ncreate index if not exists idx_cold_chain_shop on public.cold_chain_logs(shop_id);\ncreate index if not exists idx_cold_chain_date on public.cold_chain_logs(shop_id, recorded_at desc);\ncreate index if not exists idx_cold_chain_status on public.cold_chain_logs(shop_id, status);
 
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
@@ -1445,6 +1443,11 @@ alter table public.cross_border_shipments enable row level security;
 alter table public.sms_gateway_settings   enable row level security;
 alter table public.sms_logs               enable row level security;
 alter table public.inter_shop_transfers   enable row level security;
+alter table public.fleet_vehicles         enable row level security;
+alter table public.fleet_trips            enable row level security;
+alter table public.fleet_fuel_logs        enable row level security;
+alter table public.quality_inspections    enable row level security;
+alter table public.cold_chain_logs        enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -2057,6 +2060,44 @@ create policy "fleet_fuel_logs: authorized staff can write" on public.fleet_fuel
     public.has_permission(shop_id, 'manage_settings') or
     public.has_permission(shop_id, 'create_invoice') or
     public.has_permission(shop_id, 'manage_products')
+  );
+
+drop policy if exists "quality_inspections: members can read" on public.quality_inspections;
+create policy "quality_inspections: members can read" on public.quality_inspections
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "quality_inspections: authorized staff can write" on public.quality_inspections;
+create policy "quality_inspections: authorized staff can write" on public.quality_inspections
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_products') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'manage_settings')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_products') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'manage_settings')
+  );
+
+drop policy if exists "cold_chain_logs: members can read" on public.cold_chain_logs;
+create policy "cold_chain_logs: members can read" on public.cold_chain_logs
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "cold_chain_logs: authorized staff can write" on public.cold_chain_logs;
+create policy "cold_chain_logs: authorized staff can write" on public.cold_chain_logs
+  for all using (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_products') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'manage_settings')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'manage_products') or
+    public.has_permission(shop_id, 'create_purchase') or
+    public.has_permission(shop_id, 'manage_settings')
   );
 
 -- ============================================================================
