@@ -35,6 +35,8 @@ import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
 import 'package:mandi/modules/fleet/views/fleet_logistics_page.dart';
 import 'package:mandi/modules/quality/views/quality_lab_page.dart';
 import 'package:mandi/modules/inventory_labels/views/inventory_labels_page.dart';
+import 'package:mandi/modules/offline_sync/views/offline_sync_page.dart';
+import 'package:mandi/modules/broadcast/views/broadcast_hub_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -640,6 +642,24 @@ class DashboardPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const InventoryLabelsPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.sync_problem_rounded,
+                  label: 'Offline Sync (آف لائن ڈیٹا)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const OfflineSyncPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.campaign_rounded,
+                  label: 'Rate Broadcast (ریٹ براڈکاسٹ)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const BroadcastHubPage()),
                   ),
                 ),
                 if (shopCtx.hasPermission('manage_roles'))

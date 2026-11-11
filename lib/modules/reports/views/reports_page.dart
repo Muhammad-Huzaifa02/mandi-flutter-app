@@ -29,6 +29,8 @@ import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
 import 'package:mandi/modules/fleet/views/fleet_logistics_page.dart';
 import 'package:mandi/modules/quality/views/quality_lab_page.dart';
 import 'package:mandi/modules/inventory_labels/views/inventory_labels_page.dart';
+import 'package:mandi/modules/offline_sync/views/offline_sync_page.dart';
+import 'package:mandi/modules/broadcast/views/broadcast_hub_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -1243,6 +1245,134 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Pallet stack placards, Code128 1D barcodes, 2D QR tags, 4-up adhesive stickers & warehouse rosters',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Offline Sync & Audit Reconciliation Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.amber.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const OfflineSyncPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.amber.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.sync_problem_rounded,
+                      color: Colors.amberAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Offline Sync Engine & Audit',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'آف لائن سنک اور آڈٹ',
+                              style: MText.caption.copyWith(
+                                color: Colors.amberAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Local mutation queues, automatic conflict resolution, offline simulation & audit certificates',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Mandi Bhav Broadcast & Telegram Bot Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.teal.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const BroadcastHubPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.campaign_rounded,
+                      color: Colors.tealAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Rate Broadcast & Telegram Bot',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'ریٹ براڈکاسٹ و بوٹ',
+                              style: MText.caption.copyWith(
+                                color: Colors.tealAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Automated WhatsApp rate bulletins, Telegram channel broadcaster & distribution certificates',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),

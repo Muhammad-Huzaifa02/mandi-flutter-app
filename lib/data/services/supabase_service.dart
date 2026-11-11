@@ -12,6 +12,7 @@ import 'package:mandi/data/models/invoice_model.dart';
 /// shop_id on every row they touch.
 class SupabaseService {
   static final SupabaseClient _client = Supabase.instance.client;
+  static SupabaseClient get client => _client;
 
   // ── Shops / Members / Roles ─────────────────────────────────────────────
 
@@ -1810,6 +1811,128 @@ class SupabaseService {
   }) async {
     await _client
         .from('inventory_labels')
+        .delete()
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  // --------------------------------------------------------------------------
+  // OFFLINE SYNC AUDIT LOGS (آف لائن سنک آڈٹ لاگ)
+  // --------------------------------------------------------------------------
+
+  static Stream<List<Map<String, dynamic>>> syncAuditLogsStream(String shopId) {
+    return _client
+        .from('sync_audit_logs')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('started_at', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getSyncAuditLogs(String shopId) async {
+    final rows = await _client
+        .from('sync_audit_logs')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('started_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createSyncAuditLog(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('sync_audit_logs')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  // --------------------------------------------------------------------------
+  // BROADCAST CAMPAIGNS & SUBSCRIBERS (واٹس ایپ اور ٹیلیگرام ریٹ براڈکاسٹ)
+  // --------------------------------------------------------------------------
+
+  static Stream<List<Map<String, dynamic>>> broadcastCampaignsStream(String shopId) {
+    return _client
+        .from('broadcast_campaigns')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getBroadcastCampaigns(String shopId) async {
+    final rows = await _client
+        .from('broadcast_campaigns')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createBroadcastCampaign(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('broadcast_campaigns')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateBroadcastCampaign(
+      String id, String shopId, Map<String, dynamic> data) async {
+    final updateData = Map<String, dynamic>.from(data);
+    updateData['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('broadcast_campaigns')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteBroadcastCampaign(String id, String shopId) async {
+    await _client
+        .from('broadcast_campaigns')
+        .delete()
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Stream<List<Map<String, dynamic>>> broadcastSubscribersStream(String shopId) {
+    return _client
+        .from('broadcast_subscribers')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('name', ascending: true);
+  }
+
+  static Future<List<Map<String, dynamic>>> getBroadcastSubscribers(String shopId) async {
+    final rows = await _client
+        .from('broadcast_subscribers')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('name', ascending: true);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createBroadcastSubscriber(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('broadcast_subscribers')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateBroadcastSubscriber(
+      String id, String shopId, Map<String, dynamic> data) async {
+    await _client
+        .from('broadcast_subscribers')
+        .update(data)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Future<void> deleteBroadcastSubscriber(String id, String shopId) async {
+    await _client
+        .from('broadcast_subscribers')
         .delete()
         .eq('id', id)
         .eq('shop_id', shopId);

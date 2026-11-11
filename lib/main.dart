@@ -35,6 +35,8 @@ import 'package:mandi/modules/payroll/providers/staff_payroll_provider.dart';
 import 'package:mandi/modules/fleet/providers/fleet_provider.dart';
 import 'package:mandi/modules/quality/providers/quality_provider.dart';
 import 'package:mandi/modules/inventory_labels/providers/inventory_label_provider.dart';
+import 'package:mandi/modules/offline_sync/providers/offline_sync_provider.dart';
+import 'package:mandi/modules/broadcast/providers/broadcast_provider.dart';
 import 'package:mandi/routes/app_root.dart';
 
 Future<void> main() async {
@@ -182,6 +184,16 @@ class MandiApp extends StatelessWidget {
           create: (_) => InventoryLabelProvider(),
           update: (_, shopCtx, labelProvider) =>
               labelProvider!..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, OfflineSyncProvider>(
+          create: (_) => OfflineSyncProvider(),
+          update: (_, shopCtx, syncProvider) =>
+              (syncProvider ?? OfflineSyncProvider())..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, BroadcastProvider>(
+          create: (_) => BroadcastProvider(),
+          update: (_, shopCtx, broadcastProvider) =>
+              (broadcastProvider ?? BroadcastProvider())..updateShop(shopCtx.currentShopId),
         ),
       ],
       child: Consumer2<ThemeProvider, LocaleProvider>(

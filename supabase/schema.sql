@@ -1055,6 +1055,67 @@ create index if not exists idx_inventory_labels_type on public.inventory_labels(
 create index if not exists idx_inventory_labels_status on public.inventory_labels(shop_id, status);
 create index if not exists idx_inventory_labels_date on public.inventory_labels(shop_id, created_at desc);
 
+-- 7q. OFFLINE SYNC AUDIT LOGS (آف لائن سنک آڈٹ لاگ)
+create table if not exists public.sync_audit_logs (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  device_id                   text not null default '',
+  sync_session_id             text not null default '',
+  mutation_count              integer not null default 0,
+  conflicts_count             integer not null default 0,
+  status                      text not null default 'completed', -- in_progress, completed, partial, failed
+  client_platform             text not null default 'android', -- android, windows, ios, web
+  details                     jsonb not null default '{}'::jsonb,
+  started_at                  timestamptz not null default now(),
+  completed_at                timestamptz
+);
+
+create index if not exists idx_sync_audit_shop on public.sync_audit_logs(shop_id);
+create index if not exists idx_sync_audit_device on public.sync_audit_logs(shop_id, device_id);
+create index if not exists idx_sync_audit_date on public.sync_audit_logs(shop_id, started_at desc);
+
+-- 7r. BROADCAST CAMPAIGNS & SUBSCRIBERS (واٹس ایپ اور ٹیلیگرام ریٹ براڈکاسٹ)
+create table if not exists public.broadcast_campaigns (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  title                       text not null default '',
+  channel                     text not null default 'both', -- whatsapp, telegram, both
+  audience_type               text not null default 'all_farmers', -- all_farmers, all_buyers, commission_agents, transporters, custom
+  template_type               text not null default 'daily_rates', -- daily_rates, boli_alert, khata_reminder, custom_announcement
+  message_body                text not null default '',
+  total_recipients            integer not null default 0,
+  delivered_count             integer not null default 0,
+  failed_count                integer not null default 0,
+  status                      text not null default 'draft', -- draft, scheduled, sending, sent, failed
+  scheduled_at                timestamptz,
+  sent_at                     timestamptz,
+  metadata                    jsonb not null default '{}'::jsonb,
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_broadcast_campaigns_shop on public.broadcast_campaigns(shop_id);
+create index if not exists idx_broadcast_campaigns_status on public.broadcast_campaigns(shop_id, status);
+create index if not exists idx_broadcast_campaigns_channel on public.broadcast_campaigns(shop_id, channel);
+create index if not exists idx_broadcast_campaigns_date on public.broadcast_campaigns(shop_id, created_at desc);
+
+create table if not exists public.broadcast_subscribers (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  name                        text not null default '',
+  phone_or_chat_id            text not null default '',
+  platform                    text not null default 'whatsapp', -- whatsapp, telegram, both
+  subscriber_type             text not null default 'farmer', -- farmer, buyer, agent, staff
+  is_active                   boolean not null default true,
+  notes                       text not null default '',
+  created_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_broadcast_subscribers_shop on public.broadcast_subscribers(shop_id);
+create index if not exists idx_broadcast_subscribers_active on public.broadcast_subscribers(shop_id, is_active);
+create index if not exists idx_broadcast_subscribers_platform on public.broadcast_subscribers(shop_id, platform);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1549,6 +1610,9 @@ alter table public.fleet_fuel_logs        enable row level security;
 alter table public.quality_inspections    enable row level security;
 alter table public.cold_chain_logs        enable row level security;
 alter table public.inventory_labels       enable row level security;
+alter table public.sync_audit_logs        enable row level security;
+alter table public.broadcast_campaigns    enable row level security;
+alter table public.broadcast_subscribers  enable row level security;
 
 -- profiles: read your own; owners can read profiles of people they've
 -- invited into one of their shops (needed to show staff/customer/supplier
@@ -2220,6 +2284,57 @@ create policy "inventory_labels: authorized staff can write" on public.inventory
     public.has_permission(shop_id, 'create_purchase') or
     public.has_permission(shop_id, 'create_invoice') or
     public.has_permission(shop_id, 'manage_settings')
+  );
+
+drop policy if exists "sync_audit_logs: members can read" on public.sync_audit_logs;
+create policy "sync_audit_logs: members can read" on public.sync_audit_logs
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "sync_audit_logs: authorized staff can write" on public.sync_audit_logs;
+create policy "sync_audit_logs: authorized staff can write" on public.sync_audit_logs
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_invoice')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'manage_inventory') or
+    public.has_permission(shop_id, 'create_invoice')
+  );
+
+drop policy if exists "broadcast_campaigns: members can read" on public.broadcast_campaigns;
+create policy "broadcast_campaigns: members can read" on public.broadcast_campaigns
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "broadcast_campaigns: authorized staff can write" on public.broadcast_campaigns;
+create policy "broadcast_campaigns: authorized staff can write" on public.broadcast_campaigns
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'manage_products') or
+    public.has_permission(shop_id, 'create_invoice')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'manage_products') or
+    public.has_permission(shop_id, 'create_invoice')
+  );
+
+drop policy if exists "broadcast_subscribers: members can read" on public.broadcast_subscribers;
+create policy "broadcast_subscribers: members can read" on public.broadcast_subscribers
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "broadcast_subscribers: authorized staff can write" on public.broadcast_subscribers;
+create policy "broadcast_subscribers: authorized staff can write" on public.broadcast_subscribers
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'manage_customers') or
+    public.has_permission(shop_id, 'manage_suppliers')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'manage_customers') or
+    public.has_permission(shop_id, 'manage_suppliers')
   );
 
 -- ============================================================================

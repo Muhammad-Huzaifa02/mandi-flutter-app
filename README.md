@@ -226,6 +226,36 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
   - **Multi-Up 4-Per-Page Adhesive Sticker Sheets**: Compact 2x2 sticker sheet for thermal sticker rolls or standard A4 sticky sheets.
   - **Master Warehouse Pallet & Lot Roster**: Landscape A4 stock inventory report with summary statistics and complete stack audit trails.
 
+### 🔄 Offline-First SQLite Sync Engine with Conflict Resolution (*آف لائن سنک اور مقامی ڈیٹا بیس*)
+- **Durable Local Mutation Queue (`OfflineSyncService`, `SyncMutation`)**: Built specifically for remote agricultural mandis and godown basements with zero cellular reception.
+  - Stores pending mutations locally in persistent storage with unique UUIDs, client-side timestamps, and idempotency keys (`IDEMP-...`).
+  - Supports full entity mutation lifecycle: **Commodity Rates**, **Inventory Labels**, **Weighbridge Tickets**, **Staff Attendance**, and **Sales Invoices**.
+- **Intelligent Conflict Detection & Last-Write-Wins**:
+  - Automatically compares `clientTimestamp` with cloud server `updated_at`.
+  - When concurrent cloud modifications occur, flags the item with `SyncMutationStatus.conflict` while letting other non-conflicting mutations drain safely.
+- **Interactive Visual Conflict Resolution Modal (`ResolveConflictDialog`)**:
+  - Side-by-side JSON diff inspection between **Your Device (Local)** and **Cloud Server (Remote)**.
+  - 1-tap resolution strategy: **Client Local Wins** or **Cloud Server Wins**.
+- **Simulated Offline Testing Mode & Live Status Bar**:
+  - In-app toggle allowing testing and demonstrations in zero-network environments.
+  - Real-time connection badge (Online 🟢, Offline 🔴, Syncing 🔄).
+- **Printable A4 Offline Sync Audit & Reconciliation Certificate (`OfflineSyncPdfGenerator`)**:
+  - Full audit trail report detailing device IDs, sync sessions, drained queue counts, and conflict reconciliation history.
+
+### 📢 Automated WhatsApp & Telegram Bot for Daily Mandi Bhav Broadcast (*واٹس ایپ اور ٹیلیگرام ریٹ براڈکاسٹ*)
+- **Automated Mandi Bhav Bulletin Generator (`BroadcastService`)**:
+  - Auto-synthesizes beautifully formatted Urdu and English daily bulletins directly from live Mandi rate boards.
+  - Embeds commodity emojis (🌾 گندم, 🍚 چاول, 🌽 مکئی, 🌻 سورج مکھی), rate ranges per 40kg Maund, sentiment trends (📈 تیز / 📉 مندا / ⚖️ مستحکم), arrival quantities, and Boli timings.
+- **Multi-Channel Messenger Gateway (`BroadcastProvider`)**:
+  - **WhatsApp Business Web / Mobile**: 1-click deep links (`https://api.whatsapp.com/send?phone=...&text=...`) for instant group distribution.
+  - **Telegram Bot API**: Direct HTTP JSON message dispatch to individual farmer chat IDs and public Mandi broadcast channels (`t.me`).
+- **Subscriber Directory & Targeted Audience Segments**:
+  - Manages subscriber directory categorized by **Registered Farmers (زمیندار)**, **Millers & Buyers (خریدار)**, **Commission Agents (آڑھتی)**, and **Transporters**.
+  - Automatic Pakistan phone number standardization (`+92` / `03xx` -> `923xx`).
+- **Campaign Analytics & Official PDF Distribution Certificate (`BroadcastReportPdfGenerator`)**:
+  - Real-time delivery tracking with sent counts, delivery percentage, and failure flags.
+  - Official A4 printable Mandi Bhav Distribution Certificate for Mandi Committee notification records.
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.
@@ -265,6 +295,8 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 | **Fleet & Logistics** | Vehicle fleet asset register, freight trip bilty dispatching, fuel/diesel expense logging, carrier P&L registers, printable A4 transport bilty challans. |
 | **Quality Lab & Cold Chain** | Moisture testing (% detection), refraction deduction math, certified grade assignment (Super, FAQ, Substandard), HACCP cold room temperature & humidity logs, printable A4 Certificate of Analysis. |
 | **Barcode & QR Tracking** | Code128 1D barcodes, 2D QR lot tags, pallet stack placards, packaging tare math, mobile camera verification terminal, 4-up adhesive sticker sheets. |
+| **Offline Sync Engine** | Local mutation queues, conflict detection & resolution modal, offline simulation mode, automatic queue drain on reconnect, and A4 audit certificates. |
+| **Mandi Bhav Broadcast & Bot** | Daily Urdu/English rate bulletins, WhatsApp deep linking, Telegram Bot API & public channel broadcast, subscriber directory, and A4 certificates. |
 | **Reports** | Executive profit/loss overview, commission earnings, receivables/payables summary, date filters, Excel/PDF export. |
 | **Employees & Roles** | Staff roster management, invite new employees, activate/deactivate members, custom permission matrix editor. |
 | **Shop Settings** | Edit shop details, upload logo image, set invoice prefix, configure thermal printer paper width & footer note, theme color. |
