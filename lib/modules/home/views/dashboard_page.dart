@@ -352,8 +352,14 @@ class DashboardPage extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text('${AppStrings.tr(context, 'welcome')}, ${shopCtx.currentMember?.name ?? ''}',
-                                style: MText.titleLg.copyWith(color: Colors.white)),
+                            Expanded(
+                              child: Text(
+                                '${AppStrings.tr(context, 'welcome')}, ${shopCtx.currentMember?.name ?? ''}',
+                                style: MText.titleLg.copyWith(color: Colors.white),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                             const SizedBox(width: 6),
                             const Icon(Icons.edit_outlined,
                                 size: 16, color: MColors.gold),

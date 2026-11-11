@@ -177,9 +177,13 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
             children: [
               const Icon(Icons.storefront, color: Colors.teal),
               const SizedBox(width: 8),
-              Text(
-                'Currently Unloading at Platforms (${unloading.length})',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  '${AppStrings.tr(context, 'currently_unloading')} (${unloading.length})',
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -205,9 +209,13 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
             children: [
               const Icon(Icons.hourglass_top, color: Colors.blueGrey),
               const SizedBox(width: 8),
-              Text(
-                'Waiting in Queue (قطار میں موجود گاڑیاں - ${queued.length})',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  '${AppStrings.tr(context, 'waiting_queue')} (${queued.length})',
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
