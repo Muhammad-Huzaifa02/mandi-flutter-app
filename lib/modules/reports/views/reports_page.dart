@@ -26,6 +26,7 @@ import 'package:mandi/modules/voice_notes/views/voice_notes_hub_page.dart';
 import 'package:mandi/modules/loyalty/views/customer_loyalty_page.dart';
 import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
 import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
+import 'package:mandi/modules/fleet/views/fleet_logistics_page.dart';
 
 enum ReportPeriod { allTime, today, thisWeek, thisMonth, custom }
 
@@ -1048,6 +1049,70 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(height: 2),
                         Text(
                           'Daily biometric attendance, overtime hours, advance recoveries & official A4 salary slips',
+                          style: MText.caption.copyWith(
+                            color: MColors.textOnDarkSub,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            // Quick Fleet Logistics & Bilty Card
+            GlassCard(
+              padding: const EdgeInsets.all(MSpacing.md),
+              borderColor: Colors.teal.withValues(alpha: 0.4),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const FleetLogisticsPage()),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
+                    child: const Icon(
+                      Icons.local_shipping_rounded,
+                      color: Colors.tealAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: MSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Fleet Logistics & Bilty',
+                              style: MText.bodyMd.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'ٹرانسپورٹ و ڈیزل کھاتہ',
+                              style: MText.caption.copyWith(
+                                color: Colors.tealAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Vehicle freight ledger, trip bilty printing, diesel expense logs & carrier P&L registers',
                           style: MText.caption.copyWith(
                             color: MColors.textOnDarkSub,
                           ),

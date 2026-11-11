@@ -32,6 +32,7 @@ import 'package:mandi/modules/voice_notes/providers/audio_note_provider.dart';
 import 'package:mandi/modules/loyalty/providers/loyalty_rebate_provider.dart';
 import 'package:mandi/modules/rates/providers/mandi_rate_provider.dart';
 import 'package:mandi/modules/payroll/providers/staff_payroll_provider.dart';
+import 'package:mandi/modules/fleet/providers/fleet_provider.dart';
 import 'package:mandi/routes/app_root.dart';
 
 Future<void> main() async {
@@ -164,6 +165,11 @@ class MandiApp extends StatelessWidget {
           create: (_) => StaffPayrollProvider(),
           update: (_, shopCtx, staffPayrollProvider) =>
               staffPayrollProvider!..updateShop(shopCtx.currentShopId),
+        ),
+        ChangeNotifierProxyProvider<ShopContextProvider, FleetProvider>(
+          create: (_) => FleetProvider(),
+          update: (_, shopCtx, fleetProvider) =>
+              fleetProvider!..updateShop(shopCtx.currentShopId),
         ),
       ],
       child: Consumer2<ThemeProvider, LocaleProvider>(

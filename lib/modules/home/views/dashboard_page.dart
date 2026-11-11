@@ -32,6 +32,7 @@ import 'package:mandi/modules/voice_notes/views/voice_notes_hub_page.dart';
 import 'package:mandi/modules/loyalty/views/customer_loyalty_page.dart';
 import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
 import 'package:mandi/modules/payroll/views/staff_payroll_page.dart';
+import 'package:mandi/modules/fleet/views/fleet_logistics_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -610,6 +611,15 @@ class DashboardPage extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (_) => const StaffPayrollPage()),
+                  ),
+                ),
+                _ManageTile(
+                  icon: Icons.local_shipping_rounded,
+                  label: 'Fleet & Bilty (ٹرانسپورٹ کھاتہ)',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const FleetLogisticsPage()),
                   ),
                 ),
                 if (shopCtx.hasPermission('manage_roles'))

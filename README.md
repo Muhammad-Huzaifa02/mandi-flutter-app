@@ -173,6 +173,30 @@ A comprehensive, production-ready, multi-tenant Flutter application designed spe
 - **Disbursement Lifecycle & Multi-Method Payouts**: Status progression (`draft`, `approved`, `paid`) with support for **Cash**, **Bank Transfer**, or **Cheque** disbursement vouchers.
 - **A4 Printable Salary Pay Slips & Registers (`StaffPayrollPdfGenerator`)**: High-resolution individual Staff Salary Pay Slip vouchers with itemized earnings & deductions, alongside Landscape A4 Monthly Wage Disbursement Registers.
 
+### 🚚 Fuel & Vehicle Fleet Logistics Ledger (*گاڑیوں کا تیل، کرایہ اور ٹرانسپورٹ کھاتہ*)
+- **Transport Fleet & Carrier Registry (`FleetLogisticsPage`, `FleetProvider`)**: Centralized vehicle fleet asset register supporting multiple cargo carrier types:
+  - **Tractor Trolley (*ٹریکٹر ٹرالی*)**: Rural farm-to-mandi hauler (approx 200–350 Maunds).
+  - **Mazda Truck 6-Wheeler (*مزدا 6 وہیلر*)**: Inter-city grain transport (approx 400–600 Maunds).
+  - **Shehzore Pickup (*شہزور ڈالہ*)**: Rapid regional delivery (approx 150–250 Maunds).
+  - **Pickup Dala (*پک اپ ڈالہ*) & Rickshaw Loader (*لوڈر رکشہ*)**: Local mandi distribution.
+  - **10-Wheeler Heavy Trailer (*ٹرالر 10 وہیلر*)**: Long-haul port and cross-country transit (approx 800–1200 Maunds).
+  - Categorized by ownership: **Shop Owned (*ذاتی گاڑی*)**, **Contracted Carrier (*کنٹریکٹ*)**, and **Rental (*کرایہ*)**.
+- **Freight Trip Dispatching & Bilty Engine (`NewTripChallanDialog`, `FleetTrip`)**: Comprehensive cargo transport dispatch system:
+  - Origin, destination, party/consignee, commodity, bags, weight in KG and auto Mandi Maunds ($\text{KG} / 40.0$).
+  - Freight billing with agreed gross freight and driver cash advance tracking.
+  - Real-time operating expense budget (diesel, toll plaza / chungi, and misc transit costs).
+  - Real-time financial equations:
+    $$\text{Operating Expenses} = \text{Diesel Expense} + \text{Toll / Tax} + \text{Other Expenses}$$
+    $$\text{Net Trip Profit} = \text{Agreed Freight} - \text{Operating Expenses}$$
+    $$\text{Balance Freight Payable} = \text{Agreed Freight} - \text{Driver Advance}$$
+- **Fuel, Lubricants & Maintenance Expense Logging (`LogFuelExpenseDialog`, `FleetFuelLog`)**:
+  - Itemized receipt recording for **Diesel**, **Petrol**, **CNG**, **Engine Oil & Filters**, **Tires & Punctures**, and **Workshop Repairs**.
+  - Liters, pump/vendor name, rate per liter, voucher number, and odometer mileage tracking with automatic vehicle odometer sync.
+  - Optional linking directly to in-transit freight trips.
+- **Official A4 Printable Bilties & Vehicle P&L Ledgers (`FleetLogisticsPdfGenerator`)**:
+  - **Official A4 Portrait Trip Bilty / Delivery Challan**: Dual-language formal transport bilty with consignor, carrier, cargo weights, billing terms, advance paid, and driver/merchant signature seals.
+  - **Landscape A4 Vehicle Profit & Loss Ledger**: Comprehensive vehicle register detailing all trips, gross freight revenue, total fuel liters & costs, net operational profit, and fleet profit margins.
+
 ### 🔐 Enterprise Security & Audit Logging
 - **Row Level Security (RLS)**: Strict database-level isolation ensuring zero cross-tenant data leaks and customer/supplier privacy.
 - **Privilege Escalation Wall**: PostgreSQL `BEFORE UPDATE` trigger preventing unauthorized tampering with roles, permissions, status, or salary.

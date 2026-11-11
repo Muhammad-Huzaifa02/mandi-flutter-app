@@ -1533,4 +1533,133 @@ class SupabaseService {
         .eq('id', payrollId)
         .eq('shop_id', shopId);
   }
+
+  // ============================================================================
+  // FLEET & VEHICLE LOGISTICS (گاڑیوں کا ڈیزل، ٹرپ کرایہ اور ٹرانسپورٹ کھاتہ)
+  // ============================================================================
+
+  static Stream<List<Map<String, dynamic>>> fleetVehiclesStream(String shopId) =>
+      _client
+          .from('fleet_vehicles')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('registration_number');
+
+  static Future<List<Map<String, dynamic>>> getFleetVehicles(String shopId) async {
+    final rows = await _client
+        .from('fleet_vehicles')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('registration_number');
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createFleetVehicle(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('fleet_vehicles')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateFleetVehicle({
+    required String id,
+    required String shopId,
+    required Map<String, dynamic> data,
+  }) async {
+    final updateData = Map<String, dynamic>.from(data);
+    updateData['updated_at'] = DateTime.now().toIso8601String();
+    await _client
+        .from('fleet_vehicles')
+        .update(updateData)
+        .eq('id', id)
+        .eq('shop_id', shopId);
+  }
+
+  static Stream<List<Map<String, dynamic>>> fleetTripsStream(String shopId) =>
+      _client
+          .from('fleet_trips')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .order('trip_date', ascending: false);
+
+  static Future<List<Map<String, dynamic>>> getFleetTrips(String shopId) async {
+    final rows = await _client
+        .from('fleet_trips')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('trip_date', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createFleetTrip(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('fleet_trips')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
+
+  static Future<void> updateFleetTripStatus({
+    required String tripId,
+    required String shopId,
+    required String status,
+    double? dieselExpense,
+    double? tollTax,
+    double? otherExpense,
+    double? netProfit,
+  }) async {
+    final updateData = <String, dynamic>{
+      'status': status,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    if (dieselExpense != null) updateData['diesel_expense_pkr'] = dieselExpense;
+    if (tollTax != null) updateData['toll_and_tax_pkr'] = tollTax;
+    if (otherExpense != null) updateData['other_expense_pkr'] = otherExpense;
+    if (netProfit != null) updateData['net_trip_profit_pkr'] = netProfit;
+
+    await _client
+        .from('fleet_trips')
+        .update(updateData)
+        .eq('id', tripId)
+        .eq('shop_id', shopId);
+  }
+
+  static Stream<List<Map<String, dynamic>>> fleetFuelLogsStream(
+          String shopId, {String? vehicleId}) {
+    if (vehicleId != null && vehicleId.isNotEmpty) {
+      return _client
+          .from('fleet_fuel_logs')
+          .stream(primaryKey: ['id'])
+          .eq('shop_id', shopId)
+          .eq('vehicle_id', vehicleId)
+          .order('log_date', ascending: false);
+    }
+    return _client
+        .from('fleet_fuel_logs')
+        .stream(primaryKey: ['id'])
+        .eq('shop_id', shopId)
+        .order('log_date', ascending: false);
+  }
+
+  static Future<List<Map<String, dynamic>>> getFleetFuelLogs(
+      String shopId, {String? vehicleId}) async {
+    var query = _client.from('fleet_fuel_logs').select('*').eq('shop_id', shopId);
+    if (vehicleId != null && vehicleId.isNotEmpty) {
+      query = query.eq('vehicle_id', vehicleId);
+    }
+    final rows = await query.order('log_date', ascending: false);
+    return List<Map<String, dynamic>>.from(rows);
+  }
+
+  static Future<String> createFleetFuelLog(Map<String, dynamic> data) async {
+    final res = await _client
+        .from('fleet_fuel_logs')
+        .insert(data)
+        .select('id')
+        .single();
+    return res['id'] as String;
+  }
 }

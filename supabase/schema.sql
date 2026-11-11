@@ -880,6 +880,83 @@ create index if not exists idx_payroll_member on public.staff_payroll(shop_id, m
 create index if not exists idx_payroll_month on public.staff_payroll(shop_id, month_year);
 create index if not exists idx_payroll_status on public.staff_payroll(shop_id, status);
 
+-- 7n. FLEET_VEHICLES & FUEL LOGISTICS (گاڑیوں کا تیل، کرایہ اور ٹرانسپورٹ کھاتہ)
+create table if not exists public.fleet_vehicles (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  registration_number         text not null default '', -- e.g. "FD-8921", "LES-4412"
+  vehicle_type                text not null default 'tractor_trolley', -- tractor_trolley, mazda_truck, shehzore, pickup_dala, rickshaw_loader, 10_wheeler_trailer
+  ownership_type              text not null default 'shop_owned', -- shop_owned, contracted_carrier, rental
+  driver_name                 text not null default '',
+  driver_phone                text not null default '',
+  capacity_maunds             numeric(10,2) not null default 0,
+  odometer_km                 numeric(10,2) not null default 0,
+  status                      text not null default 'active', -- active, maintenance, inactive
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now(),
+  constraint uq_fleet_vehicle unique(shop_id, registration_number)
+);
+
+create index if not exists idx_fleet_vehicles_shop on public.fleet_vehicles(shop_id);
+create index if not exists idx_fleet_vehicles_reg on public.fleet_vehicles(shop_id, registration_number);
+
+create table if not exists public.fleet_trips (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  vehicle_id                  uuid not null references public.fleet_vehicles(id) on delete cascade,
+  trip_number                 text not null default '', -- e.g. "TRIP-2611-001"
+  trip_date                   date not null default current_date,
+  origin                      text not null default '',
+  destination                 text not null default '',
+  commodity_name              text not null default '',
+  loaded_weight_kg            numeric(12,2) not null default 0,
+  loaded_weight_maunds        numeric(10,2) not null default 0,
+  bag_count                   integer not null default 0,
+  party_name                  text not null default '',
+  agreed_freight_pkr          numeric(12,2) not null default 0, -- Total Kiraya
+  driver_advance_pkr          numeric(12,2) not null default 0,
+  diesel_expense_pkr          numeric(12,2) not null default 0,
+  toll_and_tax_pkr            numeric(12,2) not null default 0,
+  other_expense_pkr           numeric(12,2) not null default 0,
+  net_trip_profit_pkr         numeric(12,2) not null default 0,
+  balance_freight_payable_pkr numeric(12,2) not null default 0,
+  status                      text not null default 'in_transit', -- in_transit, completed, cancelled
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_fleet_trips_shop on public.fleet_trips(shop_id);
+create index if not exists idx_fleet_trips_vehicle on public.fleet_trips(shop_id, vehicle_id);
+create index if not exists idx_fleet_trips_date on public.fleet_trips(shop_id, trip_date desc);
+create index if not exists idx_fleet_trips_status on public.fleet_trips(shop_id, status);
+
+create table if not exists public.fleet_fuel_logs (
+  id                          uuid primary key default gen_random_uuid(),
+  shop_id                     uuid not null references public.shops(id) on delete cascade,
+  vehicle_id                  uuid not null references public.fleet_vehicles(id) on delete cascade,
+  trip_id                     uuid references public.fleet_trips(id) on delete set null,
+  log_date                    date not null default current_date,
+  fuel_type                   text not null default 'diesel', -- diesel, petrol, cng, engine_oil, maintenance
+  pump_or_vendor_name         text not null default '',
+  liters                      numeric(8,2) not null default 0,
+  rate_per_liter              numeric(8,2) not null default 0,
+  total_cost_pkr              numeric(12,2) not null default 0,
+  odometer_km                 numeric(10,2) not null default 0,
+  receipt_voucher_number      text not null default '',
+  notes                       text not null default '',
+  created_by                  uuid references auth.users(id),
+  created_at                  timestamptz not null default now(),
+  updated_at                  timestamptz not null default now()
+);
+
+create index if not exists idx_fleet_fuel_shop on public.fleet_fuel_logs(shop_id);
+create index if not exists idx_fleet_fuel_vehicle on public.fleet_fuel_logs(shop_id, vehicle_id);
+create index if not exists idx_fleet_fuel_date on public.fleet_fuel_logs(shop_id, log_date desc);
+
 -- ============================================================================
 -- 8. RPC — create_shop_with_owner
 --    Atomically creates a shop, its 5 default roles, and the owner's
@@ -1929,6 +2006,57 @@ create policy "staff_payroll: authorized staff can write" on public.staff_payrol
     public.has_permission(shop_id, 'manage_employees') or
     public.has_permission(shop_id, 'manage_settings') or
     public.has_permission(shop_id, 'view_ledger')
+  );
+
+drop policy if exists "fleet_vehicles: members can read" on public.fleet_vehicles;
+create policy "fleet_vehicles: members can read" on public.fleet_vehicles
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "fleet_vehicles: authorized staff can write" on public.fleet_vehicles;
+create policy "fleet_vehicles: authorized staff can write" on public.fleet_vehicles
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'manage_products')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'manage_products')
+  );
+
+drop policy if exists "fleet_trips: members can read" on public.fleet_trips;
+create policy "fleet_trips: members can read" on public.fleet_trips
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "fleet_trips: authorized staff can write" on public.fleet_trips;
+create policy "fleet_trips: authorized staff can write" on public.fleet_trips
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'manage_products')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'manage_products')
+  );
+
+drop policy if exists "fleet_fuel_logs: members can read" on public.fleet_fuel_logs;
+create policy "fleet_fuel_logs: members can read" on public.fleet_fuel_logs
+  for select using (public.is_shop_member(shop_id));
+
+drop policy if exists "fleet_fuel_logs: authorized staff can write" on public.fleet_fuel_logs;
+create policy "fleet_fuel_logs: authorized staff can write" on public.fleet_fuel_logs
+  for all using (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'manage_products')
+  )
+  with check (
+    public.has_permission(shop_id, 'manage_settings') or
+    public.has_permission(shop_id, 'create_invoice') or
+    public.has_permission(shop_id, 'manage_products')
   );
 
 -- ============================================================================
