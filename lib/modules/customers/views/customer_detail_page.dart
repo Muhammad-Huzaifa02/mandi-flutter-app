@@ -218,19 +218,19 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(_customer.name,
-                                style: MText.titleLg.copyWith(color: Colors.white)),
+                                style: MText.titleLg.copyWith(color: MColors.textPrimary)),
                             if (_customer.phone.isNotEmpty)
                               Text('Phone: ${_customer.phone}',
                                   style: MText.bodySm
-                                      .copyWith(color: Colors.white70)),
+                                      .copyWith(color: MColors.textSecondary)),
                             if (_customer.email.isNotEmpty)
                               Text('Email: ${_customer.email}',
                                   style: MText.bodySm
-                                      .copyWith(color: Colors.white70)),
+                                      .copyWith(color: MColors.textSecondary)),
                             if (locationStr.isNotEmpty)
                               Text('Address: $locationStr',
                                   style: MText.bodySm
-                                      .copyWith(color: Colors.white70)),
+                                      .copyWith(color: MColors.textSecondary)),
                           ],
                         ),
                       ),
@@ -239,15 +239,15 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                   const SizedBox(height: MSpacing.md),
                   Chip(
                     avatar: const Icon(Icons.stars,
-                        color: Colors.amber, size: 18),
+                        color: MColors.primary, size: 18),
                     label: Text(
                       '$loyaltyPoints Loyalty Points (Rs. ${totalSpent.toStringAsFixed(0)} spent)',
                       style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                          color: MColors.textPrimary),
                     ),
-                    backgroundColor: Colors.amber.withValues(alpha: 0.2),
+                    backgroundColor: MColors.primary.withValues(alpha: 0.12),
                   ),
                 ],
               ),
@@ -263,7 +263,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Outstanding Khata Balance',
-                      style: MText.labelMd.copyWith(color: Colors.white70)),
+                      style: MText.labelMd.copyWith(color: MColors.textSecondary)),
                   const SizedBox(height: MSpacing.xs),
                   Text(
                     'Rs. ${_customer.runningBalance.toStringAsFixed(0)}',
@@ -271,8 +271,8 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                       color: _customer.runningBalance > 0
                           ? MColors.danger
                           : (_customer.runningBalance < 0
-                              ? Colors.greenAccent
-                              : Colors.white),
+                              ? Colors.green.shade700
+                              : MColors.textPrimary),
                       fontSize: 24,
                     ),
                   ),
@@ -283,7 +283,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                         : (_customer.runningBalance < 0
                             ? 'Advance payment received'
                             : 'Khata Settled'),
-                    style: MText.bodySm.copyWith(color: Colors.white70),
+                    style: MText.bodySm.copyWith(color: MColors.textSecondary),
                   ),
                 ],
               ),
@@ -296,9 +296,9 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Account Ledger History',
-                    style: MText.titleLg.copyWith(color: Colors.white)),
+                    style: MText.titleLg.copyWith(color: MColors.textPrimary)),
                 Text('${ledgerEntries.length} Transactions',
-                    style: MText.bodySm.copyWith(color: Colors.white70)),
+                    style: MText.bodySm.copyWith(color: MColors.textSecondary)),
               ],
             ),
             const SizedBox(height: MSpacing.sm),
@@ -308,7 +308,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                 padding: const EdgeInsets.all(MSpacing.xl),
                 child: Center(
                   child: Text('No transactions recorded for this customer yet.',
-                      style: MText.bodyMd.copyWith(color: Colors.white70)),
+                      style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
                 ),
               )
             else
@@ -331,13 +331,13 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                           children: [
                             CircleAvatar(
                               backgroundColor: isInvoice
-                                  ? MColors.gold.withValues(alpha: 0.2)
-                                  : Colors.greenAccent.withValues(alpha: 0.2),
+                                  ? MColors.primary.withValues(alpha: 0.12)
+                                  : Colors.green.withValues(alpha: 0.12),
                               child: Icon(
                                 isInvoice ? Icons.receipt_long : Icons.payments,
                                 color: isInvoice
-                                    ? MColors.gold
-                                    : Colors.greenAccent,
+                                    ? MColors.primary
+                                    : Colors.green.shade700,
                               ),
                             ),
                             const SizedBox(width: MSpacing.md),
@@ -345,11 +345,11 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(entry.reference,
-                                    style: MText.titleLg.copyWith(color: Colors.white)),
+                                    style: MText.titleLg.copyWith(color: MColors.textPrimary)),
                                 Text(
                                   '${entry.formattedDate} • ${entry.description}',
                                   style: MText.bodySm
-                                      .copyWith(color: Colors.white70),
+                                      .copyWith(color: MColors.textSecondary),
                                 ),
                               ],
                             ),
@@ -364,8 +364,8 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                                   : '- Rs. ${entry.credit.toStringAsFixed(0)} (Cr)',
                               style: MText.bodyMd.copyWith(
                                 color: isInvoice
-                                    ? Colors.orangeAccent
-                                    : Colors.greenAccent,
+                                    ? Colors.orange.shade800
+                                    : Colors.green.shade700,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -373,8 +373,9 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                               'Bal: Rs. ${entry.runningBalance.toStringAsFixed(0)}',
                               style: MText.bodySm.copyWith(
                                 color: entry.runningBalance > 0
-                                    ? MColors.gold
-                                    : Colors.white70,
+                                    ? MColors.primary
+                                    : MColors.textSecondary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -393,8 +394,8 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                 Expanded(
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white38),
+                      foregroundColor: MColors.primary,
+                      side: BorderSide(color: Colors.grey.shade400),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () => Navigator.push(

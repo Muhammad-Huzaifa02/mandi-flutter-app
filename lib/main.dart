@@ -235,11 +235,7 @@ class MandiApp extends StatelessWidget {
             brandColor: themeProvider.primaryBrandColor,
             brightness: Brightness.light,
           ),
-          darkTheme: AppTheme.getDynamicTheme(
-            brandColor: themeProvider.primaryBrandColor,
-            brightness: Brightness.dark,
-          ),
-          themeMode: themeProvider.themeMode,
+          themeMode: ThemeMode.light,
           locale: localeProvider.locale,
           supportedLocales: const [
             Locale('en', ''),

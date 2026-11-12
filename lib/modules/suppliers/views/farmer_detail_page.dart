@@ -224,19 +224,19 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(_farmer.name,
-                            style: MText.titleLg.copyWith(color: Colors.white)),
+                            style: MText.titleLg.copyWith(color: MColors.textPrimary)),
                         if (_farmer.phone.isNotEmpty)
                           Text('Phone: ${_farmer.phone}',
                               style: MText.bodySm
-                                  .copyWith(color: Colors.white70)),
+                                  .copyWith(color: MColors.textSecondary)),
                         if (_farmer.email.isNotEmpty)
                           Text('Email: ${_farmer.email}',
                               style: MText.bodySm
-                                  .copyWith(color: Colors.white70)),
+                                  .copyWith(color: MColors.textSecondary)),
                         if (_farmer.productsSupplied.isNotEmpty)
                           Text('Crops: ${_farmer.productsSupplied}',
                               style: MText.bodySm
-                                  .copyWith(color: Colors.white70)),
+                                  .copyWith(color: MColors.textSecondary)),
                       ],
                     ),
                   ),
@@ -254,7 +254,7 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Outstanding Payable Balance',
-                      style: MText.labelMd.copyWith(color: Colors.white70)),
+                      style: MText.labelMd.copyWith(color: MColors.textSecondary)),
                   const SizedBox(height: MSpacing.xs),
                   Text(
                     'Rs. ${_farmer.runningBalance.toStringAsFixed(0)}',
@@ -262,8 +262,8 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                       color: _farmer.runningBalance > 0
                           ? MColors.danger
                           : (_farmer.runningBalance < 0
-                              ? Colors.greenAccent
-                              : Colors.white),
+                              ? Colors.green.shade700
+                              : MColors.textPrimary),
                       fontSize: 24,
                     ),
                   ),
@@ -274,7 +274,7 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                         : (_farmer.runningBalance < 0
                             ? 'Advance paid to farmer (پیشگی رقم)'
                             : 'Settled'),
-                    style: MText.bodySm.copyWith(color: Colors.white70),
+                    style: MText.bodySm.copyWith(color: MColors.textSecondary),
                   ),
                 ],
               ),
@@ -287,9 +287,9 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Account Ledger History',
-                    style: MText.titleLg.copyWith(color: Colors.white)),
+                    style: MText.titleLg.copyWith(color: MColors.textPrimary)),
                 Text('${ledgerEntries.length} Transactions',
-                    style: MText.bodySm.copyWith(color: Colors.white70)),
+                    style: MText.bodySm.copyWith(color: MColors.textSecondary)),
               ],
             ),
             const SizedBox(height: MSpacing.sm),
@@ -299,7 +299,7 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                 padding: const EdgeInsets.all(MSpacing.xl),
                 child: Center(
                   child: Text('No transactions recorded for this farmer yet.',
-                      style: MText.bodyMd.copyWith(color: Colors.white70)),
+                      style: MText.bodyMd.copyWith(color: MColors.textSecondary)),
                 ),
               )
             else
@@ -322,13 +322,13 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                           children: [
                             CircleAvatar(
                               backgroundColor: isPayout
-                                  ? Colors.greenAccent.withValues(alpha: 0.2)
-                                  : MColors.gold.withValues(alpha: 0.2),
+                                  ? Colors.green.withValues(alpha: 0.12)
+                                  : MColors.primary.withValues(alpha: 0.12),
                               child: Icon(
                                 isPayout ? Icons.payments : Icons.assignment_outlined,
                                 color: isPayout
-                                    ? Colors.greenAccent
-                                    : MColors.gold,
+                                    ? Colors.green.shade700
+                                    : MColors.primary,
                               ),
                             ),
                             const SizedBox(width: MSpacing.md),
@@ -336,11 +336,11 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(entry.reference,
-                                    style: MText.titleLg.copyWith(color: Colors.white)),
+                                    style: MText.titleLg.copyWith(color: MColors.textPrimary)),
                                 Text(
                                   '${entry.formattedDate} • ${entry.description}',
                                   style: MText.bodySm
-                                      .copyWith(color: Colors.white70),
+                                      .copyWith(color: MColors.textSecondary),
                                 ),
                               ],
                             ),
@@ -355,8 +355,8 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                                   : '+ Rs. ${entry.credit.toStringAsFixed(0)} (Produce)',
                               style: MText.bodyMd.copyWith(
                                 color: isPayout
-                                    ? Colors.greenAccent
-                                    : Colors.orangeAccent,
+                                    ? Colors.green.shade700
+                                    : Colors.orange.shade800,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -364,8 +364,9 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                               'Bal: Rs. ${entry.runningBalance.toStringAsFixed(0)}',
                               style: MText.bodySm.copyWith(
                                 color: entry.runningBalance > 0
-                                    ? MColors.gold
-                                    : Colors.white70,
+                                    ? MColors.primary
+                                    : MColors.textSecondary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -384,8 +385,8 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                 Expanded(
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white38),
+                      foregroundColor: MColors.primary,
+                      side: BorderSide(color: Colors.grey.shade400),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     onPressed: () => Navigator.push(

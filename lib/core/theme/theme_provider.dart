@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  static const _key = 'theme_mode';
   static const _brandKey = 'brand_color_value';
   static const _fontScaleKey = 'font_scale_value';
 
-  ThemeMode _mode = ThemeMode.dark; // Default to Deep Emerald Dark
+  // The application is permanently dedicated to Light Mode
+  ThemeMode get themeMode => ThemeMode.light;
   Color _primaryBrandColor = const Color(0xFF0F6B3C); // Default Emerald Green
   double _fontScale = 1.0; // 0.85 (Compact), 1.0 (Normal), 1.15 (Large), 1.3 (XL)
 
-  ThemeMode get themeMode => _mode;
   Color get primaryBrandColor => _primaryBrandColor;
   double get fontScale => _fontScale;
 
@@ -20,12 +19,6 @@ class ThemeProvider extends ChangeNotifier {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(_key);
-    _mode = switch (saved) {
-      'light' => ThemeMode.light,
-      'dark' => ThemeMode.dark,
-      _ => ThemeMode.dark,
-    };
 
     final colorVal = prefs.getInt(_brandKey);
     if (colorVal != null) {
@@ -37,10 +30,7 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   Future<void> setMode(ThemeMode mode) async {
-    _mode = mode;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, mode.name);
+    // No-op: The app is strictly Light Mode only
   }
 
   Future<void> setBrandColor(Color color) async {
