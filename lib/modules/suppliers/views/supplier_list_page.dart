@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
@@ -29,7 +30,7 @@ class _SupplierListPageState extends State<SupplierListPage> {
     final canAdd = shopCtx.hasPermission('manage_suppliers');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Suppliers')),
+      appBar: AppBar(title: Text(AppStrings.tr(context, 'farmers'))),
       floatingActionButton: canAdd
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.push(
@@ -37,7 +38,7 @@ class _SupplierListPageState extends State<SupplierListPage> {
                 MaterialPageRoute(builder: (_) => const AddSupplierPage()),
               ),
               icon: const Icon(Icons.person_add_alt_1_outlined),
-              label: const Text('Add Supplier'),
+              label: Text(AppStrings.tr(context, 'add_farmer')),
             )
           : null,
       body: Consumer<SupplierProvider>(
@@ -75,8 +76,8 @@ class _SupplierListPageState extends State<SupplierListPage> {
                     ? Center(
                         child: Text(
                           _searchCtrl.text.isEmpty
-                              ? 'No suppliers added yet.'
-                              : 'No suppliers match your search.',
+                              ? 'No farmers added yet.'
+                              : 'No farmers match your search.',
                           style: MText.bodyMd
                               .copyWith(color: MColors.textSecondary),
                         ),

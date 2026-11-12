@@ -467,7 +467,7 @@ class DashboardPage extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '${supplierProv.suppliers.length} Suppliers',
+                            '${supplierProv.suppliers.length} Farmers',
                             style: MText.caption.copyWith(color: MColors.textOnDarkSub, fontSize: 9.5),
                           ),
                         ],
@@ -545,8 +545,8 @@ class DashboardPage extends StatelessWidget {
                   ),
                 if (shopCtx.hasPermission('manage_suppliers'))
                   _ManageTile(
-                    icon: Icons.local_shipping_outlined,
-                    label: AppStrings.tr(context, 'suppliers'),
+                    icon: Icons.agriculture_rounded,
+                    label: AppStrings.tr(context, 'farmers'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(

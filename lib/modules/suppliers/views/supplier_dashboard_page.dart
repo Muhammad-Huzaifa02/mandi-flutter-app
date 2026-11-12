@@ -124,7 +124,7 @@ class SupplierDashboardPage extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 2),
-                          Text('Supplier to ${shop?.name ?? 'this shop'}',
+                          Text('Farmer (زمیندار) at ${shop?.name ?? 'this shop'}',
                               style: MText.bodySm
                                   .copyWith(color: MColors.textOnDarkSub)),
                         ],

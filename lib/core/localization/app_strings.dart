@@ -24,7 +24,10 @@ class AppStrings {
     // Manage Hub Modules
     'employees': {'en': 'Employees', 'ur': 'ملازمین'},
     'customers': {'en': 'Customers', 'ur': 'گاہک (خریدار)'},
-    'suppliers': {'en': 'Suppliers', 'ur': 'سپلائرز (زمیندار)'},
+    'suppliers': {'en': 'Farmers', 'ur': 'زمیندار (کسان)'},
+    'farmers': {'en': 'Farmers', 'ur': 'زمیندار (کسان)'},
+    'add_farmer': {'en': 'Add Farmer', 'ur': 'نیا زمیندار درج کریں'},
+    'farmer_details': {'en': 'Farmer Khata', 'ur': 'زمیندار کھاتہ'},
     'purchases': {'en': 'Purchases', 'ur': 'خریداری'},
     'consignments': {'en': 'Consignments', 'ur': 'امانت و آڑھت'},
     'products': {'en': 'Products', 'ur': 'اجناس و اشیاء'},

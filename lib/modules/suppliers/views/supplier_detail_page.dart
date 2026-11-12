@@ -118,7 +118,7 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
 
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Supplier profile updated.')),
+                  const SnackBar(content: Text('Farmer profile updated.')),
                 );
               }
             },
@@ -229,7 +229,7 @@ class _SupplierDetailPageState extends State<SupplierDetailPage> {
                               style: MText.bodySm
                                   .copyWith(color: Colors.white70)),
                         if (_supplier.productsSupplied.isNotEmpty)
-                          Text('Supplies: ${_supplier.productsSupplied}',
+                          Text('Crops: ${_supplier.productsSupplied}',
                               style: MText.bodySm
                                   .copyWith(color: Colors.white70)),
                       ],

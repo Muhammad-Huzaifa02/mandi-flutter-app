@@ -50,7 +50,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Supplier added & invitation sent.')),
+        const SnackBar(content: Text('Farmer added & invitation sent.')),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -66,7 +66,7 @@ class _AddSupplierPageState extends State<AddSupplierPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Supplier')),
+      appBar: AppBar(title: const Text('Add Farmer (نیا زمیندار)')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Form(
