@@ -19,7 +19,7 @@ class FarmerDetailPage extends StatefulWidget {
   final Farmer farmer;
   Farmer get supplier => farmer;
 
-  const FarmerDetailPage({
+  FarmerDetailPage({
     super.key,
     Farmer? farmer,
     Farmer? supplier,

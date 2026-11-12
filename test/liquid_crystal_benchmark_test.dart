@@ -1,7 +1,6 @@
 // Liquid Crystal Glassmorphism Benchmark & Direct Sunlight Test Suite
 // (*مائع کرسٹل تھیم کارکردگی و شدید دھوپ میں بینچ مارک ٹیسٹ*).
 
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
@@ -48,9 +47,9 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.dark(),
-          home: Scaffold(
+          home: const Scaffold(
             body: GlassCard(
-              child: const Text('Rs. 450,000 Payable'),
+              child: Text('Rs. 450,000 Payable'),
             ),
           ),
         ),
@@ -170,10 +169,11 @@ void main() {
       GlassCard.lowPowerMode = true;
 
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: GlassCard(
-              child: const Text('Low Power Active'),
+              isLowPower: true,
+              child: Text('Low Power Active'),
             ),
           ),
         ),
@@ -191,9 +191,9 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData.dark(),
-          home: Scaffold(
+          home: const Scaffold(
             body: GlassCard(
-              child: const Text('Sunlight Legible Price: Rs. 3,850'),
+              child: Text('Sunlight Legible Price: Rs. 3,850'),
             ),
           ),
         ),

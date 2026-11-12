@@ -12,7 +12,7 @@ class AddEditFarmerProductPage extends StatefulWidget {
   Farmer get supplier => farmer;
   final Product? product;
 
-  const AddEditFarmerProductPage({
+  AddEditFarmerProductPage({
     super.key,
     Farmer? farmer,
     Farmer? supplier,
