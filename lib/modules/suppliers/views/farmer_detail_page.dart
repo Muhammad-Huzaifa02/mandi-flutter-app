@@ -31,8 +31,6 @@ class FarmerDetailPage extends StatefulWidget {
 
 class _FarmerDetailPageState extends State<FarmerDetailPage> {
   late Farmer _farmer;
-  Farmer get _supplier => _farmer;
-  set _supplier(Farmer value) => _farmer = value;
 
   @override
   void initState() {
@@ -100,7 +98,7 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
               Navigator.pop(dialogCtx);
 
               setState(() {
-                _supplier = _supplier.copyWith(
+                _farmer = _farmer.copyWith(
                   name: newName,
                   phone: newPhone,
                   email: newEmail,
@@ -108,10 +106,10 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                 );
               });
 
-              if (_supplier.id.isNotEmpty) {
+              if (_farmer.id.isNotEmpty) {
                 await SupabaseService.updateShopMember(
-                  membershipId: _supplier.id,
-                  shopId: _supplier.shopId,
+                  membershipId: _farmer.id,
+                  shopId: _farmer.shopId,
                   data: {
                     'name': newName,
                     'phone': newPhone,
@@ -146,25 +144,25 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
         context.watch<PurchaseOrderProvider>().purchaseOrders;
     final myOrders = purchaseOrders
         .where((po) =>
-            po.supplierId == _supplier.id ||
+            po.supplierId == _farmer.id ||
             (po.supplierName.isNotEmpty &&
                 po.supplierName.toLowerCase() ==
-                    _supplier.name.toLowerCase()))
+                    _farmer.name.toLowerCase()))
         .toList();
 
     final allInvoices = context.watch<InvoiceProvider>().invoices
         .where((inv) =>
-            inv.supplierId == _supplier.id ||
+            inv.supplierId == _farmer.id ||
             (inv.supplierName.isNotEmpty &&
                 inv.supplierName.toLowerCase() ==
-                    _supplier.name.toLowerCase()))
+                    _farmer.name.toLowerCase()))
         .toList();
 
     final allPayments = context.watch<PaymentProvider>().payments
         .where((p) =>
             p.partyType.toLowerCase() == 'supplier' &&
-            (p.partyId == _supplier.id ||
-                (_supplier.userId != null && p.partyId == _supplier.userId)))
+            (p.partyId == _farmer.id ||
+                (_farmer.userId != null && p.partyId == _farmer.userId)))
         .toList();
 
     // DSA: Unified merge & Prefix-Sum progressive running balance calculation
@@ -214,8 +212,8 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                     radius: 28,
                     backgroundColor: MColors.gold.withValues(alpha: 0.2),
                     child: Text(
-                      _supplier.name.isNotEmpty
-                          ? _supplier.name[0].toUpperCase()
+                      _farmer.name.isNotEmpty
+                          ? _farmer.name[0].toUpperCase()
                           : 'F',
                       style: MText.titleLg.copyWith(color: MColors.gold),
                     ),
@@ -225,18 +223,18 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_supplier.name,
+                        Text(_farmer.name,
                             style: MText.titleLg.copyWith(color: Colors.white)),
-                        if (_supplier.phone.isNotEmpty)
-                          Text('Phone: ${_supplier.phone}',
+                        if (_farmer.phone.isNotEmpty)
+                          Text('Phone: ${_farmer.phone}',
                               style: MText.bodySm
                                   .copyWith(color: Colors.white70)),
-                        if (_supplier.email.isNotEmpty)
-                          Text('Email: ${_supplier.email}',
+                        if (_farmer.email.isNotEmpty)
+                          Text('Email: ${_farmer.email}',
                               style: MText.bodySm
                                   .copyWith(color: Colors.white70)),
-                        if (_supplier.productsSupplied.isNotEmpty)
-                          Text('Crops: ${_supplier.productsSupplied}',
+                        if (_farmer.productsSupplied.isNotEmpty)
+                          Text('Crops: ${_farmer.productsSupplied}',
                               style: MText.bodySm
                                   .copyWith(color: Colors.white70)),
                       ],
@@ -259,11 +257,11 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                       style: MText.labelMd.copyWith(color: Colors.white70)),
                   const SizedBox(height: MSpacing.xs),
                   Text(
-                    'Rs. ${_supplier.runningBalance.toStringAsFixed(0)}',
+                    'Rs. ${_farmer.runningBalance.toStringAsFixed(0)}',
                     style: MText.titleLg.copyWith(
-                      color: _supplier.runningBalance > 0
+                      color: _farmer.runningBalance > 0
                           ? MColors.danger
-                          : (_supplier.runningBalance < 0
+                          : (_farmer.runningBalance < 0
                               ? Colors.greenAccent
                               : Colors.white),
                       fontSize: 24,
@@ -271,9 +269,9 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                   ),
                   const SizedBox(height: MSpacing.xs),
                   Text(
-                    _supplier.runningBalance > 0
+                    _farmer.runningBalance > 0
                         ? 'Payable to farmer (واجب الادا رقم)'
-                        : (_supplier.runningBalance < 0
+                        : (_farmer.runningBalance < 0
                             ? 'Advance paid to farmer (پیشگی رقم)'
                             : 'Settled'),
                     style: MText.bodySm.copyWith(color: Colors.white70),
@@ -394,7 +392,7 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => AddPaymentPage(
-                          initialSupplier: _supplier,
+                          initialSupplier: _farmer,
                           initialPartyType: 'supplier',
                         ),
                       ),
@@ -404,8 +402,8 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                         style: TextStyle(fontSize: 13)),
                   ),
                 ),
-                if (_supplier.runningBalance > 0 &&
-                    _supplier.phone.isNotEmpty) ...[
+                if (_farmer.runningBalance > 0 &&
+                    _farmer.phone.isNotEmpty) ...[
                   const SizedBox(width: MSpacing.sm),
                   Expanded(
                     child: ElevatedButton.icon(
@@ -415,9 +413,9 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
                       ),
                       onPressed: () {
                         WhatsAppShareService.sharePaymentReminder(
-                          phone: _supplier.phone,
-                          name: _supplier.name,
-                          pendingBalance: _supplier.runningBalance,
+                          phone: _farmer.phone,
+                          name: _farmer.name,
+                          pendingBalance: _farmer.runningBalance,
                           shopName: shop?.name ?? 'Mandi Shop',
                         );
                       },

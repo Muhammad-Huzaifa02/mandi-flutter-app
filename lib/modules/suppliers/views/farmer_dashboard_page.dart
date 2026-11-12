@@ -45,6 +45,10 @@ class FarmerDashboardPage extends StatelessWidget {
       ),
     );
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final headingColor = isDark ? Colors.white : MColors.textPrimary;
+    final subtitleColor = isDark ? MColors.textOnDarkSub : MColors.textSecondary;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -98,7 +102,7 @@ class FarmerDashboardPage extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     'Welcome, ${member?.name ?? ''}',
-                                    style: MText.titleLg.copyWith(color: Colors.white),
+                                    style: MText.titleLg.copyWith(color: headingColor),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -111,7 +115,7 @@ class FarmerDashboardPage extends StatelessWidget {
                             const SizedBox(height: 2),
                             Text('Farmer (زمیندار) at ${shop?.name ?? 'this shop'}',
                                 style: MText.bodySm
-                                    .copyWith(color: MColors.textOnDarkSub)),
+                                    .copyWith(color: subtitleColor)),
                           ],
                         ),
                       ),
@@ -130,7 +134,9 @@ class FarmerDashboardPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Money Owed to Me by ${shop?.name ?? "Shop"}',
-                        style: MText.labelMd.copyWith(color: Colors.white70)),
+                        style: MText.labelMd.copyWith(
+                          color: isDark ? Colors.white70 : MColors.textSecondary,
+                        )),
                     const SizedBox(height: MSpacing.xs),
                     Text(
                       'Rs. ${myFarmer.runningBalance.toStringAsFixed(0)}',
@@ -181,7 +187,7 @@ class FarmerDashboardPage extends StatelessWidget {
 
               const SizedBox(height: MSpacing.xl),
               Text('Farmer & Crop Services (زمیندار سروسز)',
-                  style: MText.titleLg.copyWith(color: Colors.white)),
+                  style: MText.titleLg.copyWith(color: headingColor)),
               const SizedBox(height: MSpacing.sm),
               Wrap(
                 spacing: MSpacing.sm,
@@ -247,7 +253,7 @@ class FarmerDashboardPage extends StatelessWidget {
 
               const SizedBox(height: MSpacing.lg),
               Text('My Account (میرا کھاتہ)',
-                  style: MText.titleLg.copyWith(color: Colors.white)),
+                  style: MText.titleLg.copyWith(color: headingColor)),
               const SizedBox(height: MSpacing.sm),
               Wrap(
                 spacing: MSpacing.sm,
@@ -294,6 +300,10 @@ class _FarmerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = isDark ? MColors.gold : MColors.primary;
+    final textColor = isDark ? Colors.white : MColors.textPrimary;
+
     return GlassCard(
       onTap: onTap,
       borderRadius: AppDimensions.cardRadius,
@@ -309,12 +319,12 @@ class _FarmerTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: MColors.gold, size: 24),
+            Icon(icon, color: iconColor, size: 24),
             const SizedBox(height: 6),
             Text(
               label,
               style: MText.caption.copyWith(
-                color: Colors.white,
+                color: textColor,
                 fontWeight: FontWeight.w600,
                 fontSize: 11,
               ),

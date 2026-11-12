@@ -110,7 +110,12 @@ class CustomerDashboardPage extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   'Welcome, ${member?.name ?? ''}',
-                                  style: MText.titleLg.copyWith(color: Colors.white),
+                                  style: MText.titleLg.copyWith(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : MColors.textPrimary,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -121,9 +126,15 @@ class CustomerDashboardPage extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 2),
-                          Text('Customer at ${shop?.name ?? 'this shop'}',
-                              style: MText.bodySm
-                                  .copyWith(color: MColors.textOnDarkSub)),
+                          Text(
+                            'Customer at ${shop?.name ?? 'this shop'}',
+                            style: MText.bodySm.copyWith(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? MColors.textOnDarkSub
+                                  : MColors.textSecondary,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -144,15 +155,21 @@ class CustomerDashboardPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('My Outstanding Balance (بقایا رقم)',
-                          style: MText.labelMd.copyWith(color: Colors.white70)),
+                      Text(
+                        'My Outstanding Balance (بقایا رقم)',
+                        style: MText.labelMd.copyWith(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white70
+                              : MColors.textSecondary,
+                        ),
+                      ),
                       Icon(
                         myCustomer.runningBalance > 0
                             ? Icons.warning_amber_rounded
                             : Icons.check_circle_outline,
                         color: myCustomer.runningBalance > 0
                             ? MColors.gold
-                            : Colors.greenAccent,
+                            : Colors.green,
                         size: 20,
                       ),
                     ],
@@ -165,7 +182,9 @@ class CustomerDashboardPage extends StatelessWidget {
                       style: MText.titleLg.copyWith(
                         color: myCustomer.runningBalance > 0
                             ? MColors.danger
-                            : Colors.greenAccent,
+                            : (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.greenAccent
+                                : Colors.green.shade700),
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
@@ -176,15 +195,25 @@ class CustomerDashboardPage extends StatelessWidget {
                     myCustomer.runningBalance > 0
                         ? 'Payable to ${shop?.name ?? "Mandi Shop"}'
                         : 'No pending dues',
-                    style: MText.caption.copyWith(color: MColors.textOnDarkSub),
+                    style: MText.caption.copyWith(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? MColors.textOnDarkSub
+                          : MColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
             ),
 
             const SizedBox(height: MSpacing.xl),
-            Text('Quick Buyer Services (خریدار سہولیات)',
-                style: MText.titleLg.copyWith(color: Colors.white)),
+            Text(
+              'Quick Buyer Services (خریدار سہولیات)',
+              style: MText.titleLg.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : MColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: MSpacing.sm),
             Wrap(
               spacing: MSpacing.sm,
@@ -244,8 +273,14 @@ class CustomerDashboardPage extends StatelessWidget {
             ),
 
             const SizedBox(height: MSpacing.lg),
-            Text('My Account',
-                style: MText.titleLg.copyWith(color: Colors.white)),
+            Text(
+              'My Account',
+              style: MText.titleLg.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : MColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: MSpacing.sm),
             Wrap(
               spacing: MSpacing.sm,
@@ -317,12 +352,20 @@ class _CustomerTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: MColors.gold, size: 24),
+            Icon(
+              icon,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? MColors.gold
+                  : MColors.primary,
+              size: 24,
+            ),
             const SizedBox(height: 6),
             Text(
               label,
               style: MText.caption.copyWith(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : MColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 11,
               ),

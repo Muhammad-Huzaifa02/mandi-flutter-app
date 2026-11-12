@@ -288,6 +288,7 @@ class DashboardPage extends StatelessWidget {
       (sum, s) => sum + (s.runningBalance > 0 ? s.runningBalance : 0.0),
     );
     final totalInvoicesCount = invoiceProv.invoices.length;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -375,7 +376,12 @@ class DashboardPage extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 '${AppStrings.tr(context, 'welcome')}, ${shopCtx.currentMember?.name ?? ''}',
-                                style: MText.titleLg.copyWith(color: Colors.white),
+                                style: MText.titleLg.copyWith(
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : MColors.textPrimary,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -386,9 +392,15 @@ class DashboardPage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 2),
-                        Text('${AppStrings.tr(context, 'role')}: ${shopCtx.currentRole?.name ?? '—'}',
-                            style: MText.bodySm
-                                .copyWith(color: MColors.textOnDarkSub)),
+                        Text(
+                          '${AppStrings.tr(context, 'role')}: ${shopCtx.currentRole?.name ?? '—'}',
+                          style: MText.bodySm.copyWith(
+                            color: Theme.of(context).brightness ==
+                                    Brightness.dark
+                                ? MColors.textOnDarkSub
+                                : MColors.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -405,106 +417,151 @@ class DashboardPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: GlassCard(
-                      padding: const EdgeInsets.all(MSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: MSpacing.sm,
+                        vertical: MSpacing.md,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Receivables (وصولی)',
-                                style: MText.caption.copyWith(color: Colors.white70),
+                              Expanded(
+                                child: Text(
+                                  'Receivables',
+                                  style: MText.caption.copyWith(
+                                    color: isDark ? Colors.white70 : MColors.textSecondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              const Icon(Icons.trending_up, color: Colors.greenAccent, size: 16),
+                              const Icon(Icons.trending_up, color: Colors.greenAccent, size: 14),
                             ],
                           ),
                           const SizedBox(height: 4),
                           FittedBox(
                             fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
                             child: Text(
                               'Rs. ${totalReceivables.toStringAsFixed(0)}',
                               style: MText.titleMd.copyWith(
-                                color: Colors.white,
+                                color: isDark ? Colors.white : MColors.textPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           Text(
                             '${customerProv.customers.length} Customers',
-                            style: MText.caption.copyWith(color: MColors.textOnDarkSub, fontSize: 9.5),
+                            style: MText.caption.copyWith(
+                              color: isDark ? MColors.textOnDarkSub : MColors.textSecondary,
+                              fontSize: 9.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: MSpacing.sm),
+                  const SizedBox(width: MSpacing.xs),
                   Expanded(
                     child: GlassCard(
-                      padding: const EdgeInsets.all(MSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: MSpacing.sm,
+                        vertical: MSpacing.md,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Payables (ادائیگی)',
-                                style: MText.caption.copyWith(color: Colors.white70),
+                              Expanded(
+                                child: Text(
+                                  'Payables',
+                                  style: MText.caption.copyWith(
+                                    color: isDark ? Colors.white70 : MColors.textSecondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              const Icon(Icons.trending_down, color: Colors.amberAccent, size: 16),
+                              const Icon(Icons.trending_down, color: Colors.amberAccent, size: 14),
                             ],
                           ),
                           const SizedBox(height: 4),
                           FittedBox(
                             fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
                             child: Text(
                               'Rs. ${totalPayables.toStringAsFixed(0)}',
                               style: MText.titleMd.copyWith(
-                                color: Colors.white,
+                                color: isDark ? Colors.white : MColors.textPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           Text(
                             '${farmerProv.farmers.length} Farmers',
-                            style: MText.caption.copyWith(color: MColors.textOnDarkSub, fontSize: 9.5),
+                            style: MText.caption.copyWith(
+                              color: isDark ? MColors.textOnDarkSub : MColors.textSecondary,
+                              fontSize: 9.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: MSpacing.sm),
+                  const SizedBox(width: MSpacing.xs),
                   Expanded(
                     child: GlassCard(
-                      padding: const EdgeInsets.all(MSpacing.md),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: MSpacing.sm,
+                        vertical: MSpacing.md,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Bills (بلز)',
-                                style: MText.caption.copyWith(color: Colors.white70),
+                              Expanded(
+                                child: Text(
+                                  'Invoices',
+                                  style: MText.caption.copyWith(
+                                    color: isDark ? Colors.white70 : MColors.textSecondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              const Icon(Icons.receipt, color: Colors.lightBlueAccent, size: 16),
+                              const Icon(Icons.receipt, color: Colors.lightBlueAccent, size: 14),
                             ],
                           ),
                           const SizedBox(height: 4),
                           FittedBox(
                             fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
                             child: Text(
-                              '$totalInvoicesCount Invoices',
+                              '$totalInvoicesCount Bills',
                               style: MText.titleMd.copyWith(
-                                color: Colors.white,
+                                color: isDark ? Colors.white : MColors.textPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           Text(
                             'This Season',
-                            style: MText.caption.copyWith(color: MColors.textOnDarkSub, fontSize: 9.5),
+                            style: MText.caption.copyWith(
+                              color: isDark ? MColors.textOnDarkSub : MColors.textSecondary,
+                              fontSize: 9.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -515,8 +572,14 @@ class DashboardPage extends StatelessWidget {
             ],
 
             const SizedBox(height: MSpacing.lg),
-            Text(AppStrings.tr(context, 'manage'),
-                style: MText.titleLg.copyWith(color: Colors.white)),
+            Text(
+              AppStrings.tr(context, 'manage'),
+              style: MText.titleLg.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : MColors.textPrimary,
+              ),
+            ),
             const SizedBox(height: MSpacing.sm),
 
             Wrap(
@@ -920,12 +983,20 @@ class _ManageTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: MColors.gold, size: 24),
+            Icon(
+              icon,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? MColors.gold
+                  : MColors.primary,
+              size: 24,
+            ),
             const SizedBox(height: 6),
             Text(
               label,
               style: MText.caption.copyWith(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : MColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 11,
               ),
