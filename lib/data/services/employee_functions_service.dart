@@ -62,6 +62,23 @@ class AccountInviteService {
         'extra': {'openingBalance': openingBalance},
       });
 
+  static Future<void> inviteFarmer({
+    required String shopId,
+    required String name,
+    required String phone,
+    required String email,
+    String? productsSupplied,
+    double? openingBalance,
+  }) =>
+      inviteSupplier(
+        shopId: shopId,
+        name: name,
+        phone: phone,
+        email: email,
+        productsSupplied: productsSupplied,
+        openingBalance: openingBalance,
+      );
+
   static Future<void> inviteSupplier({
     required String shopId,
     required String name,

@@ -158,7 +158,7 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
                     ),
                     ButtonSegment(
                       value: 'supplier',
-                      label: Text('Supplier Payment'),
+                      label: Text('Farmer Payment (زمیندار)'),
                       icon: Icon(Icons.upload_outlined),
                     ),
                   ],
@@ -194,7 +194,7 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
                 DropdownButtonFormField<Supplier>(
                   initialValue: _selectedSupplier,
                   decoration:
-                      const InputDecoration(labelText: 'Select Supplier *'),
+                      const InputDecoration(labelText: 'Select Farmer (زمیندار) *'),
                   items: suppliers
                       .map((s) => DropdownMenuItem(
                             value: s,
@@ -204,7 +204,7 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
                       .toList(),
                   onChanged: (s) => setState(() => _selectedSupplier = s),
                   validator: (v) =>
-                      v == null ? 'Please select a supplier' : null,
+                      v == null ? 'Please select a farmer' : null,
                 ),
 
               const SizedBox(height: MSpacing.md),

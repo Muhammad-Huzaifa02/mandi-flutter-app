@@ -39,7 +39,7 @@ class _AddFarmerPageState extends State<AddFarmerPage> {
 
     try {
       final balance = double.tryParse(_openingBalance.text.trim());
-      await AccountInviteService.inviteSupplier(
+      await AccountInviteService.inviteFarmer(
         shopId: shopId,
         name: _name.text.trim(),
         phone: _phone.text.trim(),

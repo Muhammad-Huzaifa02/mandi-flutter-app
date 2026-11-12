@@ -15,7 +15,7 @@ import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/employees/providers/employee_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
-import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
+import 'package:mandi/modules/suppliers/providers/farmer_provider.dart';
 import 'package:mandi/modules/products/providers/product_provider.dart';
 import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
 import 'package:mandi/modules/expenses/providers/expense_provider.dart';

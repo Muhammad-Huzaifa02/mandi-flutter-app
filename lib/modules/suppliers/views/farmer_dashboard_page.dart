@@ -4,13 +4,13 @@ import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
-import 'package:mandi/data/models/supplier_model.dart';
+import 'package:mandi/data/models/farmer_model.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
-import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
+import 'package:mandi/modules/suppliers/providers/farmer_provider.dart';
 import 'package:mandi/modules/suppliers/views/farmer_detail_page.dart';
 import 'package:mandi/modules/products/views/product_list_page.dart';
-import 'package:mandi/modules/products/views/add_edit_supplier_product_page.dart';
+import 'package:mandi/modules/products/views/add_edit_farmer_product_page.dart';
 import 'package:mandi/modules/purchase_orders/views/purchase_order_list_page.dart';
 import 'package:mandi/modules/payments/views/payment_list_page.dart';
 import 'package:mandi/modules/farmer_passbook/pages/farmer_passbook_page.dart';
@@ -30,13 +30,13 @@ class FarmerDashboardPage extends StatelessWidget {
     final shop = shopCtx.currentShop;
     final member = shopCtx.currentMember;
 
-    final suppliers = context.watch<SupplierProvider>().suppliers;
-    final mySupplier = suppliers.firstWhere(
+    final farmers = context.watch<FarmerProvider>().farmers;
+    final myFarmer = farmers.firstWhere(
       (s) =>
           s.userId == auth.uid ||
           (member?.email.isNotEmpty == true &&
               s.email.toLowerCase() == member!.email.toLowerCase()),
-      orElse: () => Supplier(
+      orElse: () => Farmer(
         id: member?.id ?? '',
         shopId: shopCtx.currentShopId ?? '',
         name: member?.name ?? 'Farmer',
@@ -70,7 +70,7 @@ class FarmerDashboardPage extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => FarmerDetailPage(supplier: mySupplier),
+                    builder: (_) => FarmerDetailPage(supplier: myFarmer),
                   ),
                 ),
                 borderRadius: BorderRadius.circular(18),
@@ -133,15 +133,15 @@ class FarmerDashboardPage extends StatelessWidget {
                         style: MText.labelMd.copyWith(color: Colors.white70)),
                     const SizedBox(height: MSpacing.xs),
                     Text(
-                      'Rs. ${mySupplier.runningBalance.toStringAsFixed(0)}',
+                      'Rs. ${myFarmer.runningBalance.toStringAsFixed(0)}',
                       style: MText.titleLg.copyWith(
-                        color: mySupplier.runningBalance > 0
+                        color: myFarmer.runningBalance > 0
                             ? MColors.danger
                             : Colors.greenAccent,
                         fontSize: 24,
                       ),
                     ),
-                    if (mySupplier.runningBalance > 0 &&
+                    if (myFarmer.runningBalance > 0 &&
                         (shop?.phone.isNotEmpty == true ||
                             shop?.whatsapp.isNotEmpty == true)) ...[
                       const SizedBox(height: MSpacing.md),
@@ -162,7 +162,7 @@ class FarmerDashboardPage extends StatelessWidget {
                             WhatsAppShareService.sharePaymentReminder(
                               phone: targetPhone,
                               name: shop?.name ?? 'Shop Owner',
-                              pendingBalance: mySupplier.runningBalance,
+                              pendingBalance: myFarmer.runningBalance,
                               shopName: shop?.name ?? 'Mandi Shop',
                             );
                           },
@@ -221,7 +221,7 @@ class FarmerDashboardPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            AddEditSupplierProductPage(supplier: mySupplier),
+                            AddEditFarmerProductPage(farmer: myFarmer),
                       ),
                     ),
                   ),
@@ -267,7 +267,7 @@ class FarmerDashboardPage extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => FarmerDetailPage(supplier: mySupplier),
+                        builder: (_) => FarmerDetailPage(farmer: myFarmer),
                       ),
                     ),
                   ),

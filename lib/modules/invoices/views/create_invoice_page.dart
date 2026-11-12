@@ -455,8 +455,8 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                   ),
                   ButtonSegment(
                     value: 'supplier',
-                    label: Text('For Supplier (Aawak)'),
-                    icon: Icon(Icons.local_shipping_outlined),
+                    label: Text('For Farmer (Zamindar / Aawak)'),
+                    icon: Icon(Icons.agriculture_outlined),
                   ),
                 ],
                 selected: {_invoiceType},
@@ -504,9 +504,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 DropdownButtonFormField<Supplier>(
                   initialValue: _selectedSupplier,
                   decoration: const InputDecoration(
-                    labelText: 'Supplier / Farmer (Aawak Consignment) *',
+                    labelText: 'Farmer / Zamindar (Aawak Consignment) *',
                   ),
-                  hint: const Text('Select Supplier / Farmer'),
+                  hint: const Text('Select Farmer (زمیندار)'),
                   items: suppliers
                       .map((s) => DropdownMenuItem(
                             value: s,
@@ -515,7 +515,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       .toList(),
                   onChanged: (s) => setState(() => _selectedSupplier = s),
                   validator: (v) =>
-                      v == null ? 'Please select a supplier' : null,
+                      v == null ? 'Please select a farmer' : null,
                 ),
 
               const SizedBox(height: MSpacing.lg),
@@ -705,7 +705,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     if (_invoiceType == 'supplier' && _selectedSupplier != null) ...[
                       const Divider(height: MSpacing.md),
                       _SummaryRow(
-                        label: 'Net Payout to Supplier:',
+                        label: 'Net Payout to Farmer (صافی رقم):',
                         value: 'Rs. ${_netSupplierPayout.toStringAsFixed(0)}',
                         color: Colors.green,
                         isBold: true,

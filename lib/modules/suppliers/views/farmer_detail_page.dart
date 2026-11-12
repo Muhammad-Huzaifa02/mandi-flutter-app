@@ -6,7 +6,7 @@ import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/ledger_pdf_generator.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/core/utils/ledger_calculator.dart';
-import 'package:mandi/data/models/supplier_model.dart';
+import 'package:mandi/data/models/farmer_model.dart';
 import 'package:mandi/data/models/ledger_entry_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -16,28 +16,35 @@ import 'package:mandi/modules/payments/providers/payment_provider.dart';
 import 'package:mandi/modules/payments/views/add_payment_page.dart';
 
 class FarmerDetailPage extends StatefulWidget {
-  final Supplier supplier;
+  final Farmer farmer;
+  Farmer get supplier => farmer;
 
-  const FarmerDetailPage({super.key, required this.supplier});
+  const FarmerDetailPage({
+    super.key,
+    Farmer? farmer,
+    Farmer? supplier,
+  }) : farmer = (farmer ?? supplier)!;
 
   @override
   State<FarmerDetailPage> createState() => _FarmerDetailPageState();
 }
 
 class _FarmerDetailPageState extends State<FarmerDetailPage> {
-  late Supplier _supplier;
+  late Farmer _farmer;
+  Farmer get _supplier => _farmer;
+  set _supplier(Farmer value) => _farmer = value;
 
   @override
   void initState() {
     super.initState();
-    _supplier = widget.supplier;
+    _farmer = widget.farmer;
   }
 
   void _editProfileDialog() {
-    final nameCtrl = TextEditingController(text: _supplier.name);
-    final phoneCtrl = TextEditingController(text: _supplier.phone);
-    final emailCtrl = TextEditingController(text: _supplier.email);
-    final productsCtrl = TextEditingController(text: _supplier.productsSupplied);
+    final nameCtrl = TextEditingController(text: _farmer.name);
+    final phoneCtrl = TextEditingController(text: _farmer.phone);
+    final emailCtrl = TextEditingController(text: _farmer.email);
+    final productsCtrl = TextEditingController(text: _farmer.productsSupplied);
 
     showDialog(
       context: context,
@@ -161,8 +168,8 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
         .toList();
 
     // DSA: Unified merge & Prefix-Sum progressive running balance calculation
-    final ledgerEntries = LedgerCalculator.buildSupplierLedger(
-      openingBalance: _supplier.openingBalance,
+    final ledgerEntries = LedgerCalculator.buildFarmerLedger(
+      openingBalance: _farmer.openingBalance,
       purchaseOrders: myOrders,
       consignmentInvoices: allInvoices,
       payments: allPayments,
@@ -170,7 +177,7 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_supplier.name),
+        title: Text(_farmer.name),
         actions: [
           if (canEdit)
             IconButton(
@@ -182,8 +189,8 @@ class _FarmerDetailPageState extends State<FarmerDetailPage> {
             icon: const Icon(Icons.print_outlined),
             tooltip: 'Print Ledger Statement PDF',
             onPressed: () {
-              LedgerPdfGenerator.printSupplierLedger(
-                supplier: _supplier,
+              LedgerPdfGenerator.printFarmerLedger(
+                farmer: _farmer,
                 shopName: shop?.name ?? 'Mandi Shop',
                 shopPhone: shop?.phone,
                 shopCity: shop?.city,

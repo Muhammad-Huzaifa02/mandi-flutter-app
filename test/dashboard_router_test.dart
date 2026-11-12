@@ -9,8 +9,10 @@ void main() {
     test('customer -> CustomerDashboardPage',
         () => expect(dashboardForRole('customer'), isA<CustomerDashboardPage>()));
 
-    test('supplier -> FarmerDashboardPage',
-        () => expect(dashboardForRole('supplier'), isA<FarmerDashboardPage>()));
+    test('supplier / farmer -> FarmerDashboardPage', () {
+      expect(dashboardForRole('supplier'), isA<FarmerDashboardPage>());
+      expect(dashboardForRole('farmer'), isA<FarmerDashboardPage>());
+    });
 
     test('every internal staff role -> DashboardPage', () {
       for (final roleId in [

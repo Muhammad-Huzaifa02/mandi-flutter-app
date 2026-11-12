@@ -41,7 +41,7 @@ class WelcomePage extends StatelessWidget {
                   _RoleChip('Shop Owners'),
                   _RoleChip('Staff'),
                   _RoleChip('Customers'),
-                  _RoleChip('Suppliers'),
+                  _RoleChip('Farmers'),
                 ],
               ),
               const Spacer(flex: 3),

@@ -36,7 +36,8 @@ class _ProductListPageState extends State<ProductListPage> {
     final isCustomerRole = shopCtx.currentRole?.id == 'customer' ||
         shopCtx.currentRole?.name.toLowerCase() == 'customer';
     final isSupplierRole = shopCtx.currentRole?.id == 'supplier' ||
-        shopCtx.currentRole?.name.toLowerCase() == 'supplier';
+        shopCtx.currentRole?.name.toLowerCase() == 'supplier' ||
+        shopCtx.currentRole?.name.toLowerCase() == 'farmer';
 
     final activeSupplierId =
         widget.supplierFilterId ?? (isSupplierRole ? member?.id : null);

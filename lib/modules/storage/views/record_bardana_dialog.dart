@@ -286,7 +286,7 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                     ),
                     const SizedBox(width: 8),
                     ChoiceChip(
-                      label: const Text('Supplier / Farmer (زمیندار)'),
+                      label: const Text('Farmer (زمیندار)'),
                       selected: _partyType == 'supplier',
                       onSelected: (v) {
                         if (v) {

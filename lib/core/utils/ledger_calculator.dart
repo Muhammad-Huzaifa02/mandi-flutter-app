@@ -192,6 +192,20 @@ class LedgerCalculator {
     return finalizedLedger;
   }
 
+  /// Builds a chronologically sorted, progressive running-balance ledger for a Farmer (Zamindar).
+  static List<LedgerEntry> buildFarmerLedger({
+    required double openingBalance,
+    required List<PurchaseOrder> purchaseOrders,
+    required List<Invoice> consignmentInvoices,
+    required List<Payment> payments,
+  }) =>
+      buildSupplierLedger(
+        openingBalance: openingBalance,
+        purchaseOrders: purchaseOrders,
+        consignmentInvoices: consignmentInvoices,
+        payments: payments,
+      );
+
   /// Calculates summary financial totals across the ledger timeline.
   static LedgerSummary calculateSummary(
     double openingBalance,

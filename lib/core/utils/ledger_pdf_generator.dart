@@ -4,6 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import 'package:mandi/data/models/customer_model.dart';
+import 'package:mandi/data/models/farmer_model.dart';
 import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/data/models/ledger_entry_model.dart';
 import 'package:mandi/core/utils/ledger_calculator.dart';
@@ -581,4 +582,36 @@ class LedgerPdfGenerator {
       ),
     );
   }
+
+  /// Generates a complete itemized PDF Account Statement for a Farmer.
+  static Future<Uint8List> generateFarmerLedgerPdf({
+    required Farmer farmer,
+    required String shopName,
+    String? shopPhone,
+    String? shopCity,
+    List<LedgerEntry> entries = const [],
+  }) =>
+      generateSupplierLedgerPdf(
+        supplier: farmer,
+        shopName: shopName,
+        shopPhone: shopPhone,
+        shopCity: shopCity,
+        entries: entries,
+      );
+
+  /// Prints or shares a Farmer Ledger PDF.
+  static Future<void> printFarmerLedger({
+    required Farmer farmer,
+    required String shopName,
+    String? shopPhone,
+    String? shopCity,
+    List<LedgerEntry> entries = const [],
+  }) =>
+      printSupplierLedger(
+        supplier: farmer,
+        shopName: shopName,
+        shopPhone: shopPhone,
+        shopCity: shopCity,
+        entries: entries,
+      );
 }

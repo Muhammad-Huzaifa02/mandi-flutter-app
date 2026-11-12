@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
-import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
+import 'package:mandi/modules/suppliers/providers/farmer_provider.dart';
 import 'package:mandi/modules/suppliers/views/add_farmer_page.dart';
 import 'package:mandi/modules/suppliers/views/farmer_detail_page.dart';
 
@@ -41,13 +41,13 @@ class _FarmerListPageState extends State<FarmerListPage> {
               label: Text(AppStrings.tr(context, 'add_farmer')),
             )
           : null,
-      body: Consumer<SupplierProvider>(
+      body: Consumer<FarmerProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final suppliers = provider.search(_searchCtrl.text);
+          final farmers = provider.search(_searchCtrl.text);
 
           return Column(
             children: [
@@ -72,7 +72,7 @@ class _FarmerListPageState extends State<FarmerListPage> {
                 ),
               ),
               Expanded(
-                child: suppliers.isEmpty
+                child: farmers.isEmpty
                     ? Center(
                         child: Text(
                           _searchCtrl.text.isEmpty
@@ -84,11 +84,11 @@ class _FarmerListPageState extends State<FarmerListPage> {
                       )
                     : ListView.separated(
                         padding: const EdgeInsets.all(MSpacing.md),
-                        itemCount: suppliers.length,
+                        itemCount: farmers.length,
                         separatorBuilder: (_, __) =>
                             const SizedBox(height: MSpacing.sm),
                         itemBuilder: (context, i) {
-                          final s = suppliers[i];
+                          final s = farmers[i];
                           return Card(
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -129,7 +129,7 @@ class _FarmerListPageState extends State<FarmerListPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
-                                      FarmerDetailPage(supplier: s),
+                                      FarmerDetailPage(farmer: s),
                                 ),
                               ),
                             ),

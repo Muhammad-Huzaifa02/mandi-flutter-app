@@ -22,6 +22,7 @@ Widget dashboardForRole(String? roleId) {
     case 'customer':
       return const CustomerDashboardPage();
     case 'supplier':
+    case 'farmer':
       return const FarmerDashboardPage();
     default:
       return const DashboardPage();

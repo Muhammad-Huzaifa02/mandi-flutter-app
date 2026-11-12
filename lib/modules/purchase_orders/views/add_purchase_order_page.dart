@@ -126,8 +126,9 @@ class _AddPurchaseOrderPageState extends State<AddPurchaseOrderPage> {
             children: [
               DropdownButtonFormField<Supplier>(
                 initialValue: _selectedSupplier,
-                decoration: const InputDecoration(labelText: 'Supplier'),
-                hint: const Text('Select Supplier (Optional)'),
+                decoration:
+                    const InputDecoration(labelText: 'Farmer / Zamindar (زمیندار)'),
+                hint: const Text('Select Farmer (Optional)'),
                 items: suppliers
                     .map((s) => DropdownMenuItem(
                           value: s,

@@ -14,7 +14,7 @@ import 'package:mandi/modules/suppliers/views/farmer_list_page.dart';
 import 'package:mandi/modules/products/views/product_list_page.dart';
 import 'package:mandi/modules/invoices/views/invoice_list_page.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
-import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
+import 'package:mandi/modules/suppliers/providers/farmer_provider.dart';
 import 'package:mandi/modules/invoices/providers/invoice_provider.dart';
 import 'package:mandi/modules/expenses/views/expense_list_page.dart';
 import 'package:mandi/modules/payments/views/payment_list_page.dart';
@@ -276,14 +276,14 @@ class DashboardPage extends StatelessWidget {
     final shop = shopCtx.currentShop;
 
     final customerProv = context.watch<CustomerProvider>();
-    final supplierProv = context.watch<SupplierProvider>();
+    final farmerProv = context.watch<FarmerProvider>();
     final invoiceProv = context.watch<InvoiceProvider>();
 
     final totalReceivables = customerProv.customers.fold<double>(
       0.0,
       (sum, c) => sum + (c.runningBalance > 0 ? c.runningBalance : 0.0),
     );
-    final totalPayables = supplierProv.suppliers.fold<double>(
+    final totalPayables = farmerProv.farmers.fold<double>(
       0.0,
       (sum, s) => sum + (s.runningBalance > 0 ? s.runningBalance : 0.0),
     );
@@ -467,7 +467,7 @@ class DashboardPage extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '${supplierProv.suppliers.length} Farmers',
+                            '${farmerProv.farmers.length} Farmers',
                             style: MText.caption.copyWith(color: MColors.textOnDarkSub, fontSize: 9.5),
                           ),
                         ],
