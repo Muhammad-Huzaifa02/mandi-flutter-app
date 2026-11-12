@@ -10,7 +10,7 @@ import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/employees/views/employee_list_page.dart';
 import 'package:mandi/modules/customers/views/customer_list_page.dart';
-import 'package:mandi/modules/suppliers/views/supplier_list_page.dart';
+import 'package:mandi/modules/suppliers/views/farmer_list_page.dart';
 import 'package:mandi/modules/products/views/product_list_page.dart';
 import 'package:mandi/modules/invoices/views/invoice_list_page.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
@@ -550,7 +550,7 @@ class DashboardPage extends StatelessWidget {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const SupplierListPage()),
+                          builder: (_) => const FarmerListPage()),
                     ),
                   ),
                 if (shopCtx.hasPermission('create_purchase') ||

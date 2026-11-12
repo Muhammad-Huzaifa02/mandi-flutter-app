@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mandi/modules/home/views/dashboard_page.dart';
 import 'package:mandi/modules/customers/views/customer_dashboard_page.dart';
-import 'package:mandi/modules/suppliers/views/supplier_dashboard_page.dart';
+import 'package:mandi/modules/suppliers/views/farmer_dashboard_page.dart';
 
 /// Maps the active shop membership's role to the dashboard that role
 /// actually sees. This is the piece AppRoot was missing — it always
@@ -22,7 +22,7 @@ Widget dashboardForRole(String? roleId) {
     case 'customer':
       return const CustomerDashboardPage();
     case 'supplier':
-      return const SupplierDashboardPage();
+      return const FarmerDashboardPage();
     default:
       return const DashboardPage();
   }
