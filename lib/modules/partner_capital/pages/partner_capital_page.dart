@@ -8,6 +8,7 @@ import 'package:printing/printing.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/partner_capital_model.dart';
 import 'package:mandi/modules/partner_capital/providers/partner_capital_provider.dart';
 import 'package:mandi/modules/partner_capital/dialogs/add_partner_dialog.dart';
@@ -50,13 +51,14 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
     final partners = provider.partners;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
           AppStrings.tr(context, 'partner_capital_title'),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -66,9 +68,10 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      body: LiquidCrystalBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Top KPI Cards Row
@@ -288,7 +291,8 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildPartnerCard(BuildContext context, ShopPartnerModel partner) {

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/gate_pass_model.dart';
 import 'package:mandi/modules/gate_pass/providers/gate_pass_provider.dart';
 import 'package:mandi/modules/gate_pass/dialogs/issue_gate_pass_dialog.dart';
@@ -65,12 +66,14 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
     final gateProvider = context.watch<GatePassProvider>();
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
           AppStrings.tr(context, 'gate_pass_title'),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
@@ -95,16 +98,18 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
           ),
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // Tab 1: Live Unloading Board
-          _buildUnloadingBoardTab(context, gateProvider, shopName),
-          // Tab 2: Inward Tokens Register
-          _buildInwardTokensTab(context, gateProvider, shopName),
-          // Tab 3: Gate-Out Clearance Pass
-          _buildGateOutTab(context, gateProvider, shopName),
-        ],
+      body: LiquidCrystalBackground(
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            // Tab 1: Live Unloading Board
+            _buildUnloadingBoardTab(context, gateProvider, shopName),
+            // Tab 2: Inward Tokens Register
+            _buildInwardTokensTab(context, gateProvider, shopName),
+            // Tab 3: Gate-Out Clearance Pass
+            _buildGateOutTab(context, gateProvider, shopName),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showDialog(

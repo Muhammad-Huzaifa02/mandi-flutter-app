@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/modules/farmer_passbook/providers/farmer_passbook_provider.dart';
 import 'package:mandi/modules/suppliers/providers/supplier_provider.dart';
@@ -101,13 +102,14 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
     final isPayable = passbookProvider.runningBalance >= 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
           AppStrings.tr(context, 'farmer_passbook_title'),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -122,9 +124,10 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      body: LiquidCrystalBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Farmer Selector Row
@@ -477,7 +480,8 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildMetricCard({

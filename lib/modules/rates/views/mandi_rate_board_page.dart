@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/mandi_rate_board_pdf_generator.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
+import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/mandi_rate_model.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/modules/rates/providers/mandi_rate_provider.dart';
@@ -186,12 +187,12 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
     final totalArrivals =
         rates.fold(0.0, (sum, r) => sum + r.arrivalsMaunds);
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Mandi Rate Board (منڈی ریٹ لسٹ و براڈکاسٹ)'),
-        backgroundColor: MColors.primary,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -222,16 +223,7 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isDark
-                ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                : [const Color(0xFFF8FAFC), const Color(0xFFF1F5F9)],
-          ),
-        ),
+      body: LiquidCrystalBackground(
         child: Column(
           children: [
             // Top Controls Bar (Date Picker, Search, Trend Filter)

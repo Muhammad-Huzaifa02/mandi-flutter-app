@@ -9,6 +9,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/modules/auction_boli/providers/auction_boli_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
@@ -225,14 +226,14 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
     final boliProvider = context.watch<AuctionBoliProvider>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A), // Deep Slate Navy TV Theme
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
           AppStrings.tr(context, 'auction_terminal_title'),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        backgroundColor: const Color(0xFF1E293B),
-        elevation: 2,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.add_box_outlined, color: Colors.amberAccent),
@@ -246,8 +247,9 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
+      body: LiquidCrystalBackground(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
           final isWide = constraints.maxWidth > 850;
 
           return Padding(
@@ -281,7 +283,8 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
           );
         },
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildMainBiddingFloor(

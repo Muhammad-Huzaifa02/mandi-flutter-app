@@ -8,6 +8,7 @@ import 'package:printing/printing.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/warehouse_grid_model.dart';
 import 'package:mandi/modules/warehouse_grid/providers/warehouse_grid_provider.dart';
 import 'package:mandi/modules/warehouse_grid/dialogs/store_crop_in_bay_dialog.dart';
@@ -55,13 +56,14 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
     final selectedBay = provider.selectedBay;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(
           AppStrings.tr(context, 'warehouse_grid_title'),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        backgroundColor: Colors.teal[800],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -71,9 +73,10 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      body: LiquidCrystalBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Chamber Selector Row
@@ -230,7 +233,8 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildBayCell(BuildContext context, WarehouseGridBayModel bay,
