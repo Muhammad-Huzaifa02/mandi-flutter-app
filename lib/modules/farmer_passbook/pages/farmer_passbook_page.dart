@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/supplier_model.dart';
 import 'package:mandi/modules/farmer_passbook/providers/farmer_passbook_provider.dart';
@@ -439,39 +440,42 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (ctx, idx) {
                   final item = passbookProvider.deliveries[idx];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.commodity,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Date: ${item.dateStr} • Rate: Rs. ${_currencyFmt.format(item.ratePerMaund)} / Md',
-                              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              '${item.maunds.toStringAsFixed(1)} Maunds',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal),
-                            ),
-                            Text(
-                              'Net: Rs. ${_currencyFmt.format(item.netPayable)}',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ],
+                  return InkWell(
+                    onTap: () => _showLotDetailsBottomSheet(context, item),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.commodity,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Date: ${item.dateStr} • Rate: Rs. ${_currencyFmt.format(item.ratePerMaund)} / Md',
+                                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '${item.maunds.toStringAsFixed(1)} Maunds',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.teal),
+                              ),
+                              Text(
+                                'Net: Rs. ${_currencyFmt.format(item.netPayable)}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -518,6 +522,95 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                 ),
                 Text(subtitle, style: const TextStyle(color: Colors.black38, fontSize: 10)),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLotDetailsBottomSheet(
+      BuildContext context, FarmerCropDeliveryEntry item) {
+    showGlassBottomSheet(
+      context: context,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.receipt_long_rounded,
+                    color: Color(0xFFD4A62A)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${item.commodity} - نیلامی پرچی',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Text(
+                  item.dateStr,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Divider(color: Colors.white24, height: 1),
+            const SizedBox(height: 12),
+            _buildDetailRow('کل وزن (Weight):',
+                '${item.maunds.toStringAsFixed(1)} Maunds (${item.weightKg.toStringAsFixed(0)} KG)'),
+            _buildDetailRow('ریٹ فی من (Rate):',
+                'Rs. ${_currencyFmt.format(item.ratePerMaund)} / من'),
+            _buildDetailRow('کل بولی رقم (Gross):',
+                'Rs. ${_currencyFmt.format(item.grossAmount)}'),
+            _buildDetailRow('منہائی و کمیشن (Deductions):',
+                '- Rs. ${_currencyFmt.format(item.deductions)}',
+                isDanger: true),
+            const Divider(color: Colors.white24, height: 16),
+            _buildDetailRow('خالص قابل ادا (Net Payable):',
+                'Rs. ${_currencyFmt.format(item.netPayable)}',
+                isHighlight: true),
+            const SizedBox(height: 18),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F6B3C),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('بند کریں (Close)'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value,
+      {bool isDanger = false, bool isHighlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isHighlight ? 16 : 13,
+              fontWeight: isHighlight ? FontWeight.bold : FontWeight.w600,
+              color: isDanger
+                  ? Colors.redAccent
+                  : (isHighlight ? const Color(0xFFD4A62A) : Colors.white),
             ),
           ),
         ],

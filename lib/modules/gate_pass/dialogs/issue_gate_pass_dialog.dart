@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/modules/gate_pass/providers/gate_pass_provider.dart';
 
 class IssueGatePassDialog extends StatefulWidget {
@@ -86,7 +87,8 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GlassDialog(
+      maxWidth: 520,
       title: const Row(
         children: [
           Icon(Icons.confirmation_num, color: Colors.teal),

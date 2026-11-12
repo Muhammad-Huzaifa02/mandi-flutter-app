@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/gate_pass_model.dart';
 import 'package:mandi/modules/gate_pass/providers/gate_pass_provider.dart';
 
@@ -68,7 +69,8 @@ class _CalloutPlatformDialogState extends State<CalloutPlatformDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return GlassDialog(
+      maxWidth: 500,
       title: Row(
         children: [
           const Icon(Icons.campaign, color: Colors.amber),

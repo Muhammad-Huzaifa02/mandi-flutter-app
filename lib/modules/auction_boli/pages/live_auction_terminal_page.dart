@@ -9,6 +9,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/modules/auction_boli/providers/auction_boli_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -47,11 +48,19 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
     final bagsCtrl = TextEditingController(text: '50');
     final basePriceCtrl = TextEditingController(text: '3800');
 
-    showDialog(
+    showGlassDialog(
       context: context,
       builder: (ctx) {
-        return AlertDialog(
-          title: const Text('پھڑ ڈھیری تفصیل درج کریں (New Auction Heap)'),
+        return GlassDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.gavel_rounded, color: Color(0xFFD4A62A)),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('پھڑ ڈھیری تفصیل درج کریں (New Auction Heap)'),
+              ),
+            ],
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -107,8 +116,11 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                 );
                 Navigator.pop(ctx);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal[800]),
-              child: const Text('شروع کریں (Start Boli)', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F6B3C),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('شروع کریں (Start Boli)'),
             ),
           ],
         );
