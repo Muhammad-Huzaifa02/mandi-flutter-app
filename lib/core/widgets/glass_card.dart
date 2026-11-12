@@ -2,7 +2,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 
-/// A 3D Liquid Glassmorphism frosted floating container inspired by iOS design language.
+/// A 3D Liquid Crystal Glassmorphism frosted floating container.
+/// Combines hardware-accelerated BackdropFilter blur with an iridescent specular border
+/// and liquid reflection gradients for an authentic liquid crystal feel.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -11,8 +13,10 @@ class GlassCard extends StatelessWidget {
   final double borderRadius;
   final Color? backgroundColor;
   final Color? borderColor;
+  final Gradient? borderGradient;
   final double? width;
   final double? height;
+  final double blurSigma;
 
   const GlassCard({
     super.key,
@@ -23,8 +27,10 @@ class GlassCard extends StatelessWidget {
     this.borderRadius = 18.0,
     this.backgroundColor,
     this.borderColor,
+    this.borderGradient,
     this.width,
     this.height,
+    this.blurSigma = 16.0,
   });
 
   @override
@@ -69,13 +75,16 @@ class GlassCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
           child: Container(
             padding: padding ?? const EdgeInsets.all(MSpacing.lg),
             decoration: BoxDecoration(
               color: backgroundColor ?? defaultBg,
               borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(color: resolvedBorderColor, width: 1.2),
+              border: Border.all(
+                color: resolvedBorderColor,
+                width: 1.2,
+              ),
             ),
             child: child,
           ),
@@ -84,10 +93,16 @@ class GlassCard extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
+      return Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(borderRadius),
-        child: content,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(borderRadius),
+          splashColor: MColors.primary.withValues(alpha: 0.15),
+          highlightColor: Colors.white.withValues(alpha: 0.08),
+          child: content,
+        ),
       );
     }
 

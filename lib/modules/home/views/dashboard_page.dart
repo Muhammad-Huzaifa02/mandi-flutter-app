@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
+import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/services/supabase_service.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -289,6 +290,7 @@ class DashboardPage extends StatelessWidget {
     final totalInvoicesCount = invoiceProv.invoices.length;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: InkWell(
           onTap: shopCtx.hasMultipleShops
@@ -342,9 +344,10 @@ class DashboardPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(MSpacing.lg),
-        child: Column(
+      body: LiquidCrystalBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(MSpacing.lg),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GlassCard(
@@ -884,7 +887,8 @@ class DashboardPage extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 

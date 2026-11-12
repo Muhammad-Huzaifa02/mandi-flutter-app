@@ -16,6 +16,7 @@ import 'package:mandi/modules/payments/views/payment_list_page.dart';
 import 'package:mandi/modules/farmer_passbook/pages/farmer_passbook_page.dart';
 import 'package:mandi/modules/rates/views/mandi_rate_board_page.dart';
 import 'package:mandi/modules/gate_pass/pages/gate_pass_page.dart';
+import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 
 /// Shown when the signed-in account's role in the active shop is
 /// 'supplier' (see lib/routes/dashboard_router.dart).
@@ -45,6 +46,7 @@ class SupplierDashboardPage extends StatelessWidget {
     );
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Row(
           children: [
@@ -73,9 +75,10 @@ class SupplierDashboardPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(MSpacing.lg),
-        child: Column(
+      body: LiquidCrystalBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(MSpacing.lg),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             InkWell(
@@ -293,7 +296,8 @@ Thank you!
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
