@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/quality_inspection_pdf_generator.dart';
 import 'package:mandi/data/models/quality_inspection_model.dart';
@@ -88,15 +89,16 @@ class _QualityLabPageState extends State<QualityLabPage>
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<QualityProvider>();
+    final isUrdu = AppStrings.isUrdu(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quality Lab & Moisture (جنس کوالٹی لیب)'),
+        title: Text(AppStrings.val(context, en: 'Quality Lab & Moisture', ur: 'کوالٹی و نمی ٹیسٹ لیب')),
         elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh Lab Data',
+            tooltip: AppStrings.val(context, en: 'Refresh Lab Data', ur: 'تازہ کریں'),
             onPressed: () => provider.loadQualityData(),
           ),
           ElevatedButton.icon(
@@ -108,7 +110,7 @@ class _QualityLabPageState extends State<QualityLabPage>
                   borderRadius: BorderRadius.circular(8)),
             ),
             icon: const Icon(Icons.ac_unit, size: 18),
-            label: const Text('Log Temp'),
+            label: Text(AppStrings.val(context, en: 'Log Temp', ur: 'ٹمپریچر لاگ')),
             onPressed: () => _openLogTempDialog(),
           ),
           const SizedBox(width: 8),
@@ -121,7 +123,7 @@ class _QualityLabPageState extends State<QualityLabPage>
                   borderRadius: BorderRadius.circular(8)),
             ),
             icon: const Icon(Icons.add),
-            label: const Text('New Lab Test (ٹیسٹ)'),
+            label: Text(AppStrings.val(context, en: 'New Lab Test', ur: 'نیا ٹیسٹ')),
             onPressed: _openNewInspectionDialog,
           ),
           const SizedBox(width: 12),
@@ -132,18 +134,18 @@ class _QualityLabPageState extends State<QualityLabPage>
           indicatorWeight: 3,
           labelColor: Colors.teal,
           unselectedLabelColor: Colors.grey,
-          tabs: const [
+          tabs: [
             Tab(
-              icon: Icon(Icons.biotech_outlined),
-              text: 'Quality & Moisture (کوالٹی سرٹیفکیٹ)',
+              icon: const Icon(Icons.biotech_outlined),
+              text: AppStrings.val(context, en: 'Quality & Moisture', ur: 'کوالٹی و نمی سرٹیفکیٹ'),
             ),
             Tab(
-              icon: Icon(Icons.ac_unit_outlined),
-              text: 'Cold Chain Temp (کولڈ روم لاگ)',
+              icon: const Icon(Icons.ac_unit_outlined),
+              text: AppStrings.val(context, en: 'Cold Chain Temp', ur: 'کولڈ روم لاگ'),
             ),
             Tab(
-              icon: Icon(Icons.menu_book_outlined),
-              text: 'Deductions Matrix (کٹوتی رولز)',
+              icon: const Icon(Icons.menu_book_outlined),
+              text: AppStrings.val(context, en: 'Deductions Matrix', ur: 'کٹوتی کے اصول'),
             ),
           ],
         ),
@@ -151,16 +153,16 @@ class _QualityLabPageState extends State<QualityLabPage>
       body: Column(
         children: [
           // KPI Metric Banner
-          _buildKpiMetricsBanner(provider),
+          _buildKpiMetricsBanner(context, provider, isUrdu),
 
           // Tab Bar Views
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildQualityTestsTab(provider),
-                _buildColdChainTab(provider),
-                _buildDeductionsMatrixTab(),
+                _buildQualityTestsTab(context, provider, isUrdu),
+                _buildColdChainTab(context, provider, isUrdu),
+                _buildDeductionsMatrixTab(context, isUrdu),
               ],
             ),
           ),
@@ -170,7 +172,7 @@ class _QualityLabPageState extends State<QualityLabPage>
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text('New Lab Inspection'),
+        label: Text(AppStrings.val(context, en: 'New Lab Inspection', ur: 'نیا کوالٹی معائنہ')),
         onPressed: _openNewInspectionDialog,
       ),
     );
@@ -180,7 +182,7 @@ class _QualityLabPageState extends State<QualityLabPage>
   // KPI METRICS BANNER
   // ===========================================================================
 
-  Widget _buildKpiMetricsBanner(QualityProvider provider) {
+  Widget _buildKpiMetricsBanner(BuildContext context, QualityProvider provider, bool isUrdu) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -192,44 +194,43 @@ class _QualityLabPageState extends State<QualityLabPage>
         child: Row(
           children: [
             _buildKpiTile(
-              label: 'Total Inspected / ٹیسٹ شدہ',
-              value: '${provider.totalInspectionsCount} Samples',
-              subtitle: '${provider.certifiedCount} Certified',
+              label: AppStrings.val(context, en: 'Total Inspected', ur: 'کل ٹیسٹ شدہ'),
+              value: '${provider.totalInspectionsCount} ${AppStrings.val(context, en: 'Samples', ur: 'نمونے')}',
+              subtitle: '${provider.certifiedCount} ${AppStrings.val(context, en: 'Certified', ur: 'منظور شدہ')}',
               color: Colors.teal,
               icon: Icons.biotech,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Avg Moisture / اوسط نمی',
+              label: AppStrings.val(context, en: 'Avg Moisture', ur: 'اوسط نمی'),
               value: '${provider.averageMoisture.toStringAsFixed(1)} %',
-              subtitle: 'Base Standard: 14%',
+              subtitle: '${AppStrings.val(context, en: 'Base Standard', ur: 'معیاری حد')}: 14%',
               color: Colors.blue,
               icon: Icons.water_drop,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Gross Tested / وزن بھرا',
-              value:
-                  '${_currencyFmt.format(provider.totalGrossWeightKg)} KG',
+              label: AppStrings.val(context, en: 'Gross Tested', ur: 'بھرا وزن'),
+              value: '${_currencyFmt.format(provider.totalGrossWeightKg)} KG',
               subtitle:
-                  '(${((provider.totalGrossWeightKg) / 40.0).toStringAsFixed(0)} Maunds)',
+                  '(${((provider.totalGrossWeightKg) / 40.0).toStringAsFixed(0)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')})',
               color: Colors.indigo,
               icon: Icons.scale,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Total Katoti / کٹوتی وزن',
+              label: AppStrings.val(context, en: 'Total Katoti', ur: 'کل کٹوتی وزن'),
               value:
                   '- ${_currencyFmt.format(provider.totalDeductionWeightKg)} KG',
-              subtitle: 'Moisture + Refraction',
+              subtitle: AppStrings.val(context, en: 'Moisture + Refraction', ur: 'نمی و کچرا کٹوتی'),
               color: Colors.red,
               icon: Icons.remove_circle_outline,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Net Certified / صاف وزن',
+              label: AppStrings.val(context, en: 'Net Certified', ur: 'صاف وزن'),
               value:
-                  '${provider.totalNetWeightMaunds.toStringAsFixed(0)} Maunds',
+                  '${provider.totalNetWeightMaunds.toStringAsFixed(0)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
               subtitle:
                   '${_currencyFmt.format(provider.totalNetWeightKg)} KG',
               color: Colors.green,
@@ -237,9 +238,9 @@ class _QualityLabPageState extends State<QualityLabPage>
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Cold Chain Alerts / خطرہ',
-              value: '${provider.activeColdChainAlerts} Warnings',
-              subtitle: 'Temperature Excursions',
+              label: AppStrings.val(context, en: 'Cold Chain Alerts', ur: 'کولڈ چین الرٹس'),
+              value: '${provider.activeColdChainAlerts} ${AppStrings.val(context, en: 'Warnings', ur: 'انتباہ')}',
+              subtitle: AppStrings.val(context, en: 'Temperature Excursions', ur: 'درجہ حرارت کا بگاڑ'),
               color: provider.activeColdChainAlerts > 0
                   ? Colors.redAccent
                   : Colors.blueGrey,
@@ -298,7 +299,7 @@ class _QualityLabPageState extends State<QualityLabPage>
   // TAB 1: COMMODITY QUALITY & MOISTURE TESTS
   // ===========================================================================
 
-  Widget _buildQualityTestsTab(QualityProvider provider) {
+  Widget _buildQualityTestsTab(BuildContext context, QualityProvider provider, bool isUrdu) {
     final inspections = provider.filteredInspections;
 
     return Column(
@@ -313,8 +314,11 @@ class _QualityLabPageState extends State<QualityLabPage>
                 child: TextField(
                   controller: _searchCtrl,
                   decoration: InputDecoration(
-                    hintText:
-                        'Search certificate #, commodity, party, or vehicle...',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'Search certificate #, commodity, party, or vehicle...',
+                      ur: 'سرٹیفکیٹ نمبر، جنس، پارٹی یا گاڑی تلاش کریں...',
+                    ),
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: _searchCtrl.text.isNotEmpty
                         ? IconButton(
@@ -338,22 +342,18 @@ class _QualityLabPageState extends State<QualityLabPage>
               // Grade Filter
               DropdownButton<QualityGrade?>(
                 value: provider.selectedGrade,
-                hint: const Text('All Grades'),
+                hint: Text(AppStrings.val(context, en: 'All Grades', ur: 'تمام گریڈز')),
                 items: [
-                  const DropdownMenuItem(
-                      value: null, child: Text('All Grades (تمام گریڈز)')),
                   DropdownMenuItem(
-                      value: QualityGrade.gradeASuper,
-                      child: Text(QualityGrade.gradeASuper.labelEnglish)),
-                  DropdownMenuItem(
-                      value: QualityGrade.gradeBFaq,
-                      child: Text(QualityGrade.gradeBFaq.labelEnglish)),
-                  DropdownMenuItem(
-                      value: QualityGrade.gradeCSubstandard,
-                      child: Text(QualityGrade.gradeCSubstandard.labelEnglish)),
-                  DropdownMenuItem(
-                      value: QualityGrade.rejected,
-                      child: Text(QualityGrade.rejected.labelEnglish)),
+                    value: null,
+                    child: Text(AppStrings.val(context, en: 'All Grades', ur: 'تمام گریڈز')),
+                  ),
+                  ...QualityGrade.values.map((g) {
+                    return DropdownMenuItem(
+                      value: g,
+                      child: Text(isUrdu ? g.labelUrdu : g.labelEnglish),
+                    );
+                  }),
                 ],
                 onChanged: (val) => provider.setGradeFilter(val),
               ),
@@ -362,10 +362,12 @@ class _QualityLabPageState extends State<QualityLabPage>
               if (provider.availableCommodities.isNotEmpty)
                 DropdownButton<String?>(
                   value: provider.selectedCommodity,
-                  hint: const Text('All Crops'),
+                  hint: Text(AppStrings.val(context, en: 'All Crops', ur: 'تمام اجناس')),
                   items: [
-                    const DropdownMenuItem(
-                        value: null, child: Text('All Crops (تمام اجناس)')),
+                    DropdownMenuItem(
+                      value: null,
+                      child: Text(AppStrings.val(context, en: 'All Crops', ur: 'تمام اجناس')),
+                    ),
                     ...provider.availableCommodities.map((c) {
                       return DropdownMenuItem(
                           value: c,
@@ -390,14 +392,22 @@ class _QualityLabPageState extends State<QualityLabPage>
                           Icon(Icons.biotech_outlined,
                               size: 64, color: Colors.grey.shade400),
                           const SizedBox(height: 12),
-                          const Text(
-                            'No Quality Inspections Found / کوئی لیب ٹیسٹ نہیں',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'No Quality Inspections Found',
+                              ur: 'کوئی کوالٹی معائنہ ریکارڈ نہیں ملا',
+                            ),
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Perform grain moisture tests and calculate certified weight katoti.',
+                            AppStrings.val(
+                              context,
+                              en: 'Perform grain moisture tests and calculate certified weight katoti.',
+                              ur: 'اناج کی نمی کا معائنہ کریں اور وزنی کٹوتی کا حساب لگائیں۔',
+                            ),
                             style: TextStyle(
                                 fontSize: 13, color: Colors.grey.shade600),
                           ),
@@ -408,7 +418,7 @@ class _QualityLabPageState extends State<QualityLabPage>
                               foregroundColor: Colors.white,
                             ),
                             icon: const Icon(Icons.add),
-                            label: const Text('New Lab Test (نیا ٹیسٹ)'),
+                            label: Text(AppStrings.val(context, en: 'New Lab Test', ur: 'نیا ٹیسٹ')),
                             onPressed: _openNewInspectionDialog,
                           ),
                         ],
@@ -419,7 +429,7 @@ class _QualityLabPageState extends State<QualityLabPage>
                       itemCount: inspections.length,
                       itemBuilder: (context, index) {
                         final item = inspections[index];
-                        return _buildInspectionCard(item);
+                        return _buildInspectionCard(context, item, isUrdu);
                       },
                     ),
         ),
@@ -427,7 +437,7 @@ class _QualityLabPageState extends State<QualityLabPage>
     );
   }
 
-  Widget _buildInspectionCard(QualityInspection item) {
+  Widget _buildInspectionCard(BuildContext context, QualityInspection item, bool isUrdu) {
     Color gradeColor;
     switch (item.qualityGrade) {
       case QualityGrade.gradeASuper:
@@ -492,7 +502,7 @@ class _QualityLabPageState extends State<QualityLabPage>
                             Border.all(color: gradeColor.withValues(alpha: 0.4)),
                       ),
                       child: Text(
-                        item.qualityGrade.labelEnglish,
+                        isUrdu ? item.qualityGrade.labelUrdu : item.qualityGrade.labelEnglish,
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -515,7 +525,7 @@ class _QualityLabPageState extends State<QualityLabPage>
               children: [
                 Expanded(
                   child: Text(
-                    '${item.commodityName} ${item.variety.isNotEmpty ? '(${item.variety})' : ''} • ${item.partyName.isNotEmpty ? 'Party: ${item.partyName}' : 'General Lot'}${item.vehicleNumber.isNotEmpty ? ' • Vehicle: ${item.vehicleNumber}' : ''}',
+                    '${item.commodityName} ${item.variety.isNotEmpty ? '(${item.variety})' : ''} • ${item.partyName.isNotEmpty ? "${AppStrings.val(context, en: 'Party', ur: 'پارٹی')}: ${item.partyName}" : AppStrings.val(context, en: 'General Lot', ur: 'عام لاٹ')}${item.vehicleNumber.isNotEmpty ? " • ${AppStrings.val(context, en: 'Vehicle', ur: 'گاڑی')}: ${item.vehicleNumber}" : ''}',
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 13),
                   ),
@@ -535,20 +545,33 @@ class _QualityLabPageState extends State<QualityLabPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _metricItem('Moisture',
-                      '${item.moisturePercentage.toStringAsFixed(1)} % (Base ${item.baseMoisturePercentage.toStringAsFixed(0)}%)'),
-                  _metricItem('Excess Moist.',
-                      '+ ${excessMoisture.toStringAsFixed(1)} %',
-                      color: excessMoisture > 0 ? Colors.blue : null),
-                  _metricItem('Trash / Foreign',
-                      '${item.foreignMatterPercentage.toStringAsFixed(1)} %'),
-                  _metricItem('Broken Grain',
-                      '${item.brokenGrainPercentage.toStringAsFixed(1)} %'),
-                  _metricItem('Damaged',
-                      '${item.damagedGrainPercentage.toStringAsFixed(1)} %'),
-                  _metricItem('Total Katoti',
-                      '- ${item.totalDeductionPercentage.toStringAsFixed(2)} %',
-                      color: Colors.red, isBold: true),
+                  _metricItem(
+                    AppStrings.val(context, en: 'Moisture', ur: 'نمی'),
+                    '${item.moisturePercentage.toStringAsFixed(1)} % (${AppStrings.val(context, en: 'Base', ur: 'حد')} ${item.baseMoisturePercentage.toStringAsFixed(0)}%)',
+                  ),
+                  _metricItem(
+                    AppStrings.val(context, en: 'Excess Moist.', ur: 'اضافی نمی'),
+                    '+ ${excessMoisture.toStringAsFixed(1)} %',
+                    color: excessMoisture > 0 ? Colors.blue : null,
+                  ),
+                  _metricItem(
+                    AppStrings.val(context, en: 'Trash', ur: 'کچرا'),
+                    '${item.foreignMatterPercentage.toStringAsFixed(1)} %',
+                  ),
+                  _metricItem(
+                    AppStrings.val(context, en: 'Broken Grain', ur: 'ٹوٹا دانہ'),
+                    '${item.brokenGrainPercentage.toStringAsFixed(1)} %',
+                  ),
+                  _metricItem(
+                    AppStrings.val(context, en: 'Damaged', ur: 'داغی دانہ'),
+                    '${item.damagedGrainPercentage.toStringAsFixed(1)} %',
+                  ),
+                  _metricItem(
+                    AppStrings.val(context, en: 'Total Katoti', ur: 'کل کٹوتی'),
+                    '- ${item.totalDeductionPercentage.toStringAsFixed(2)} %',
+                    color: Colors.red,
+                    isBold: true,
+                  ),
                 ],
               ),
             ),
@@ -561,9 +584,11 @@ class _QualityLabPageState extends State<QualityLabPage>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Gross Weight (بھرا)',
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade600)),
+                    Text(
+                      AppStrings.val(context, en: 'Gross Weight', ur: 'بھرا وزن'),
+                      style: TextStyle(
+                          fontSize: 11, color: Colors.grey.shade600),
+                    ),
                     Text('${_currencyFmt.format(item.grossWeightKg)} KG',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 13)),
@@ -572,9 +597,11 @@ class _QualityLabPageState extends State<QualityLabPage>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Katoti Weight (کٹوتی)',
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade600)),
+                    Text(
+                      AppStrings.val(context, en: 'Katoti Weight', ur: 'کٹوتی وزن'),
+                      style: TextStyle(
+                          fontSize: 11, color: Colors.grey.shade600),
+                    ),
                     Text(
                         '- ${_currencyFmt.format(item.deductionWeightKg)} KG',
                         style: const TextStyle(
@@ -586,11 +613,13 @@ class _QualityLabPageState extends State<QualityLabPage>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Net Certified (صاف وزن)',
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey.shade600)),
                     Text(
-                      '${_currencyFmt.format(item.netWeightKg)} KG (${item.netWeightMaunds.toStringAsFixed(1)} Maunds)',
+                      AppStrings.val(context, en: 'Net Certified', ur: 'صاف وزن'),
+                      style: TextStyle(
+                          fontSize: 11, color: Colors.grey.shade600),
+                    ),
+                    Text(
+                      '${_currencyFmt.format(item.netWeightKg)} KG (${item.netWeightMaunds.toStringAsFixed(1)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')})',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
@@ -605,8 +634,10 @@ class _QualityLabPageState extends State<QualityLabPage>
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   ),
                   icon: const Icon(Icons.print, size: 16),
-                  label: const Text('Print Cert A4',
-                      style: TextStyle(fontSize: 12)),
+                  label: Text(
+                    AppStrings.val(context, en: 'Print Cert A4', ur: 'پرنٹ سرٹیفکیٹ'),
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   onPressed: () => _printCertificate(item),
                 ),
               ],
@@ -641,7 +672,7 @@ class _QualityLabPageState extends State<QualityLabPage>
   // TAB 2: COLD CHAIN TEMPERATURE MONITORING
   // ===========================================================================
 
-  Widget _buildColdChainTab(QualityProvider provider) {
+  Widget _buildColdChainTab(BuildContext context, QualityProvider provider, bool isUrdu) {
     final logs = provider.filteredColdChainLogs;
 
     return Column(
@@ -654,15 +685,19 @@ class _QualityLabPageState extends State<QualityLabPage>
             children: [
               Row(
                 children: [
-                  const Text('Filter by Chamber: ',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    AppStrings.val(context, en: 'Filter by Chamber: ', ur: 'چیمبر فلٹر: '),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(width: 8),
                   DropdownButton<String?>(
                     value: provider.selectedChamber,
-                    hint: const Text('All Chambers'),
+                    hint: Text(AppStrings.val(context, en: 'All Chambers', ur: 'تمام چیمبرز')),
                     items: [
-                      const DropdownMenuItem(
-                          value: null, child: Text('All Chambers (تمام رومز)')),
+                      DropdownMenuItem(
+                        value: null,
+                        child: Text(AppStrings.val(context, en: 'All Chambers', ur: 'تمام چیمبرز')),
+                      ),
                       ...provider.availableChambers.map((c) {
                         return DropdownMenuItem(
                             value: c,
@@ -682,7 +717,7 @@ class _QualityLabPageState extends State<QualityLabPage>
                           horizontal: 12, vertical: 8),
                     ),
                     icon: const Icon(Icons.print, size: 16),
-                    label: const Text('Print Audit Sheet'),
+                    label: Text(AppStrings.val(context, en: 'Print Audit Sheet', ur: 'آڈٹ شیٹ پرنٹ کریں')),
                     onPressed: () => _printColdChainAudit(logs),
                   ),
                   const SizedBox(width: 8),
@@ -694,7 +729,7 @@ class _QualityLabPageState extends State<QualityLabPage>
                           horizontal: 12, vertical: 8),
                     ),
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Log Temp Reading'),
+                    label: Text(AppStrings.val(context, en: 'Log Temp Reading', ur: 'ٹمپریچر درج کریں')),
                     onPressed: () =>
                         _openLogTempDialog(provider.selectedChamber),
                   ),
@@ -714,14 +749,22 @@ class _QualityLabPageState extends State<QualityLabPage>
                       Icon(Icons.ac_unit_outlined,
                           size: 64, color: Colors.grey.shade400),
                       const SizedBox(height: 12),
-                      const Text(
-                        'No Cold Chain Temperature Logs Found',
-                        style: TextStyle(
+                      Text(
+                        AppStrings.val(
+                          context,
+                          en: 'No Cold Chain Temperature Logs Found',
+                          ur: 'کولڈ روم درجہ حرارت کا کوئی لاگ نہیں ملا',
+                        ),
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Record daily cold room core temperatures and humidity readings.',
+                        AppStrings.val(
+                          context,
+                          en: 'Record daily cold room core temperatures and humidity readings.',
+                          ur: 'روزانہ کولڈ روم درجہ حرارت اور نمی کی ریڈنگز درج کریں۔',
+                        ),
                         style: TextStyle(
                             fontSize: 13, color: Colors.grey.shade600),
                       ),
@@ -770,7 +813,9 @@ class _QualityLabPageState extends State<QualityLabPage>
                                     color: statusColor.withValues(alpha: 0.4)),
                               ),
                               child: Text(
-                                log.status.labelEnglish.toUpperCase(),
+                                isUrdu
+                                    ? log.status.labelUrdu
+                                    : log.status.labelEnglish.toUpperCase(),
                                 style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -794,7 +839,7 @@ class _QualityLabPageState extends State<QualityLabPage>
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Humidity: ${log.humidityPercentage.toStringAsFixed(0)} % RH • Safe: ${log.minTempThreshold.toStringAsFixed(0)}-${log.maxTempThreshold.toStringAsFixed(0)} °C • Sensor: ${log.sensorDeviceId.isEmpty ? 'Probe' : log.sensorDeviceId}',
+                                '${AppStrings.val(context, en: 'Humidity', ur: 'نمی')}: ${log.humidityPercentage.toStringAsFixed(0)} % RH • ${AppStrings.val(context, en: 'Safe', ur: 'محفوظ')}: ${log.minTempThreshold.toStringAsFixed(0)}-${log.maxTempThreshold.toStringAsFixed(0)} °C • ${AppStrings.val(context, en: 'Sensor', ur: 'سینسر')}: ${log.sensorDeviceId.isEmpty ? (isUrdu ? 'پروب' : 'Probe') : log.sensorDeviceId}',
                                 style: const TextStyle(fontSize: 11),
                               ),
                               Text(
@@ -819,15 +864,19 @@ class _QualityLabPageState extends State<QualityLabPage>
   // TAB 3: DEDUCTIONS MATRIX & QUALITY STANDARDS
   // ===========================================================================
 
-  Widget _buildDeductionsMatrixTab() {
+  Widget _buildDeductionsMatrixTab(BuildContext context, bool isUrdu) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Mandi Standard Moisture & Katoti Matrix (کٹوتی رولز و شیڈول)',
-            style: TextStyle(
+          Text(
+            AppStrings.val(
+              context,
+              en: 'Mandi Standard Moisture & Katoti Matrix',
+              ur: 'منڈی معیاری نمی و کٹوتی شیڈول',
+            ),
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: MColors.textPrimary,
@@ -835,7 +884,11 @@ class _QualityLabPageState extends State<QualityLabPage>
           ),
           const SizedBox(height: 6),
           Text(
-            'Official reference standards for moisture baselines and laboratory dockage multipliers.',
+            AppStrings.val(
+              context,
+              en: 'Official reference standards for moisture baselines and laboratory dockage multipliers.',
+              ur: 'نمی کی معیاری حدود اور لیب کٹوتی کے سرکاری و منڈی قواعد۔',
+            ),
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 16),
@@ -849,29 +902,58 @@ class _QualityLabPageState extends State<QualityLabPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.grass, color: Colors.teal),
-                      SizedBox(width: 8),
+                      const Icon(Icons.grass, color: Colors.teal),
+                      const SizedBox(width: 8),
                       Text(
-                        'Standard Crop Moisture Limits (معیاری نمی کی حد)',
-                        style: TextStyle(
+                        AppStrings.val(
+                          context,
+                          en: 'Standard Crop Moisture Limits',
+                          ur: 'اجناس میں معیاری نمی کی حد',
+                        ),
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
                   const Divider(),
-                  _buildMatrixRow('Wheat (گندم)', '12.0 %',
-                      'Above 12% : 1:1 weight shrinkage deduction'),
-                  _buildMatrixRow('Paddy / Rice (دھان / چاول)', '14.0 %',
-                      'Above 14% : 1:1 deduction; above 22% rejected'),
-                  _buildMatrixRow('Corn / Maize (مکئی)', '14.0 %',
-                      'Above 14% : 1:1 drying katoti; mold risk above 18%'),
-                  _buildMatrixRow('Cotton / Phutti (پھٹی)', '8.0 %',
-                      'Moisture above 8% causes lint discoloration'),
-                  _buildMatrixRow('Canola & Oilseeds (کینولا و سرسوں)', '9.0 %',
-                      'High moisture causes rancidity & acidity spike'),
+                  _buildMatrixRow(
+                    isUrdu ? 'گندم' : 'Wheat',
+                    '12.0 %',
+                    isUrdu
+                        ? '12% سے اوپر: 1:1 وزن کی سوکھی کٹوتی'
+                        : 'Above 12% : 1:1 weight shrinkage deduction',
+                  ),
+                  _buildMatrixRow(
+                    isUrdu ? 'دھان / چاول' : 'Paddy (Rice)',
+                    '14.0 %',
+                    isUrdu
+                        ? '14% سے اوپر: 1:1 کٹوتی؛ 22% سے اوپر مال مسترد'
+                        : 'Above 14% : 1:1 deduction; above 22% rejected',
+                  ),
+                  _buildMatrixRow(
+                    isUrdu ? 'مکئی' : 'Corn (Maize)',
+                    '14.0 %',
+                    isUrdu
+                        ? '14% سے اوپر: 1:1 ڈرائینگ کٹوتی؛ 18% سے اوپر الی کا خطرہ'
+                        : 'Above 14% : 1:1 drying katoti; mold risk above 18%',
+                  ),
+                  _buildMatrixRow(
+                    isUrdu ? 'پھٹی (کپاس)' : 'Cotton (Phutti)',
+                    '8.0 %',
+                    isUrdu
+                        ? '8% سے زیادہ نمی روئی کی رنگت خراب کرتی ہے'
+                        : 'Moisture above 8% causes lint discoloration',
+                  ),
+                  _buildMatrixRow(
+                    isUrdu ? 'کینولا و سرسوں' : 'Canola & Oilseeds',
+                    '9.0 %',
+                    isUrdu
+                        ? 'زیادہ نمی سے تیل میں تیزابیت اور بو پیدا ہوتی ہے'
+                        : 'High moisture causes rancidity & acidity spike',
+                  ),
                 ],
               ),
             ),
@@ -887,26 +969,44 @@ class _QualityLabPageState extends State<QualityLabPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.tune, color: Colors.indigo),
-                      SizedBox(width: 8),
+                      const Icon(Icons.tune, color: Colors.indigo),
+                      const SizedBox(width: 8),
                       Text(
-                        'Refraction Dockage Rules (کچرا و ٹوٹا دانہ رولز)',
-                        style: TextStyle(
+                        AppStrings.val(
+                          context,
+                          en: 'Refraction Dockage Rules',
+                          ur: 'کچرا و ٹوٹا دانہ کے اصول',
+                        ),
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
                   const Divider(),
-                  _buildMatrixRow('Foreign Matter (کچرا و ریت)', '1:1 Katoti',
-                      'Every 1% trash deducts 1% gross payload directly'),
-                  _buildMatrixRow('Broken Grain (ٹوٹا دانہ)', '0.5:1 Katoti',
-                      'Deduction factor of 50% applied to broken kernels'),
-                  _buildMatrixRow('Damaged / Weeviled (داغی و کیڑا)',
-                      '0.75:1 Katoti',
-                      'Deduction factor of 75% applied to insect-bored kernels'),
+                  _buildMatrixRow(
+                    isUrdu ? 'کچرا و مٹی' : 'Foreign Matter',
+                    isUrdu ? '1:1 کٹوتی' : '1:1 Katoti',
+                    isUrdu
+                        ? 'ہر 1% کچرا سیدھا 1% کل وزن سے منہا ہوتا ہے'
+                        : 'Every 1% trash deducts 1% gross payload directly',
+                  ),
+                  _buildMatrixRow(
+                    isUrdu ? 'ٹوٹا دانہ' : 'Broken Grain',
+                    isUrdu ? '0.5:1 کٹوتی' : '0.5:1 Katoti',
+                    isUrdu
+                        ? 'ٹوٹے دانے پر 50% کٹوتی فیکٹر لاگو ہوتا ہے'
+                        : 'Deduction factor of 50% applied to broken kernels',
+                  ),
+                  _buildMatrixRow(
+                    isUrdu ? 'داغی و کیڑا زدہ' : 'Damaged / Weeviled',
+                    isUrdu ? '0.75:1 کٹوتی' : '0.75:1 Katoti',
+                    isUrdu
+                        ? 'کیڑے یا داغی دانے پر 75% کٹوتی لاگو ہوتی ہے'
+                        : 'Deduction factor of 75% applied to insect-bored kernels',
+                  ),
                 ],
               ),
             ),
@@ -922,25 +1022,40 @@ class _QualityLabPageState extends State<QualityLabPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.ac_unit, color: Colors.blue),
-                      SizedBox(width: 8),
+                      const Icon(Icons.ac_unit, color: Colors.blue),
+                      const SizedBox(width: 8),
                       Text(
-                        'Cold Storage HACCP Climatic Bands (کولڈ روم حالات)',
-                        style: TextStyle(
+                        AppStrings.val(
+                          context,
+                          en: 'Cold Storage HACCP Climatic Bands',
+                          ur: 'کولڈ سٹوریج موسمی حالات',
+                        ),
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
                   const Divider(),
-                  _buildMatrixRow('Potatoes (آلو برائے بیج و خوراک)',
-                      '2.0 °C to 4.0 °C', 'Relative Humidity: 85 - 90 % RH'),
-                  _buildMatrixRow('Apples (سیب)', '-1.0 °C to 2.0 °C',
-                      'Relative Humidity: 90 - 95 % RH'),
-                  _buildMatrixRow('Dry Onions (پیاز)', '0.0 °C to 2.0 °C',
-                      'Relative Humidity: 65 - 70 % RH (Dry Air Circulation)'),
+                  _buildMatrixRow(
+                    isUrdu ? 'آلو (بیج و خوراک)' : 'Potatoes',
+                    isUrdu ? '2.0 °C تا 4.0 °C' : '2.0 °C to 4.0 °C',
+                    isUrdu ? 'ہوا میں نمی: 85 - 90 % RH' : 'Relative Humidity: 85 - 90 % RH',
+                  ),
+                  _buildMatrixRow(
+                    isUrdu ? 'سیب' : 'Apples',
+                    isUrdu ? '-1.0 °C تا 2.0 °C' : '-1.0 °C to 2.0 °C',
+                    isUrdu ? 'ہوا میں نمی: 90 - 95 % RH' : 'Relative Humidity: 90 - 95 % RH',
+                  ),
+                  _buildMatrixRow(
+                    isUrdu ? 'خشک پیاز' : 'Dry Onions',
+                    isUrdu ? '0.0 °C تا 2.0 °C' : '0.0 °C to 2.0 °C',
+                    isUrdu
+                        ? 'ہوا میں نمی: 65 - 70 % RH (خشک ہوا کا بہاؤ)'
+                        : 'Relative Humidity: 65 - 70 % RH (Dry Air Circulation)',
+                  ),
                 ],
               ),
             ),

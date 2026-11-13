@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/gate_pass_model.dart';
 import 'package:mandi/modules/gate_pass/providers/gate_pass_provider.dart';
@@ -65,41 +66,41 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
     final shopName = shopCtx.currentShop?.name ?? 'Mandi Commission Shop';
     final gateProvider = context.watch<GatePassProvider>();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.tr(context, 'gate_pass_title'),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
+    return LiquidCrystalBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.amberAccent,
-          indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: [
-            Tab(icon: const Icon(Icons.tv), text: AppStrings.tr(context, 'unloading_board_tab')),
-            Tab(icon: const Icon(Icons.confirmation_num), text: AppStrings.tr(context, 'inward_tokens_tab')),
-            Tab(icon: const Icon(Icons.exit_to_app), text: AppStrings.tr(context, 'gate_out_tab')),
+        appBar: AppBar(
+          title: Text(
+            AppStrings.tr(context, 'gate_pass_title'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: MColors.textPrimary,
+          bottom: TabBar(
+            controller: _tabController,
+            indicatorColor: MColors.primary,
+            indicatorWeight: 3,
+            labelColor: MColors.primary,
+            unselectedLabelColor: MColors.textSecondary,
+            tabs: [
+              Tab(icon: const Icon(Icons.tv), text: AppStrings.tr(context, 'unloading_board_tab')),
+              Tab(icon: const Icon(Icons.confirmation_num), text: AppStrings.tr(context, 'inward_tokens_tab')),
+              Tab(icon: const Icon(Icons.exit_to_app), text: AppStrings.tr(context, 'gate_out_tab')),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add_circle, color: MColors.gold, size: 28),
+              tooltip: AppStrings.tr(context, 'issue_token_btn'),
+              onPressed: () => showDialog(
+                context: context,
+                builder: (_) => const IssueGatePassDialog(),
+              ),
+            ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle, color: Colors.amberAccent, size: 28),
-            tooltip: AppStrings.tr(context, 'issue_token_btn'),
-            onPressed: () => showDialog(
-              context: context,
-              builder: (_) => const IssueGatePassDialog(),
-            ),
-          ),
-        ],
-      ),
-      body: LiquidCrystalBackground(
-        child: TabBarView(
+        body: TabBarView(
           controller: _tabController,
           children: [
             // Tab 1: Live Unloading Board
@@ -110,18 +111,18 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
             _buildGateOutTab(context, gateProvider, shopName),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showDialog(
-          context: context,
-          builder: (_) => const IssueGatePassDialog(),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => showDialog(
+            context: context,
+            builder: (_) => const IssueGatePassDialog(),
+          ),
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: Text(
+            AppStrings.tr(context, 'issue_token_btn'),
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: MColors.primary,
         ),
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(
-          AppStrings.tr(context, 'issue_token_btn'),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.teal[800],
       ),
     );
   }
@@ -155,9 +156,13 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '📢 PUBLIC CALLOUT / اعلان برائے ان لوڈنگ',
-                          style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                        Text(
+                          AppStrings.val(
+                            context,
+                            en: '📢 PUBLIC CALLOUT',
+                            ur: '📢 اعلان برائے ان لوڈنگ',
+                          ),
+                          style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -298,7 +303,7 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
                 builder: (_) => RecordWeighmentDialog(gatePass: pass),
               ),
               icon: const Icon(Icons.scale, size: 15, color: Colors.white),
-              label: const Text('کنڈا وزن (Tare)', style: TextStyle(color: Colors.white, fontSize: 11.5)),
+              label: Text(AppStrings.tr(context, 'tare_weighment_btn'), style: const TextStyle(color: Colors.white, fontSize: 11.5)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal[800],
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -373,7 +378,7 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
                 builder: (_) => CalloutPlatformDialog(gatePass: pass),
               ),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.amber[800]),
-              child: const Text('کال آؤٹ (Call)', style: TextStyle(color: Colors.white, fontSize: 12)),
+              child: Text(AppStrings.tr(context, 'callout_btn'), style: const TextStyle(color: Colors.white, fontSize: 12)),
             ),
           ],
         ),
@@ -400,7 +405,7 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
                 builder: (_) => const IssueGatePassDialog(),
               ),
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('پہلا ٹوکن جاری کریں (Issue First Token)', style: TextStyle(color: Colors.white)),
+              label: Text(AppStrings.tr(context, 'issue_first_token_btn'), style: const TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.teal[800]),
             ),
           ],
@@ -513,14 +518,14 @@ class _GatePassPageState extends State<GatePassPage> with SingleTickerProviderSt
                           await _printGateOutPass(pass, shopName);
                         },
                         icon: const Icon(Icons.check_circle, color: Colors.white, size: 16),
-                        label: const Text('گیٹ آؤٹ کلیئر (Clear)', style: TextStyle(color: Colors.white, fontSize: 12)),
+                        label: Text(AppStrings.tr(context, 'clear_gate_out_btn'), style: const TextStyle(color: Colors.white, fontSize: 12)),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.green[800]),
                       )
                     else
                       OutlinedButton.icon(
                         onPressed: () => _printGateOutPass(pass, shopName),
                         icon: const Icon(Icons.print, size: 16),
-                        label: const Text('پاس پرنٹ (Reprint)', style: TextStyle(fontSize: 12)),
+                        label: Text(AppStrings.tr(context, 'reprint_pass_btn'), style: const TextStyle(fontSize: 12)),
                       ),
                   ],
                 ),

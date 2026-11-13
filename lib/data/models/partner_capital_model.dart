@@ -43,13 +43,13 @@ enum PartnerTransactionType {
   String get labelUrdu {
     switch (this) {
       case PartnerTransactionType.capitalInjection:
-        return 'سرمایہ اضافہ (Capital Injection)';
+        return 'سرمایہ اضافہ';
       case PartnerTransactionType.drawing:
-        return 'ذاتی خرچ / نکلوانا (Drawing)';
+        return 'ذاتی خرچ یا نکلوانا';
       case PartnerTransactionType.profitDistribution:
-        return 'منافع تقسیم (Profit Distribution)';
+        return 'منافع تقسیم';
       case PartnerTransactionType.capitalWithdrawal:
-        return 'سرمایہ واپسی (Capital Withdrawal)';
+        return 'سرمایہ واپسی';
     }
   }
 

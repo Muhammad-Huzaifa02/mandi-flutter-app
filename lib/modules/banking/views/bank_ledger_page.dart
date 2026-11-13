@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/cheque_register_pdf_generator.dart';
 import 'package:mandi/data/models/bank_account_model.dart';
@@ -14,7 +15,7 @@ import 'package:mandi/modules/banking/views/add_edit_cheque_dialog.dart';
 import 'package:mandi/modules/banking/views/update_cheque_status_dialog.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
-/// Primary Mandi Banking Hub & Cheque Clearance Ledger (بینکاری و چیک رجسٹر).
+/// Primary Mandi Banking Hub & Cheque Clearance Ledger.
 class BankLedgerPage extends StatefulWidget {
   const BankLedgerPage({super.key});
 
@@ -53,11 +54,12 @@ class _BankLedgerPageState extends State<BankLedgerPage>
     List<BankAccount> bankAccounts,
   ) async {
     try {
+      final isUrdu = mounted ? AppStrings.isUrdu(context) : false;
       final pdfBytes = await ChequeRegisterPdfGenerator.generateRegisterPdf(
         shopName: shopName,
         cheques: cheques,
         bankAccounts: bankAccounts,
-        filterTitle: _getFilterTitle(),
+        filterTitle: _getFilterTitle(isUrdu),
       );
 
       await Printing.layoutPdf(
@@ -68,7 +70,11 @@ class _BankLedgerPageState extends State<BankLedgerPage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to export PDF: $e'),
+            content: Text(AppStrings.val(
+              context,
+              en: 'Failed to export PDF: $e',
+              ur: 'پی ڈی ایف فائل بنانے میں ناکامی: $e',
+            )),
             backgroundColor: MColors.danger,
           ),
         );
@@ -76,20 +82,37 @@ class _BankLedgerPageState extends State<BankLedgerPage>
     }
   }
 
-  String _getFilterTitle() {
-    switch (_selectedStatusFilter) {
-      case 'in_hand':
-        return 'In-Hand PDCs (پاس موجود چیکس)';
-      case 'due_today':
-        return 'Due Today PDCs (آج کی تاریخ کے چیکس)';
-      case 'deposited':
-        return 'Under Bank Clearance (جمع شدہ)';
-      case 'cleared':
-        return 'Cleared Cheques (کلیئر شدہ)';
-      case 'bounced':
-        return 'Bounced / Dishonored (باؤنس شدہ)';
-      default:
-        return 'All Cheques & PDCs (تمام چیکس)';
+  String _getFilterTitle([bool isUrdu = false]) {
+    if (isUrdu) {
+      switch (_selectedStatusFilter) {
+        case 'in_hand':
+          return 'پاس موجود چیکس';
+        case 'due_today':
+          return 'آج کی تاریخ کے چیکس';
+        case 'deposited':
+          return 'بینک میں جمع شدہ';
+        case 'cleared':
+          return 'کلیئر شدہ چیکس';
+        case 'bounced':
+          return 'باؤنس شدہ چیکس';
+        default:
+          return 'تمام چیکس';
+      }
+    } else {
+      switch (_selectedStatusFilter) {
+        case 'in_hand':
+          return 'In-Hand PDCs';
+        case 'due_today':
+          return 'Due Today PDCs';
+        case 'deposited':
+          return 'Under Bank Clearance';
+        case 'cleared':
+          return 'Cleared Cheques';
+        case 'bounced':
+          return 'Bounced / Dishonored';
+        default:
+          return 'All Cheques & PDCs';
+      }
     }
   }
 
@@ -97,27 +120,32 @@ class _BankLedgerPageState extends State<BankLedgerPage>
   Widget build(BuildContext context) {
     final bankProv = context.watch<BankProvider>();
     final shopCtx = context.watch<ShopContextProvider>();
-    final shopName = shopCtx.currentShop?.name ?? 'Mandi Commission Shop';
+    final isUrdu = AppStrings.isUrdu(context);
+    final shopName = shopCtx.currentShop?.name ??
+        AppStrings.val(
+          context,
+          en: 'Mandi Commission Shop',
+          ur: 'منڈی کمیشن شاپ',
+        );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bank Accounts & Cheques',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            Text(
-              'بینکاری اور چیک رجسٹر (PDC Ledger)',
-              style: TextStyle(fontSize: 12, color: Colors.white70),
-            ),
-          ],
+        title: Text(
+          AppStrings.val(
+            context,
+            en: 'Bank Accounts & PDC Cheques',
+            ur: 'بینکاری اور چیک رجسٹر',
+          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf_outlined),
-            tooltip: 'Export PDF Report',
+            tooltip: AppStrings.val(
+              context,
+              en: 'Export PDF Report',
+              ur: 'پی ڈی ایف رپورٹ ڈاؤن لوڈ کریں',
+            ),
             onPressed: () => _exportPdf(
               shopName,
               bankProv.cheques,
@@ -134,11 +162,19 @@ class _BankLedgerPageState extends State<BankLedgerPage>
           tabs: [
             Tab(
               icon: const Icon(Icons.receipt_long),
-              text: 'Cheque Register (${bankProv.cheques.length})',
+              text: AppStrings.val(
+                context,
+                en: 'Cheque Register (${bankProv.cheques.length})',
+                ur: 'چیک رجسٹر (${bankProv.cheques.length})',
+              ),
             ),
             Tab(
               icon: const Icon(Icons.account_balance),
-              text: 'Bank Accounts (${bankProv.bankAccounts.length})',
+              text: AppStrings.val(
+                context,
+                en: 'Bank Accounts (${bankProv.bankAccounts.length})',
+                ur: 'بینک اکاؤنٹس (${bankProv.bankAccounts.length})',
+              ),
             ),
           ],
         ),
@@ -148,8 +184,8 @@ class _BankLedgerPageState extends State<BankLedgerPage>
           : TabBarView(
               controller: _tabController,
               children: [
-                _buildChequesTab(bankProv),
-                _buildBankAccountsTab(bankProv),
+                _buildChequesTab(bankProv, isUrdu),
+                _buildBankAccountsTab(bankProv, isUrdu),
               ],
             ),
       floatingActionButton: FloatingActionButton.extended(
@@ -169,7 +205,9 @@ class _BankLedgerPageState extends State<BankLedgerPage>
         backgroundColor: MColors.primary,
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
-          _tabController.index == 0 ? 'Record Cheque' : 'Add Bank Account',
+          _tabController.index == 0
+              ? AppStrings.val(context, en: 'Record Cheque', ur: 'چیک درج کریں')
+              : AppStrings.val(context, en: 'Add Bank Account', ur: 'بینک اکاؤنٹ شامل کریں'),
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
@@ -178,10 +216,9 @@ class _BankLedgerPageState extends State<BankLedgerPage>
 
   // ── Tab 1: Cheques & PDC Register ──────────────────────────────────────────
 
-  Widget _buildChequesTab(BankProvider bankProv) {
+  Widget _buildChequesTab(BankProvider bankProv, bool isUrdu) {
     final summary = bankProv.summary;
 
-    // Apply filters
     ChequeStatus? statusToFilter;
     bool onlyDueToday = false;
 
@@ -224,8 +261,8 @@ class _BankLedgerPageState extends State<BankLedgerPage>
             children: [
               Expanded(
                 child: _buildMetricTile(
-                  title: 'In-Hand PDCs',
-                  subtitle: 'پاس موجود چیکس',
+                  title: isUrdu ? 'پاس موجود چیکس' : 'In-Hand PDCs',
+                  subtitle: isUrdu ? 'غیر جمع شدہ چیک' : 'In-hand / Uncleared',
                   amount: summary.inHandAmount,
                   count: summary.inHandCount,
                   color: MColors.gold,
@@ -236,8 +273,8 @@ class _BankLedgerPageState extends State<BankLedgerPage>
               const SizedBox(width: 8),
               Expanded(
                 child: _buildMetricTile(
-                  title: 'Under Clearing',
-                  subtitle: 'بینک میں جمع شدہ',
+                  title: isUrdu ? 'جمع شدہ چیکس' : 'Under Clearing',
+                  subtitle: isUrdu ? 'بینک میں جمع شدہ' : 'Deposited in bank',
                   amount: summary.depositedAmount,
                   count: summary.depositedCount,
                   color: Colors.blueAccent,
@@ -252,8 +289,8 @@ class _BankLedgerPageState extends State<BankLedgerPage>
             children: [
               Expanded(
                 child: _buildMetricTile(
-                  title: 'Cleared',
-                  subtitle: 'کامیابی سے کلیئر',
+                  title: isUrdu ? 'کامیاب کلیئر' : 'Cleared',
+                  subtitle: isUrdu ? 'کامیابی سے کلیئر' : 'Processed & cleared',
                   amount: summary.clearedAmount,
                   count: summary.clearedCount,
                   color: MColors.primaryLight,
@@ -264,8 +301,8 @@ class _BankLedgerPageState extends State<BankLedgerPage>
               const SizedBox(width: 8),
               Expanded(
                 child: _buildMetricTile(
-                  title: 'Bounced / Alert',
-                  subtitle: 'باؤنس شدہ چیکس',
+                  title: isUrdu ? 'باؤنس چیکس' : 'Bounced / Alert',
+                  subtitle: isUrdu ? 'باؤنس شدہ چیک' : 'Dishonored cheques',
                   amount: summary.bouncedAmount,
                   count: summary.bouncedCount,
                   color: MColors.danger,
@@ -291,7 +328,11 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '${summary.dueTodayCount} Cheques due today (Rs. ${_currencyFmt.format(summary.dueTodayAmount)}) - Ready for bank deposit!',
+                      AppStrings.val(
+                        context,
+                        en: '${summary.dueTodayCount} Cheques due today (Rs. ${_currencyFmt.format(summary.dueTodayAmount)}) - Ready for bank deposit!',
+                        ur: '${summary.dueTodayCount} چیکس آج مقرر ہیں (روپے ${_currencyFmt.format(summary.dueTodayAmount)}) - بینک جمع کے لیے تیار!',
+                      ),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -302,7 +343,11 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                   TextButton(
                     onPressed: () =>
                         setState(() => _selectedStatusFilter = 'due_today'),
-                    child: const Text('View Due'),
+                    child: Text(AppStrings.val(
+                      context,
+                      en: 'View Due',
+                      ur: 'مقررہ دیکھیں',
+                    )),
                   ),
                 ],
               ),
@@ -318,7 +363,11 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                 child: TextField(
                   controller: _searchCtrl,
                   decoration: InputDecoration(
-                    hintText: 'Search Cheque #, Party, Bank...',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'Search Cheque #, Party, Bank...',
+                      ur: 'چیک نمبر، پارٹی یا بینک تلاش کریں...',
+                    ),
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
@@ -345,21 +394,25 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                       ? MColors.primary
                       : null,
                 ),
-                tooltip: 'Filter Direction (Received/Issued)',
+                tooltip: AppStrings.val(
+                  context,
+                  en: 'Filter Direction',
+                  ur: 'قسم کے لحاظ سے فلٹر',
+                ),
                 initialValue: _selectedTypeFilter,
                 onSelected: (v) => setState(() => _selectedTypeFilter = v),
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: null,
-                    child: Text('All Cheques (تمام)'),
+                    child: Text(isUrdu ? 'تمام چیکس' : 'All Cheques'),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: ChequeType.received,
-                    child: Text('Received (وصولی - خریدار)'),
+                    child: Text(isUrdu ? 'وصولی (خریدار)' : 'Received (Buyer)'),
                   ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: ChequeType.issued,
-                    child: Text('Issued (ادائیگی - زمیندار)'),
+                    child: Text(isUrdu ? 'ادائیگی (زمیندار)' : 'Issued (Farmer)'),
                   ),
                 ],
               ),
@@ -373,17 +426,59 @@ class _BankLedgerPageState extends State<BankLedgerPage>
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildFilterChip('All (${bankProv.cheques.length})', 'all'),
+                _buildFilterChip(
+                  AppStrings.val(
+                    context,
+                    en: 'All (${bankProv.cheques.length})',
+                    ur: 'تمام (${bankProv.cheques.length})',
+                  ),
+                  'all',
+                ),
                 const SizedBox(width: 6),
-                _buildFilterChip('In-Hand (${summary.inHandCount})', 'in_hand'),
+                _buildFilterChip(
+                  AppStrings.val(
+                    context,
+                    en: 'In-Hand (${summary.inHandCount})',
+                    ur: 'پاس موجود (${summary.inHandCount})',
+                  ),
+                  'in_hand',
+                ),
                 const SizedBox(width: 6),
-                _buildFilterChip('Due Today (${summary.dueTodayCount})', 'due_today'),
+                _buildFilterChip(
+                  AppStrings.val(
+                    context,
+                    en: 'Due Today (${summary.dueTodayCount})',
+                    ur: 'آج کے (${summary.dueTodayCount})',
+                  ),
+                  'due_today',
+                ),
                 const SizedBox(width: 6),
-                _buildFilterChip('Deposited (${summary.depositedCount})', 'deposited'),
+                _buildFilterChip(
+                  AppStrings.val(
+                    context,
+                    en: 'Deposited (${summary.depositedCount})',
+                    ur: 'جمع شدہ (${summary.depositedCount})',
+                  ),
+                  'deposited',
+                ),
                 const SizedBox(width: 6),
-                _buildFilterChip('Cleared (${summary.clearedCount})', 'cleared'),
+                _buildFilterChip(
+                  AppStrings.val(
+                    context,
+                    en: 'Cleared (${summary.clearedCount})',
+                    ur: 'کلیئر شدہ (${summary.clearedCount})',
+                  ),
+                  'cleared',
+                ),
                 const SizedBox(width: 6),
-                _buildFilterChip('Bounced (${summary.bouncedCount})', 'bounced'),
+                _buildFilterChip(
+                  AppStrings.val(
+                    context,
+                    en: 'Bounced (${summary.bouncedCount})',
+                    ur: 'باؤنس شدہ (${summary.bouncedCount})',
+                  ),
+                  'bounced',
+                ),
               ],
             ),
           ),
@@ -401,7 +496,11 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                       size: 54, color: Colors.grey.shade400),
                   const SizedBox(height: 12),
                   Text(
-                    'No cheques found',
+                    AppStrings.val(
+                      context,
+                      en: 'No cheques found',
+                      ur: 'کوئی چیک نہیں ملا',
+                    ),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -410,7 +509,11 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Tap "+ Record Cheque" below to record incoming or outgoing cheques.',
+                    AppStrings.val(
+                      context,
+                      en: 'Tap "+ Record Cheque" below to record incoming or outgoing cheques.',
+                      ur: 'آمدنی یا ادائیگی کا چیک درج کرنے کے لیے نیچے "+ چیک درج کریں" پر کلک کریں۔',
+                    ),
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
                     textAlign: TextAlign.center,
                   ),
@@ -418,7 +521,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
               ),
             )
           else
-            ...filteredCheques.map((cheque) => _buildChequeCard(cheque)),
+            ...filteredCheques.map((cheque) => _buildChequeCard(cheque, isUrdu)),
 
           const SizedBox(height: 80),
         ],
@@ -517,7 +620,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
     );
   }
 
-  Widget _buildChequeCard(Cheque cheque) {
+  Widget _buildChequeCard(Cheque cheque, bool isUrdu) {
     Color statusColor;
     Color statusBg;
 
@@ -577,7 +680,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          cheque.typeLabelEnglish,
+                          isUrdu ? cheque.typeLabelUrdu : cheque.typeLabelEnglish,
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.bold,
@@ -607,7 +710,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      cheque.statusLabelEnglish,
+                      isUrdu ? cheque.statusLabelUrdu : cheque.statusLabelEnglish,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -638,7 +741,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                         ),
                         if (cheque.bankName.isNotEmpty)
                           Text(
-                            'Bank: ${cheque.bankName}',
+                            '${AppStrings.val(context, en: "Bank:", ur: "بینک:")} ${cheque.bankName}',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -670,7 +773,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                           size: 15, color: Colors.grey.shade600),
                       const SizedBox(width: 4),
                       Text(
-                        'Due: ${_dateFmt.format(cheque.dueDate)}',
+                        '${AppStrings.val(context, en: "Due:", ur: "تاریخ ادائیگی:")} ${_dateFmt.format(cheque.dueDate)}',
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: cheque.isPdc
@@ -723,9 +826,9 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                               UpdateChequeStatusDialog(cheque: cheque),
                         ),
                         icon: const Icon(Icons.sync_alt, size: 15),
-                        label: const Text(
-                          'Update Status',
-                          style: TextStyle(fontSize: 11.5),
+                        label: Text(
+                          AppStrings.val(context, en: 'Update Status', ur: 'سٹیٹس تبدیل کریں'),
+                          style: const TextStyle(fontSize: 11.5),
                         ),
                       ),
                       PopupMenuButton<String>(
@@ -741,13 +844,17 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                           }
                         },
                         itemBuilder: (context) => [
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'edit',
                             child: Row(
                               children: [
-                                Icon(Icons.edit, size: 16),
-                                SizedBox(width: 8),
-                                Text('Edit Details'),
+                                const Icon(Icons.edit, size: 16),
+                                const SizedBox(width: 8),
+                                Text(AppStrings.val(
+                                  context,
+                                  en: 'Edit Details',
+                                  ur: 'ترمیم کریں',
+                                )),
                               ],
                             ),
                           ),
@@ -777,7 +884,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Reason: ${cheque.bounceReason}',
+                          '${AppStrings.val(context, en: "Reason:", ur: "وجہ:")} ${cheque.bounceReason}',
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.red.shade900,
@@ -798,7 +905,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
 
   // ── Tab 2: Bank Accounts ───────────────────────────────────────────────────
 
-  Widget _buildBankAccountsTab(BankProvider bankProv) {
+  Widget _buildBankAccountsTab(BankProvider bankProv, bool isUrdu) {
     final accounts = bankProv.bankAccounts;
     final totalBalance = bankProv.totalBankBalance;
 
@@ -826,18 +933,18 @@ class _BankLedgerPageState extends State<BankLedgerPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Total Liquid Bank Balance',
-                    style: TextStyle(
+                    isUrdu ? 'مجموعی بینکاری بیلنس' : 'Total Liquid Bank Balance',
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  Icon(Icons.account_balance, color: Colors.white70, size: 22),
+                  const Icon(Icons.account_balance, color: Colors.white70, size: 22),
                 ],
               ),
               const SizedBox(height: 6),
@@ -851,7 +958,9 @@ class _BankLedgerPageState extends State<BankLedgerPage>
               ),
               const SizedBox(height: 4),
               Text(
-                'مجموعی بینکاری بیلنس (${accounts.where((a) => a.isActive).length} Active Accounts)',
+                isUrdu
+                    ? '${accounts.where((a) => a.isActive).length} فعال کھاتے'
+                    : '${accounts.where((a) => a.isActive).length} Active Accounts',
                 style: const TextStyle(color: Colors.white60, fontSize: 11),
               ),
             ],
@@ -864,7 +973,11 @@ class _BankLedgerPageState extends State<BankLedgerPage>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Configured Bank Accounts (${accounts.length})',
+              AppStrings.val(
+                context,
+                en: 'Configured Bank Accounts (${accounts.length})',
+                ur: 'منسلک بینک اکاؤنٹس (${accounts.length})',
+              ),
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -875,7 +988,11 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                 builder: (_) => const AddEditBankAccountDialog(),
               ),
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add Account'),
+              label: Text(AppStrings.val(
+                context,
+                en: 'Add Account',
+                ur: 'اکاؤنٹ شامل کریں',
+              )),
             ),
           ],
         ),
@@ -891,14 +1008,22 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                 Icon(Icons.account_balance_outlined,
                     size: 50, color: Colors.grey.shade400),
                 const SizedBox(height: 10),
-                const Text(
-                  'No bank accounts configured yet',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                Text(
+                  AppStrings.val(
+                    context,
+                    en: 'No bank accounts configured yet',
+                    ur: 'ابھی کوئی بینک اکاؤنٹ منسلک نہیں ہے',
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Add your Mandi shop commercial accounts (Meezan, HBL, MCB, Raast, JazzCash).',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Add your Mandi shop commercial accounts (Meezan, HBL, MCB, Raast, JazzCash).',
+                    ur: 'اپنی غلہ منڈی کی دکان کے تجارتی اکاؤنٹس (میزان، ایچ بی ایل، ایم سی بی، راست، جاز کیش) شامل کریں۔',
+                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -954,9 +1079,9 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                           color: MColors.primary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'DEFAULT',
-                          style: TextStyle(
+                        child: Text(
+                          AppStrings.val(context, en: 'DEFAULT', ur: 'بنیادی'),
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: MColors.primary,
@@ -977,25 +1102,35 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                         }
                       },
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'edit',
                           child: Row(
                             children: [
-                              Icon(Icons.edit, size: 16),
-                              SizedBox(width: 8),
-                              Text('Edit Account'),
+                              const Icon(Icons.edit, size: 16),
+                              const SizedBox(width: 8),
+                              Text(AppStrings.val(
+                                context,
+                                en: 'Edit Account',
+                                ur: 'اکاؤنٹ میں ترمیم',
+                              )),
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'delete',
                           child: Row(
                             children: [
-                              Icon(Icons.delete_outline,
+                              const Icon(Icons.delete_outline,
                                   size: 16, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text('Delete Account',
-                                  style: TextStyle(color: Colors.red)),
+                              const SizedBox(width: 8),
+                              Text(
+                                AppStrings.val(
+                                  context,
+                                  en: 'Delete Account',
+                                  ur: 'اکاؤنٹ حذف کریں',
+                                ),
+                                style: const TextStyle(color: Colors.red),
+                              ),
                             ],
                           ),
                         ),
@@ -1023,7 +1158,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
             Row(
               children: [
                 Text(
-                  'A/C: ${acc.accountNumber}',
+                  '${AppStrings.val(context, en: "A/C:", ur: "کھاتہ:")} ${acc.accountNumber}',
                   style: TextStyle(
                     fontSize: 12.5,
                     color: Colors.grey.shade700,
@@ -1035,9 +1170,13 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: acc.accountNumber));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Account number copied to clipboard'),
-                          duration: Duration(seconds: 1),
+                        SnackBar(
+                          content: Text(AppStrings.val(
+                            context,
+                            en: 'Account number copied to clipboard',
+                            ur: 'اکاؤنٹ نمبر کاپی ہو گیا',
+                          )),
+                          duration: const Duration(seconds: 1),
                         ),
                       );
                     },
@@ -1054,7 +1193,7 @@ class _BankLedgerPageState extends State<BankLedgerPage>
               Row(
                 children: [
                   Text(
-                    'IBAN: ${acc.iban}',
+                    '${AppStrings.val(context, en: "IBAN:", ur: "آئی بین:")} ${acc.iban}',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade600,
@@ -1065,9 +1204,13 @@ class _BankLedgerPageState extends State<BankLedgerPage>
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: acc.iban));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('IBAN copied to clipboard'),
-                          duration: Duration(seconds: 1),
+                        SnackBar(
+                          content: Text(AppStrings.val(
+                            context,
+                            en: 'IBAN copied to clipboard',
+                            ur: 'آئی بین کاپی ہو گیا',
+                          )),
+                          duration: const Duration(seconds: 1),
                         ),
                       );
                     },
@@ -1088,8 +1231,8 @@ class _BankLedgerPageState extends State<BankLedgerPage>
               children: [
                 Text(
                   acc.branchName.isNotEmpty
-                      ? 'Branch: ${acc.branchName}'
-                      : 'Mandi Account',
+                      ? '${AppStrings.val(context, en: "Branch:", ur: "برانچ:")} ${acc.branchName}'
+                      : AppStrings.val(context, en: 'Mandi Account', ur: 'منڈی کھاتہ'),
                   style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600),
                 ),
                 Text(
@@ -1112,12 +1255,24 @@ class _BankLedgerPageState extends State<BankLedgerPage>
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Delete Bank Account?'),
-        content: Text('Are you sure you want to delete ${acc.displayName}?'),
+        title: Text(AppStrings.val(
+          context,
+          en: 'Delete Bank Account?',
+          ur: 'بینک اکاؤنٹ حذف کریں؟',
+        )),
+        content: Text(AppStrings.val(
+          context,
+          en: 'Are you sure you want to delete ${acc.displayName}?',
+          ur: 'کیا آپ واقعی ${acc.displayName} حذف کرنا چاہتے ہیں؟',
+        )),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppStrings.val(
+              context,
+              en: 'Cancel',
+              ur: 'منسوخ',
+            )),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: MColors.danger),
@@ -1125,7 +1280,14 @@ class _BankLedgerPageState extends State<BankLedgerPage>
               Navigator.pop(context);
               await bankProv.deleteBankAccount(acc.id);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+            child: Text(
+              AppStrings.val(
+                context,
+                en: 'Delete',
+                ur: 'حذف کریں',
+              ),
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),

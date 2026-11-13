@@ -1,8 +1,9 @@
 // Dialog to Store Crop in a Warehouse Bay
-// (*گودام کے خانے میں مال ذخیرہ کریں*).
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/data/models/warehouse_grid_model.dart';
 import 'package:mandi/modules/warehouse_grid/providers/warehouse_grid_provider.dart';
 
@@ -28,7 +29,7 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
   @override
   void initState() {
     super.initState();
-    _cropCtrl = TextEditingController(text: widget.bay.cropName ?? 'Basmati Rice (دھان)');
+    _cropCtrl = TextEditingController(text: widget.bay.cropName ?? 'Basmati Rice');
     _farmerCtrl = TextEditingController(text: widget.bay.farmerName ?? 'Malik Farm');
     _lotCtrl = TextEditingController(text: widget.bay.lotCode ?? 'LOT-${widget.bay.chamberCode}-${widget.bay.bayCode}');
     _bagsCtrl = TextEditingController(
@@ -48,6 +49,7 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
   }
 
   Future<void> _submit() async {
+    final isUrdu = AppStrings.isUrdu(context);
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
@@ -71,14 +73,18 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Stock Stored in Bay ${widget.bay.bayCode} Successfully!'),
+            content: Text(
+              isUrdu
+                  ? 'خانہ ${widget.bay.bayCode} میں مال کا کامیابی سے اندراج ہو گیا!'
+                  : 'Stock Stored in Bay ${widget.bay.bayCode} Successfully!',
+            ),
             backgroundColor: Colors.teal,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage ?? 'Error updating bay'),
+            content: Text(provider.errorMessage ?? (isUrdu ? 'اندراج میں خرابی' : 'Error updating bay')),
             backgroundColor: Colors.red,
           ),
         );
@@ -88,6 +94,8 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
+
     return AlertDialog(
       title: Row(
         children: [
@@ -95,7 +103,9 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Store Stock in Bay ${widget.bay.bayCode}\n(${widget.bay.chamberCode} خانے میں مال کا اندراج)',
+              isUrdu
+                  ? 'خانہ ${widget.bay.bayCode} میں مال کا اندراج'
+                  : 'Store Stock in Bay ${widget.bay.bayCode}',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
@@ -109,32 +119,32 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
             children: [
               TextFormField(
                 controller: _cropCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Crop Commodity / جنس *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.grain),
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'فصل و جنس *' : 'Crop Commodity *',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.grain),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _farmerCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Farmer / زمیندار *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'زمیندار *' : 'Farmer *',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.person),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _lotCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Lot Code / لاٹ نمبر *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.qr_code),
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'لاٹ نمبر *' : 'Lot Code *',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.qr_code),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
               ),
               const SizedBox(height: 12),
               Row(
@@ -143,11 +153,11 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
                     child: TextFormField(
                       controller: _bagsCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Stored Bags (بوریاں) *',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: isUrdu ? 'تعداد بوریاں *' : 'Stored Bags *',
+                        border: const OutlineInputBorder(),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -155,11 +165,11 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
                     child: TextFormField(
                       controller: _capacityCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Bay Capacity *',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: isUrdu ? 'کل گنجائش *' : 'Bay Capacity *',
+                        border: const OutlineInputBorder(),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
                     ),
                   ),
                 ],
@@ -171,7 +181,7 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('منسوخ (Cancel)'),
+          child: Text(isUrdu ? 'منسوخ' : 'Cancel'),
         ),
         ElevatedButton(
           onPressed: _isSaving ? null : _submit,
@@ -182,7 +192,10 @@ class _StoreCropInBayDialogState extends State<StoreCropInBayDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : const Text('محفوظ کریں (Store Stock)', style: TextStyle(color: Colors.white)),
+              : Text(
+                  isUrdu ? 'محفوظ کریں' : 'Store Stock',
+                  style: const TextStyle(color: Colors.white),
+                ),
         ),
       ],
     );

@@ -5,6 +5,7 @@ import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/whatsapp_share_service.dart';
 import 'package:mandi/data/models/farmer_model.dart';
+import 'package:mandi/data/models/shop_model.dart';
 import 'package:mandi/providers/auth_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/suppliers/providers/farmer_provider.dart';
@@ -23,12 +24,419 @@ import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 class FarmerDashboardPage extends StatelessWidget {
   const FarmerDashboardPage({super.key});
 
+  void _showShopSwitcherBottomSheet(BuildContext context) {
+    final shopCtx = context.read<ShopContextProvider>();
+    final currentShopId = shopCtx.currentShopId;
+    final available = shopCtx.availableShops;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(MSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppStrings.tr(sheetCtx, 'switch_mandi_shop'),
+                      style: MText.titleLg.copyWith(color: MColors.textPrimary),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: MColors.textSecondary),
+                      onPressed: () => Navigator.pop(sheetCtx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: MSpacing.sm),
+                if (available.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: MSpacing.md),
+                    child: Text(
+                      AppStrings.tr(sheetCtx, 'no_other_shops'),
+                      style: MText.bodySm.copyWith(color: MColors.textSecondary),
+                    ),
+                  )
+                else
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: available.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(height: 1, color: MColors.divider),
+                      itemBuilder: (_, i) {
+                        final s = available[i];
+                        final isSelected = s.id == currentShopId;
+                        return InkWell(
+                          onTap: () async {
+                            Navigator.pop(sheetCtx);
+                            if (!isSelected) {
+                              await shopCtx.switchShop(s.id);
+                            }
+                          },
+                          borderRadius: MRadius.sm,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: MSpacing.sm,
+                              horizontal: 4,
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: isSelected
+                                      ? MColors.primary
+                                      : MColors.emeraldPale,
+                                  backgroundImage: s.logoUrl != null &&
+                                          s.logoUrl!.isNotEmpty
+                                      ? NetworkImage(s.logoUrl!)
+                                      : null,
+                                  child: s.logoUrl == null ||
+                                          s.logoUrl!.isEmpty
+                                      ? Icon(
+                                          Icons.storefront_rounded,
+                                          size: 18,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : MColors.primary,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: MSpacing.sm),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        s.name,
+                                        style: MText.bodyMd.copyWith(
+                                          color: MColors.textPrimary,
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.w500,
+                                        ),
+                                      ),
+                                      if (s.city.isNotEmpty)
+                                        Text(
+                                          'Ghalla Mandi, ${s.city}',
+                                          style: MText.caption.copyWith(
+                                            color: MColors.textSecondary,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                if (isSelected)
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: MColors.primary,
+                                    size: 22,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showShopDetailsModal(BuildContext context, Shop? shop) {
+    final shopCtx = context.read<ShopContextProvider>();
+    final effectiveShopName = (shop != null && shop.name.isNotEmpty)
+        ? shop.name
+        : 'Saith Commission Shop';
+    final effectiveCity = (shop != null && shop.city.isNotEmpty)
+        ? shop.city
+        : 'Faisalabad';
+    final effectiveAddress = (shop != null && shop.address.isNotEmpty)
+        ? shop.address
+        : 'Shop # 42, New Ghalla Mandi, $effectiveCity';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: MSpacing.lg,
+              vertical: MSpacing.md,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: MColors.borderMedium,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: MSpacing.md),
+                Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: MColors.primary.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: MColors.primary.withValues(alpha: 0.25),
+                          width: 2,
+                        ),
+                      ),
+                      child: shop != null &&
+                              shop.logoUrl != null &&
+                              shop.logoUrl!.isNotEmpty
+                          ? ClipOval(
+                              child: Image.network(
+                                shop.logoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.storefront_rounded,
+                                  color: MColors.primary,
+                                  size: 28,
+                                ),
+                              ),
+                            )
+                          : const Icon(
+                              Icons.storefront_rounded,
+                              color: MColors.primary,
+                              size: 28,
+                            ),
+                    ),
+                    const SizedBox(width: MSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            effectiveShopName,
+                            style: MText.titleLg.copyWith(
+                              color: MColors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: MColors.emeraldPale,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  AppStrings.tr(sheetCtx, 'commission_agent'),
+                                  style: MText.caption.copyWith(
+                                    color: MColors.primaryDark,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '• $effectiveCity',
+                                style: MText.caption
+                                    .copyWith(color: MColors.textSecondary),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded,
+                          color: MColors.textSecondary),
+                      onPressed: () => Navigator.pop(sheetCtx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: MSpacing.md),
+                const Divider(color: MColors.divider),
+                const SizedBox(height: MSpacing.sm),
+
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: MColors.emeraldPale,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.location_on_outlined,
+                        color: MColors.primary, size: 20),
+                  ),
+                  title: Text(
+                    AppStrings.tr(sheetCtx, 'shop_address'),
+                    style: MText.labelSm.copyWith(color: MColors.textSecondary),
+                  ),
+                  subtitle: Text(
+                    effectiveAddress,
+                    style: MText.bodyMd.copyWith(
+                        color: MColors.textPrimary,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+
+                if (shop != null && shop.phone.isNotEmpty)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: MColors.emeraldPale,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.phone_outlined,
+                          color: MColors.primary, size: 20),
+                    ),
+                    title: Text(
+                      AppStrings.tr(sheetCtx, 'shop_phone'),
+                      style: MText.labelSm
+                          .copyWith(color: MColors.textSecondary),
+                    ),
+                    subtitle: Text(
+                      shop.phone,
+                      style: MText.bodyMd.copyWith(
+                          color: MColors.textPrimary,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+
+                if (shop != null && shop.defaultCommissionPercent > 0)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: MColors.goldLight,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.percent_rounded,
+                          color: MColors.goldDark, size: 20),
+                    ),
+                    title: Text(
+                      'Commission Rate',
+                      style: MText.labelSm
+                          .copyWith(color: MColors.textSecondary),
+                    ),
+                    subtitle: Text(
+                      '${shop.defaultCommissionPercent}%',
+                      style: MText.bodyMd.copyWith(
+                          color: MColors.textPrimary,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+
+                const SizedBox(height: MSpacing.md),
+                Row(
+                  children: [
+                    if (shop != null &&
+                        (shop.whatsapp.isNotEmpty || shop.phone.isNotEmpty))
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF25D366),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () {
+                            final target = shop.whatsapp.isNotEmpty
+                                ? shop.whatsapp
+                                : shop.phone;
+                            WhatsAppShareService.launchWhatsApp(
+                              phone: target,
+                              message:
+                                  'Salam, inquiring about Mandi rates and consignment khata at $effectiveShopName.',
+                            );
+                          },
+                          icon: const Icon(Icons.chat_bubble_outline_rounded,
+                              color: Colors.white, size: 18),
+                          label: Text(
+                            AppStrings.tr(sheetCtx, 'whatsapp_shop'),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    if (shopCtx.hasMultipleShops) ...[
+                      const SizedBox(width: MSpacing.sm),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: MColors.primary,
+                            side: const BorderSide(color: MColors.primary),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(sheetCtx);
+                            _showShopSwitcherBottomSheet(context);
+                          },
+                          icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                          label: Text(
+                            AppStrings.tr(sheetCtx, 'switch_shop'),
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: MSpacing.sm),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final shopCtx = context.watch<ShopContextProvider>();
     final auth = context.read<AuthProvider>();
     final shop = shopCtx.currentShop;
     final member = shopCtx.currentMember;
+
+    final effectiveShopName = (shop != null && shop.name.isNotEmpty)
+        ? shop.name
+        : 'Saith Commission Shop';
 
     final farmers = context.watch<FarmerProvider>().farmers;
     final myFarmer = farmers.firstWhere(
@@ -47,29 +455,90 @@ class FarmerDashboardPage extends StatelessWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headingColor = isDark ? Colors.white : MColors.textPrimary;
-    final subtitleColor = isDark ? MColors.textOnDarkSub : MColors.textSecondary;
+    final subtitleColor =
+        isDark ? MColors.textOnDarkSub : MColors.textSecondary;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(shop?.name ?? 'Farmer Dashboard (زمیندار ڈیش بورڈ)'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: AppStrings.tr(context, 'logout'),
-            onPressed: () {
-              auth.signOut();
-              shopCtx.clear();
-            },
+    return LiquidCrystalBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: InkWell(
+            onTap: shopCtx.hasMultipleShops
+                ? () => _showShopSwitcherBottomSheet(context)
+                : () => _showShopDetailsModal(context, shop),
+            borderRadius: MRadius.sm,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: MColors.primary.withValues(alpha: 0.12),
+                    backgroundImage: shop != null &&
+                            shop.logoUrl != null &&
+                            shop.logoUrl!.isNotEmpty
+                        ? NetworkImage(shop.logoUrl!)
+                        : null,
+                    child: shop?.logoUrl == null || shop!.logoUrl!.isEmpty
+                        ? const Icon(
+                            Icons.storefront_rounded,
+                            size: 16,
+                            color: MColors.primary,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: MSpacing.xs),
+                  Flexible(
+                    child: Text(
+                      effectiveShopName,
+                      overflow: TextOverflow.ellipsis,
+                      style: MText.titleMd.copyWith(
+                        color: MColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if (shopCtx.hasMultipleShops) ...[
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: MColors.textSecondary,
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
-      body: LiquidCrystalBackground(
-        child: SingleChildScrollView(
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.info_outline_rounded),
+              tooltip: AppStrings.tr(context, 'shop_details'),
+              onPressed: () => _showShopDetailsModal(context, shop),
+            ),
+            if (shopCtx.hasMultipleShops)
+              IconButton(
+                icon: const Icon(Icons.swap_horiz_rounded),
+                tooltip: AppStrings.tr(context, 'switch_mandi_shop'),
+                onPressed: () => _showShopSwitcherBottomSheet(context),
+              ),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: AppStrings.tr(context, 'logout'),
+              onPressed: () {
+                auth.signOut();
+                shopCtx.clear();
+              },
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(MSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 1. Farmer Profile Greeting Card
               InkWell(
                 onTap: () => Navigator.push(
                   context,
@@ -101,8 +570,9 @@ class FarmerDashboardPage extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    'Welcome, ${member?.name ?? ''}',
-                                    style: MText.titleLg.copyWith(color: headingColor),
+                                    '${AppStrings.tr(context, 'welcome')}, ${member?.name ?? ''}',
+                                    style: MText.titleLg
+                                        .copyWith(color: headingColor),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -113,9 +583,11 @@ class FarmerDashboardPage extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 2),
-                            Text('Farmer (زمیندار) at ${shop?.name ?? 'this shop'}',
-                                style: MText.bodySm
-                                    .copyWith(color: subtitleColor)),
+                            Text(
+                              '${AppStrings.tr(context, 'farmer')} ${AppStrings.tr(context, 'at_this_shop')} $effectiveShopName',
+                              style: MText.bodySm
+                                  .copyWith(color: subtitleColor),
+                            ),
                           ],
                         ),
                       ),
@@ -126,30 +598,36 @@ class FarmerDashboardPage extends StatelessWidget {
 
               const SizedBox(height: MSpacing.lg),
 
-              // Glass Balance Card with WhatsApp Reminder
+              // 2. Glass Balance Card with WhatsApp Reminder
               GlassCard(
                 width: double.infinity,
                 padding: const EdgeInsets.all(MSpacing.lg),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Money Owed to Me by ${shop?.name ?? "Shop"}',
-                        style: MText.labelMd.copyWith(
-                          color: isDark ? Colors.white70 : MColors.textSecondary,
-                        )),
-                    const SizedBox(height: MSpacing.xs),
                     Text(
-                      'Rs. ${myFarmer.runningBalance.toStringAsFixed(0)}',
-                      style: MText.titleLg.copyWith(
-                        color: myFarmer.runningBalance > 0
-                            ? MColors.danger
-                            : Colors.greenAccent,
-                        fontSize: 24,
+                      '${AppStrings.tr(context, 'money_owed_to_me')} ($effectiveShopName)',
+                      style: MText.labelMd.copyWith(
+                        color: isDark ? Colors.white70 : MColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: MSpacing.xs),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Rs. ${myFarmer.runningBalance.toStringAsFixed(0)}',
+                        style: MText.displayMd.copyWith(
+                          color: myFarmer.runningBalance > 0
+                              ? MColors.danger
+                              : Colors.green.shade700,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     if (myFarmer.runningBalance > 0 &&
-                        (shop?.phone.isNotEmpty == true ||
-                            shop?.whatsapp.isNotEmpty == true)) ...[
+                        shop != null &&
+                        (shop.phone.isNotEmpty || shop.whatsapp.isNotEmpty)) ...[
                       const SizedBox(height: MSpacing.md),
                       SizedBox(
                         width: double.infinity,
@@ -162,21 +640,21 @@ class FarmerDashboardPage extends StatelessWidget {
                             ),
                           ),
                           onPressed: () {
-                            final targetPhone = shop?.whatsapp.isNotEmpty == true
-                                ? shop!.whatsapp
-                                : (shop?.phone ?? '');
+                            final targetPhone = shop.whatsapp.isNotEmpty
+                                ? shop.whatsapp
+                                : shop.phone;
                             WhatsAppShareService.sharePaymentReminder(
                               phone: targetPhone,
-                              name: shop?.name ?? 'Shop Owner',
+                              name: shop.name,
                               pendingBalance: myFarmer.runningBalance,
-                              shopName: shop?.name ?? 'Mandi Shop',
+                              shopName: effectiveShopName,
                             );
                           },
-                          icon:
-                              const Icon(Icons.send_outlined, color: Colors.white),
-                          label: const Text(
-                            'Send Payment Reminder to Shop Owner',
-                            style: TextStyle(color: Colors.white),
+                          icon: const Icon(Icons.send_outlined,
+                              color: Colors.white),
+                          label: Text(
+                            AppStrings.tr(context, 'send_reminder'),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                       ),
@@ -186,13 +664,18 @@ class FarmerDashboardPage extends StatelessWidget {
               ),
 
               const SizedBox(height: MSpacing.xl),
-              Text('Farmer & Crop Services (زمیندار سروسز)',
+              Text(AppStrings.tr(context, 'farmer_services'),
                   style: MText.titleLg.copyWith(color: headingColor)),
               const SizedBox(height: MSpacing.sm),
               Wrap(
                 spacing: MSpacing.sm,
                 runSpacing: MSpacing.sm,
                 children: [
+                  _FarmerTile(
+                    icon: Icons.storefront_rounded,
+                    label: AppStrings.tr(context, 'shop_details'),
+                    onTap: () => _showShopDetailsModal(context, shop),
+                  ),
                   _FarmerTile(
                     icon: Icons.menu_book_rounded,
                     label: AppStrings.tr(context, 'farmer_passbook'),
@@ -222,7 +705,7 @@ class FarmerDashboardPage extends StatelessWidget {
                   ),
                   _FarmerTile(
                     icon: Icons.add_business_outlined,
-                    label: 'Offer Crop',
+                    label: AppStrings.tr(context, 'offer_crop'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -245,14 +728,15 @@ class FarmerDashboardPage extends StatelessWidget {
                     label: AppStrings.tr(context, 'products'),
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ProductListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const ProductListPage()),
                     ),
                   ),
                 ],
               ),
 
               const SizedBox(height: MSpacing.lg),
-              Text('My Account (میرا کھاتہ)',
+              Text(AppStrings.tr(context, 'my_khata'),
                   style: MText.titleLg.copyWith(color: headingColor)),
               const SizedBox(height: MSpacing.sm),
               Wrap(
@@ -264,12 +748,13 @@ class FarmerDashboardPage extends StatelessWidget {
                     label: AppStrings.tr(context, 'payments'),
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const PaymentListPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const PaymentListPage()),
                     ),
                   ),
                   _FarmerTile(
                     icon: Icons.menu_book_outlined,
-                    label: 'Khata Ledger',
+                    label: AppStrings.tr(context, 'khata_ledger'),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -300,33 +785,46 @@ class _FarmerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = isDark ? MColors.gold : MColors.primary;
-    final textColor = isDark ? Colors.white : MColors.textPrimary;
-
     return GlassCard(
       onTap: onTap,
       borderRadius: AppDimensions.cardRadius,
       padding: const EdgeInsets.symmetric(
-          vertical: MSpacing.sm, horizontal: MSpacing.xs),
+          vertical: MSpacing.sm, horizontal: 4),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          minWidth: 80,
-          maxWidth: 96,
-          minHeight: 88,
+          minWidth: 88,
+          maxWidth: 98,
+          minHeight: 96,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: iconColor, size: 24),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: MColors.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: MColors.primary.withValues(alpha: 0.15),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: MColors.primary,
+                size: 22,
+              ),
+            ),
             const SizedBox(height: 6),
             Text(
               label,
               style: MText.caption.copyWith(
-                color: textColor,
+                color: MColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 11,
+                height: 1.2,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,

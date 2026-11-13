@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/sms_gateway_service.dart';
 import 'package:mandi/data/models/sms_gateway_model.dart';
@@ -132,12 +133,12 @@ class _SendQuickSmsDialogState extends State<SendQuickSmsDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Send Direct SMS',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        Text(
+                          AppStrings.val(context, en: 'Send Direct SMS', ur: 'براہ راست پیغام ارسال کریں'),
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          'خودکار ایس ایم ایس پیغام برائے گاہک / زمیندار',
+                          AppStrings.val(context, en: 'Automated SMS dispatch for customers and farmers', ur: 'گاہک یا زمیندار کو ایس ایم ایس الرٹ روانہ کریں'),
                           style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                         ),
                       ],
@@ -166,7 +167,11 @@ class _SendQuickSmsDialogState extends State<SendQuickSmsDialog> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'SMS Gateway is disabled in settings. Enable it or use Mock Simulator.',
+                          AppStrings.val(
+                            context,
+                            en: 'SMS Gateway is disabled in settings. Enable it or use Mock Simulator.',
+                            ur: 'گیٹ وے بند ہے۔ اسے سیٹنگز سے آن کریں یا ٹیسٹ سمیلیٹر استعمال کریں۔',
+                          ),
                           style: TextStyle(fontSize: 12, color: Colors.amber.shade900),
                         ),
                       ),
@@ -183,7 +188,7 @@ class _SendQuickSmsDialogState extends State<SendQuickSmsDialog> {
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
-                        labelText: 'Phone Number (موبائل نمبر)',
+                        labelText: AppStrings.val(context, en: 'Phone Number', ur: 'موبائل نمبر'),
                         hintText: '03001234567 or +92300...',
                         prefixIcon: const Icon(Icons.phone_rounded, size: 20),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -202,7 +207,7 @@ class _SendQuickSmsDialogState extends State<SendQuickSmsDialog> {
                     child: TextFormField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        labelText: 'Recipient Name',
+                        labelText: AppStrings.val(context, en: 'Recipient Name', ur: 'وصول کنندہ کا نام'),
                         hintText: 'Haji Sahib',
                         prefixIcon: const Icon(Icons.person_rounded, size: 20),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -218,9 +223,9 @@ class _SendQuickSmsDialogState extends State<SendQuickSmsDialog> {
                 controller: _messageController,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  labelText: 'SMS Message Body (پیغام کا متن)',
+                  labelText: AppStrings.val(context, en: 'SMS Message Body', ur: 'پیغام کا متن'),
                   alignLabelWithHint: true,
-                  hintText: 'Write SMS message content...',
+                  hintText: AppStrings.val(context, en: 'Write SMS message content...', ur: 'پیغام کا متن یہاں لکھیں...'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 validator: (val) {
@@ -313,7 +318,7 @@ class _SendQuickSmsDialogState extends State<SendQuickSmsDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ')),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton.icon(
@@ -331,7 +336,11 @@ class _SendQuickSmsDialogState extends State<SendQuickSmsDialog> {
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                           )
                         : const Icon(Icons.send_rounded, size: 18),
-                    label: Text(smsProvider.isSending ? 'Sending...' : 'Send SMS Now'),
+                    label: Text(
+                      smsProvider.isSending
+                          ? AppStrings.val(context, en: 'Sending...', ur: 'ارسال ہو رہا ہے...')
+                          : AppStrings.val(context, en: 'Send SMS Now', ur: 'ابھی ارسال کریں'),
+                    ),
                   ),
                 ],
               ),

@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/core/theme/theme_provider.dart';
@@ -355,10 +356,11 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
               OutlinedButton.icon(
                 icon: const Icon(Icons.print_rounded, size: 18),
                 label: Text(
-                    'Print Test Thermal Receipt (${_printerRollWidth.toStringAsFixed(0)}mm) / ٹیسٹ پرنٹ'),
+                    '${AppStrings.tr(context, 'print_test_receipt')} (${_printerRollWidth.toStringAsFixed(0)}mm)'),
                 onPressed: () {
                   final shop = context.read<ShopContextProvider>().currentShop;
                   final shopName = shop?.name ?? 'Mandi Commission Shop';
+                  final testPrintLabel = AppStrings.tr(context, 'test_print');
                   ThermalPrintPreviewDialog.show(
                     context: context,
                     title: 'Printer Hardware Test Slip',
@@ -370,7 +372,7 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
                       'Mandi: ${_city.text.isNotEmpty ? _city.text : "City Market"}',
                       'Ph: ${_phone.text.isNotEmpty ? _phone.text : "0300-1234567"}',
                       '--------------------------------',
-                      'TEST PRINT / ٹیسٹ پرنٹ',
+                      testPrintLabel,
                       'Roll Width: ${_printerRollWidth.toStringAsFixed(0)}mm',
                       'Columns: ${_printerRollWidth == 58 ? "32 Chars" : "48 Chars"}',
                       'Status: READY & ONLINE',
@@ -445,21 +447,21 @@ class _ShopSettingsPageState extends State<ShopSettingsPage> {
               ),
 
               const SizedBox(height: MSpacing.lg),
-              const Text('App Language (زبان)', style: MText.titleLg),
+              Text(AppStrings.tr(context, 'app_language'), style: MText.titleLg),
               const SizedBox(height: MSpacing.sm),
               Consumer<LocaleProvider>(
                 builder: (context, localeProvider, _) {
                   return SegmentedButton<String>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
                         value: 'en',
-                        label: Text('English'),
-                        icon: Icon(Icons.language),
+                        label: Text(localeProvider.isUrdu ? 'انگریزی' : 'English'),
+                        icon: const Icon(Icons.language),
                       ),
                       ButtonSegment(
                         value: 'ur',
-                        label: Text('اردو (Urdu)'),
-                        icon: Icon(Icons.translate),
+                        label: Text(localeProvider.isUrdu ? 'اردو' : 'Urdu'),
+                        icon: const Icon(Icons.translate),
                       ),
                     ],
                     selected: {localeProvider.isUrdu ? 'ur' : 'en'},

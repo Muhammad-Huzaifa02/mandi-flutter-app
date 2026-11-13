@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../data/models/broadcast_campaign_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import '../../rates/providers/mandi_rate_provider.dart';
@@ -63,6 +64,7 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
   @override
   Widget build(BuildContext context) {
     final broadcastProvider = context.watch<BroadcastProvider>();
+    final isUrdu = AppStrings.isUrdu(context);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -87,19 +89,14 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                       child: const Icon(Icons.campaign, color: Colors.teal, size: 24),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Create Mandi Broadcast Bulletin',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          Text(
-                            'نیا براڈکاسٹ پیغام (واٹس ایپ و ٹیلیگرام)',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
-                          ),
-                        ],
+                    Expanded(
+                      child: Text(
+                        AppStrings.val(
+                          context,
+                          en: 'Create Mandi Broadcast Bulletin',
+                          ur: 'نیا منڈی براڈکاسٹ پیغام بنائیں',
+                        ),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
                     IconButton(
@@ -113,14 +110,16 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                 // Campaign Title
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Campaign Title *',
-                    hintText: 'e.g. Morning Mandi Bhav Rates',
-                    prefixIcon: Icon(Icons.title, size: 18),
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(context, en: 'Campaign Title *', ur: 'مہم کا عنوان *'),
+                    hintText: AppStrings.val(context, en: 'e.g. Morning Mandi Bhav Rates', ur: 'مثلاً صبح کی منڈی بھاؤ لسٹ'),
+                    prefixIcon: const Icon(Icons.title, size: 18),
+                    border: const OutlineInputBorder(),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                  validator: (v) => v == null || v.trim().isEmpty
+                      ? AppStrings.val(context, en: 'Required', ur: 'لازمی ہے')
+                      : null,
                 ),
                 const SizedBox(height: 12),
 
@@ -130,15 +129,15 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                     Expanded(
                       child: DropdownButtonFormField<BroadcastChannel>(
                         initialValue: _channel,
-                        decoration: const InputDecoration(
-                          labelText: 'Channel (چینل)',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Channel', ur: 'چینل'),
+                          border: const OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                         ),
                         items: BroadcastChannel.values.map((c) {
                           return DropdownMenuItem(
                             value: c,
-                            child: Text(c.labelEn, style: const TextStyle(fontSize: 12)),
+                            child: Text(isUrdu ? c.labelUr : c.labelEn, style: const TextStyle(fontSize: 12)),
                           );
                         }).toList(),
                         onChanged: (val) {
@@ -150,15 +149,15 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                     Expanded(
                       child: DropdownButtonFormField<AudienceType>(
                         initialValue: _audience,
-                        decoration: const InputDecoration(
-                          labelText: 'Audience (مخاطب)',
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Audience', ur: 'مخاطب'),
+                          border: const OutlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                         ),
                         items: AudienceType.values.map((a) {
                           return DropdownMenuItem(
                             value: a,
-                            child: Text(a.labelEn, style: const TextStyle(fontSize: 12)),
+                            child: Text(isUrdu ? a.labelUr : a.labelEn, style: const TextStyle(fontSize: 12)),
                           );
                         }).toList(),
                         onChanged: (val) {
@@ -178,12 +177,15 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       ),
                       icon: const Icon(Icons.auto_awesome, size: 16, color: Colors.teal),
-                      label: const Text('Auto-Fill Today\'s Rates (تازہ ریٹس بھریں)', style: TextStyle(fontSize: 11)),
+                      label: Text(
+                        AppStrings.val(context, en: 'Auto-Fill Today\'s Rates', ur: 'آج کے ریٹس خودکار درج کریں'),
+                        style: const TextStyle(fontSize: 11),
+                      ),
                       onPressed: _autoFillMandiRates,
                     ),
                     const Spacer(),
                     Text(
-                      'Recipients: ${broadcastProvider.subscribers.length} subscribers',
+                      '${AppStrings.val(context, en: 'Recipients', ur: 'وصول کنندگان')}: ${broadcastProvider.subscribers.length} ${AppStrings.val(context, en: 'subscribers', ur: 'افراد')}',
                       style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
                     ),
                   ],
@@ -197,13 +199,15 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                     maxLines: null,
                     expands: true,
                     textAlignVertical: TextAlignVertical.top,
-                    decoration: const InputDecoration(
-                      labelText: 'Bulletin Message Content (پیغام کا متن) *',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(context, en: 'Bulletin Message Content *', ur: 'پیغام کا متن *'),
+                      border: const OutlineInputBorder(),
                       alignLabelWithHint: true,
                     ),
                     style: const TextStyle(fontSize: 13, height: 1.4),
-                    validator: (v) => v == null || v.trim().isEmpty ? 'Please enter message content' : null,
+                    validator: (v) => v == null || v.trim().isEmpty
+                        ? AppStrings.val(context, en: 'Please enter message content', ur: 'براہ کرم پیغام کا متن درج کریں')
+                        : null,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -214,7 +218,7 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
@@ -230,7 +234,7 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                             )
                           : const Icon(Icons.send_rounded, size: 16),
-                      label: const Text('Save & Dispatch (ارسال کریں)'),
+                      label: Text(AppStrings.val(context, en: 'Save & Dispatch', ur: 'محفوظ و ارسال کریں')),
                       onPressed: _isSaving
                           ? null
                           : () async {
@@ -253,7 +257,15 @@ class _NewBroadcastDialogState extends State<NewBroadcastDialog> {
                               if (context.mounted) {
                                 Navigator.of(context).pop();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Broadcast Bulletin Dispatched Successfully!')),
+                                  SnackBar(
+                                    content: Text(
+                                      AppStrings.val(
+                                        context,
+                                        en: 'Broadcast Bulletin Dispatched Successfully!',
+                                        ur: 'براڈکاسٹ پیغام کامیابی سے ارسال کر دیا گیا!',
+                                      ),
+                                    ),
+                                  ),
                                 );
                               }
                             },

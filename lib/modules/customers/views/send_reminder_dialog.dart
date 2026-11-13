@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/recovery_messaging_service.dart';
 import 'package:mandi/data/models/customer_model.dart';
@@ -67,8 +68,8 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
           const SizedBox(width: MSpacing.xs),
           Expanded(
             child: Text(
-              'Payment Reminder: ${widget.customer.name}',
-              style: MText.titleMd.copyWith(color: Colors.white),
+              '${AppStrings.val(context, en: "Payment Reminder:", ur: "ادائیگی کی یاد دہانی:")} ${widget.customer.name}',
+              style: MText.titleMd,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -91,8 +92,12 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Outstanding Balance (بقایا):',
-                    style: MText.caption.copyWith(color: Colors.white70),
+                    AppStrings.val(
+                      context,
+                      en: 'Outstanding Balance:',
+                      ur: 'بقایا رقم:',
+                    ),
+                    style: MText.caption.copyWith(color: Colors.black87),
                   ),
                   Text(
                     'Rs. ${widget.customer.runningBalance.toStringAsFixed(0)}',
@@ -109,10 +114,13 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
             // Language Selector
             Row(
               children: [
-                Text('Language:', style: MText.caption.copyWith(color: Colors.grey)),
+                Text(
+                  AppStrings.val(context, en: 'Language:', ur: 'زبان:'),
+                  style: MText.caption.copyWith(color: Colors.grey),
+                ),
                 const SizedBox(width: MSpacing.sm),
                 ChoiceChip(
-                  label: const Text('Urdu (اردو)'),
+                  label: Text(AppStrings.val(context, en: 'Urdu', ur: 'اردو')),
                   selected: _language == ReminderLanguage.urdu,
                   onSelected: (val) {
                     if (val) {
@@ -123,7 +131,7 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
                 ),
                 const SizedBox(width: MSpacing.xs),
                 ChoiceChip(
-                  label: const Text('English'),
+                  label: Text(AppStrings.val(context, en: 'English', ur: 'انگریزی')),
                   selected: _language == ReminderLanguage.english,
                   onSelected: (val) {
                     if (val) {
@@ -139,10 +147,13 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
             // Tone Selector
             Row(
               children: [
-                Text('Tone:', style: MText.caption.copyWith(color: Colors.grey)),
+                Text(
+                  AppStrings.val(context, en: 'Tone:', ur: 'انداز:'),
+                  style: MText.caption.copyWith(color: Colors.grey),
+                ),
                 const SizedBox(width: MSpacing.sm),
                 ChoiceChip(
-                  label: const Text('Polite (شائستہ)'),
+                  label: Text(AppStrings.val(context, en: 'Polite', ur: 'شائستہ')),
                   selected: _tone == ReminderTone.polite,
                   onSelected: (val) {
                     if (val) {
@@ -153,7 +164,7 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
                 ),
                 const SizedBox(width: MSpacing.xs),
                 ChoiceChip(
-                  label: const Text('Formal (رسمی)'),
+                  label: Text(AppStrings.val(context, en: 'Formal', ur: 'رسمی')),
                   selected: _tone == ReminderTone.formal,
                   onSelected: (val) {
                     if (val) {
@@ -164,7 +175,7 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
                 ),
                 const SizedBox(width: MSpacing.xs),
                 ChoiceChip(
-                  label: const Text('Urgent (فوری)'),
+                  label: Text(AppStrings.val(context, en: 'Urgent', ur: 'فوری')),
                   selected: _tone == ReminderTone.urgent,
                   selectedColor: Colors.redAccent.withValues(alpha: 0.3),
                   onSelected: (val) {
@@ -183,8 +194,12 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
               controller: _messageCtrl,
               maxLines: 8,
               style: const TextStyle(fontSize: 13),
-              decoration: const InputDecoration(
-                labelText: 'Message Body (پیغام کا متن)',
+              decoration: InputDecoration(
+                labelText: AppStrings.val(
+                  context,
+                  en: 'Message Body',
+                  ur: 'پیغام کا متن',
+                ),
                 alignLabelWithHint: true,
               ),
             ),
@@ -194,24 +209,29 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ')),
         ),
         OutlinedButton.icon(
           icon: const Icon(Icons.copy, size: 16),
-          label: const Text('Copy'),
+          label: Text(AppStrings.val(context, en: 'Copy', ur: 'کاپی')),
           onPressed: () async {
+            final isUrdu = AppStrings.isUrdu(context);
             await RecoveryMessagingService.copyToClipboard(_messageCtrl.text.trim());
             if (context.mounted) {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Message copied to clipboard!')),
+                SnackBar(
+                  content: Text(isUrdu
+                      ? 'پیغام کلپ بورڈ پر کاپی ہو گیا!'
+                      : 'Message copied to clipboard!'),
+                ),
               );
             }
           },
         ),
         OutlinedButton.icon(
           icon: const Icon(Icons.sms_outlined, size: 16),
-          label: const Text('Device SMS'),
+          label: Text(AppStrings.val(context, en: 'Device SMS', ur: 'موبائل ایس ایم ایس')),
           onPressed: () async {
             Navigator.pop(context);
             await RecoveryMessagingService.launchSms(
@@ -222,12 +242,13 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
         ),
         ElevatedButton.icon(
           icon: const Icon(Icons.send_to_mobile_rounded, size: 16),
-          label: const Text('Gateway SMS'),
+          label: Text(AppStrings.val(context, en: 'Gateway SMS', ur: 'گیٹ وے ایس ایم ایس')),
           style: ElevatedButton.styleFrom(
             backgroundColor: MColors.primary,
             foregroundColor: Colors.white,
           ),
           onPressed: () async {
+            final isUrdu = AppStrings.isUrdu(context);
             final smsProvider = context.read<SmsProvider>();
             final messenger = ScaffoldMessenger.of(context);
             Navigator.pop(context);
@@ -242,14 +263,18 @@ class _SendReminderDialogState extends State<SendReminderDialog> {
             if (res.success) {
               messenger.showSnackBar(
                 SnackBar(
-                  content: Text('Recovery SMS dispatched via Gateway to ${widget.customer.name}!'),
+                  content: Text(isUrdu
+                      ? '${widget.customer.name} کو گیٹ وے کے ذریعے یاد دہانی کا ایس ایم ایس بھیج دیا گیا!'
+                      : 'Recovery SMS dispatched via Gateway to ${widget.customer.name}!'),
                   backgroundColor: MColors.primary,
                 ),
               );
             } else {
               messenger.showSnackBar(
                 SnackBar(
-                  content: Text('SMS Gateway failed: ${res.errorMessage}'),
+                  content: Text(isUrdu
+                      ? 'ایس ایم ایس بھیجنے میں ناکامی: ${res.errorMessage}'
+                      : 'SMS Gateway failed: ${res.errorMessage}'),
                   backgroundColor: Colors.red.shade700,
                 ),
               );

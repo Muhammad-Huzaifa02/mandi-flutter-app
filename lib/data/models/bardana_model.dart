@@ -82,9 +82,9 @@ class BardanaTransaction {
   String get bardanaTypeLabelUrdu {
     switch (bardanaType) {
       case BardanaType.jute:
-        return 'پٹ سن بوری (Jute)';
+        return 'پٹ سن بوری';
       case BardanaType.plasticPp:
-        return 'پلاسٹک تھیلا (PP)';
+        return 'پلاسٹک تھیلا';
       case BardanaType.woodenCrate:
         return 'لکڑی کی پیٹی';
       case BardanaType.plasticCrate:
@@ -99,7 +99,7 @@ class BardanaTransaction {
       case BardanaType.jute:
         return 'Jute Sack';
       case BardanaType.plasticPp:
-        return 'Plastic Bag (PP)';
+        return 'Plastic Bag';
       case BardanaType.woodenCrate:
         return 'Wooden Crate';
       case BardanaType.plasticCrate:
@@ -112,13 +112,13 @@ class BardanaTransaction {
   String get directionLabelUrdu {
     switch (direction) {
       case BardanaDirection.issued:
-        return 'جاری کردہ (دیا گیا)';
+        return 'جاری کردہ';
       case BardanaDirection.returned:
         return 'واپس موصول شدہ';
       case BardanaDirection.purchased:
-        return 'خریداری (نیا باردانہ)';
+        return 'خریداری';
       case BardanaDirection.damaged:
-        return 'خراب / ضائع شدہ';
+        return 'خراب یا ضائع شدہ';
     }
   }
 
@@ -138,7 +138,7 @@ class BardanaTransaction {
   String get statusLabelUrdu {
     switch (status) {
       case BardanaStatus.pending:
-        return isOverdue ? 'تاخیر شدہ (واپسی باقی)' : 'واپسی باقی';
+        return isOverdue ? 'تاخیر شدہ' : 'واپسی باقی';
       case BardanaStatus.returned:
         return 'مکمل واپس شدہ';
       case BardanaStatus.settled:

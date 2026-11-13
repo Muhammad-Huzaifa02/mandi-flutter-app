@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/shop_member_model.dart';
 import 'package:mandi/data/models/staff_payroll_model.dart';
 import 'package:mandi/modules/payroll/providers/staff_payroll_provider.dart';
 
-/// Modal dialog to record or update daily staff biometric / manual attendance
-/// (*عملہ روزانہ حاضری و اوورٹائم اندراج*).
+/// Modal dialog to record or update daily staff biometric / manual attendance.
 class MarkDailyAttendanceDialog extends StatefulWidget {
   final ShopMember? preselectedMember;
 
@@ -56,6 +56,7 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
     final provider = context.watch<StaffPayrollProvider>();
     final staffList = provider.staffMembers;
     final selectedDate = provider.selectedAttendanceDate;
+    final isUrdu = AppStrings.isUrdu(context);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -85,16 +86,20 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Mark Attendance (حاضری اندراج)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Mark Attendance',
+                              ur: 'حاضری اندراج',
+                            ),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Date: ${DateFormat('dd MMMM yyyy').format(selectedDate)}',
+                            '${AppStrings.val(context, en: "Date:", ur: "تاریخ:")} ${DateFormat('dd MMMM yyyy').format(selectedDate)}',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -114,9 +119,13 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                 const SizedBox(height: 12),
 
                 // Select Staff Member
-                const Text(
-                  'Staff Member / ملازم *',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Staff Member *',
+                    ur: 'ملازم *',
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<ShopMember>(
@@ -150,15 +159,24 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                       });
                     }
                   },
-                  validator: (val) =>
-                      val == null ? 'Please select a staff member' : null,
+                  validator: (val) => val == null
+                      ? AppStrings.val(
+                          context,
+                          en: 'Please select a staff member',
+                          ur: 'براہ کرم ملازم منتخب کریں',
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 16),
 
                 // Attendance Status Options
-                const Text(
-                  'Attendance Status / کیفیت حاضری *',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Attendance Status *',
+                    ur: 'کیفیت حاضری *',
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -175,7 +193,7 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                                 : Colors.blueGrey;
 
                     return ChoiceChip(
-                      label: Text(s.labelUrdu),
+                      label: Text(isUrdu ? s.labelUrdu : s.labelEnglish),
                       selected: isSelected,
                       selectedColor: color.withValues(alpha: 0.2),
                       side: BorderSide(
@@ -195,9 +213,13 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                 const SizedBox(height: 16),
 
                 // Overtime Hours
-                const Text(
-                  'Overtime Hours / اضافی گھنٹے',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Overtime Hours',
+                    ur: 'اضافی گھنٹے',
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -205,8 +227,16 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    hintText: 'e.g. 2.0 Hours',
-                    suffixText: 'Hours',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'e.g. 2.0 Hours',
+                      ur: 'مثلاً 2.0 گھنٹے',
+                    ),
+                    suffixText: AppStrings.val(
+                      context,
+                      en: 'Hours',
+                      ur: 'گھنٹے',
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -217,15 +247,23 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                 const SizedBox(height: 16),
 
                 // Notes
-                const Text(
-                  'Remarks / تفصیل',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Remarks',
+                    ur: 'تفصیل',
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _notesCtrl,
                   decoration: InputDecoration(
-                    hintText: 'e.g. Night auction unloading duty',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'e.g. Night auction unloading duty',
+                      ur: 'مثلاً رات کی بولی میں لوڈنگ ڈیوٹی',
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -241,7 +279,11 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(
+                        context,
+                        en: 'Cancel',
+                        ur: 'منسوخ',
+                      )),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -262,7 +304,11 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.check),
-                      label: const Text('Save Attendance (محفوظ کریں)'),
+                      label: Text(AppStrings.val(
+                        context,
+                        en: 'Save Attendance',
+                        ur: 'حاضری محفوظ کریں',
+                      )),
                     ),
                   ],
                 ),
@@ -278,6 +324,7 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedMember == null) return;
 
+    final isUrdu = AppStrings.isUrdu(context);
     setState(() => _isSaving = true);
 
     final overtime = double.tryParse(_overtimeCtrl.text.trim()) ?? 0.0;
@@ -297,15 +344,19 @@ class _MarkDailyAttendanceDialogState extends State<MarkDailyAttendanceDialog> {
       if (success) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Staff attendance marked successfully!'),
+          SnackBar(
+            content: Text(isUrdu
+                ? 'عملے کی حاضری کامیابی سے درج کر لی گئی!'
+                : 'Staff attendance marked successfully!'),
             backgroundColor: Colors.green,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to mark attendance. Please try again.'),
+          SnackBar(
+            content: Text(isUrdu
+                ? 'حاضری درج کرنے میں ناکامی۔ دوبارہ کوشش کریں۔'
+                : 'Failed to mark attendance. Please try again.'),
             backgroundColor: Colors.red,
           ),
         );

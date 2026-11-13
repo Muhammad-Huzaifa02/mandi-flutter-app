@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/inventory_label_pdf_generator.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
@@ -172,7 +173,11 @@ class _ScanVerifyLabelDialogState extends State<ScanVerifyLabelDialog> {
 
               // Barcode / QR Scanner Input Box
               Text(
-                'Scan Barcode or Enter Label Code / درج کریں',
+                AppStrings.val(
+                  context,
+                  en: 'Scan Barcode or Enter Label Code',
+                  ur: 'بارکوڈ اسکین کریں یا لیبل کوڈ درج کریں',
+                ),
                 style: MText.caption.copyWith(color: Colors.white70),
               ),
               const SizedBox(height: 6),

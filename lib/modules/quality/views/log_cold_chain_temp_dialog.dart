@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/quality_inspection_model.dart';
 import 'package:mandi/modules/quality/providers/quality_provider.dart';
@@ -22,7 +23,7 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
 
   DateTime _recordedAt = DateTime.now();
 
-  final _chamberCtrl = TextEditingController(text: 'Chamber 1 (Potato Cold Store)');
+  final _chamberCtrl = TextEditingController();
   final _tempCtrl = TextEditingController(text: '2.5');
   final _humidityCtrl = TextEditingController(text: '88');
   final _minTempCtrl = TextEditingController(text: '1.0');
@@ -32,23 +33,45 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
   final _correctiveActionCtrl = TextEditingController();
 
   bool _isSaving = false;
+  bool _initialized = false;
 
-  final List<String> _chamberPresets = [
-    'Chamber 1 (Potato Cold Store)',
-    'Chamber 2 (Apple & Fruit Room)',
-    'Chamber 3 (Onion Dry Ventilation)',
-    'Chamber 4 (Pre-Cooling Cell)',
-    'General Mandi Godown # 1',
-  ];
+  List<String> _chamberPresets(bool isUrdu) => isUrdu
+      ? [
+          'چیمبر 1 (آلو کولڈ سٹور)',
+          'چیمبر 2 (سیب و پھل روم)',
+          'چیمبر 3 (پیاز وینٹی لیشن)',
+          'چیمبر 4 (پری کولنگ سیل)',
+          'منڈی جنرل گودام 1',
+        ]
+      : [
+          'Chamber 1 (Potato Cold Store)',
+          'Chamber 2 (Apple & Fruit Room)',
+          'Chamber 3 (Onion Dry Ventilation)',
+          'Chamber 4 (Pre-Cooling Cell)',
+          'General Mandi Godown # 1',
+        ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      if (widget.preselectedChamber != null &&
+          widget.preselectedChamber!.isNotEmpty) {
+        _chamberCtrl.text = widget.preselectedChamber!;
+      } else {
+        _chamberCtrl.text = AppStrings.val(
+          context,
+          en: 'Chamber 1 (Potato Cold Store)',
+          ur: 'چیمبر 1 (آلو کولڈ سٹور)',
+        );
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    if (widget.preselectedChamber != null &&
-        widget.preselectedChamber!.isNotEmpty) {
-      _chamberCtrl.text = widget.preselectedChamber!;
-    }
-
     _tempCtrl.addListener(_updateUi);
     _minTempCtrl.addListener(_updateUi);
     _maxTempCtrl.addListener(_updateUi);
@@ -73,6 +96,7 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final temp = double.tryParse(_tempCtrl.text.trim()) ?? 0.0;
     final minT = double.tryParse(_minTempCtrl.text.trim()) ?? 0.0;
     final maxT = double.tryParse(_maxTempCtrl.text.trim()) ?? 4.0;
@@ -112,16 +136,24 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Cold Chain Temp & Humidity (درجہ حرارت لاگ)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Cold Chain Temp & Humidity',
+                              ur: 'کولڈ چین درجہ حرارت و نمی لاگ',
+                            ),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Log cold room climate, sensor readings & alerts',
+                            AppStrings.val(
+                              context,
+                              en: 'Log cold room climate, sensor readings & alerts',
+                              ur: 'کولڈ روم موسمی ریکارڈ، سینسر ریڈنگز اور الرٹس',
+                            ),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -148,9 +180,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Chamber / کولڈ روم *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Chamber *', ur: 'کولڈ روم *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -158,10 +190,11 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                             initialValue:
                                 TextEditingValue(text: _chamberCtrl.text),
                             optionsBuilder: (textEditingValue) {
+                              final presets = _chamberPresets(isUrdu);
                               if (textEditingValue.text.isEmpty) {
-                                return _chamberPresets;
+                                return presets;
                               }
-                              return _chamberPresets.where((p) => p
+                              return presets.where((p) => p
                                   .toLowerCase()
                                   .contains(
                                       textEditingValue.text.toLowerCase()));
@@ -181,7 +214,11 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                                 controller: controller,
                                 focusNode: focusNode,
                                 decoration: InputDecoration(
-                                  hintText: 'e.g. Chamber 1, Potato Room',
+                                  hintText: AppStrings.val(
+                                    context,
+                                    en: 'e.g. Chamber 1, Potato Room',
+                                    ur: 'مثلاً چیمبر 1، آلو سٹور',
+                                  ),
                                   prefixIcon: const Icon(
                                       Icons.warehouse_outlined,
                                       size: 18),
@@ -193,7 +230,7 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                                 ),
                                 onChanged: (v) => _chamberCtrl.text = v,
                                 validator: (v) => v == null || v.trim().isEmpty
-                                    ? 'Required'
+                                    ? AppStrings.val(context, en: 'Required', ur: 'لازمی ہے')
                                     : null,
                               );
                             },
@@ -207,9 +244,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Time / تاریخ و وقت',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Date & Time', ur: 'تاریخ و وقت'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -266,9 +303,13 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Temperature (°C) / درجہ حرارت *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Temperature (°C) *',
+                              ur: 'درجہ حرارت (°C) *',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -287,7 +328,7 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                                   horizontal: 12, vertical: 12),
                             ),
                             validator: (v) => v == null || v.trim().isEmpty
-                                ? 'Required'
+                                ? AppStrings.val(context, en: 'Required', ur: 'لازمی ہے')
                                 : null,
                           ),
                         ],
@@ -298,9 +339,13 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Relative Humidity (%) / نمی *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Relative Humidity (%) *',
+                              ur: 'ہوا میں نمی (%) *',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -319,7 +364,7 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                                   horizontal: 12, vertical: 12),
                             ),
                             validator: (v) => v == null || v.trim().isEmpty
-                                ? 'Required'
+                                ? AppStrings.val(context, en: 'Required', ur: 'لازمی ہے')
                                 : null,
                           ),
                         ],
@@ -336,9 +381,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Min Safe Temp',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Min Safe Temp', ur: 'کم از کم حد'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -363,9 +408,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Max Safe Temp',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Max Safe Temp', ur: 'زیادہ سے زیادہ حد'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -390,9 +435,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Compliance Status',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Compliance Status', ur: 'حالت معیار'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -406,7 +451,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                                   color: statusColor.withValues(alpha: 0.4)),
                             ),
                             child: Text(
-                              evalStatus.labelEnglish.toUpperCase(),
+                              isUrdu
+                                  ? evalStatus.labelUrdu
+                                  : evalStatus.labelEnglish.toUpperCase(),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
@@ -428,9 +475,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Probe / Sensor ID',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Probe / Sensor ID', ur: 'سینسر / پروب آئی ڈی'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -453,9 +500,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Inspector Name / منشی',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Inspector Name', ur: 'انسپکٹر / منشی'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -478,16 +525,19 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                 const SizedBox(height: 14),
 
                 // Corrective Action
-                const Text(
-                  'Corrective Action / احتیاطی تدابیر',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(context, en: 'Corrective Action', ur: 'احتیاطی تدابیر'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _correctiveActionCtrl,
                   decoration: InputDecoration(
-                    hintText:
-                        'e.g. Normal circulation, or Thermostat adjusted by 1°C',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'e.g. Normal circulation, or Thermostat adjusted by 1°C',
+                      ur: 'مثلاً نارمل ایئر گردش، یا تھرموسٹیٹ 1 ڈگری تبدیل کیا گیا',
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -503,7 +553,7 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -524,7 +574,9 @@ class _LogColdChainTempDialogState extends State<LogColdChainTempDialog> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.check),
-                      label: const Text('Save Reading (لاگ محفوظ کریں)'),
+                      label: Text(
+                        AppStrings.val(context, en: 'Save Reading', ur: 'ریڈنگ محفوظ کریں'),
+                      ),
                     ),
                   ],
                 ),

@@ -50,26 +50,26 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
     final provider = context.watch<PartnerCapitalProvider>();
     final partners = provider.partners;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.tr(context, 'partner_capital_title'),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
+    return LiquidCrystalBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.print, color: Colors.white),
-            tooltip: 'Print Equity Report',
-            onPressed: partners.isEmpty ? null : () => _printReport(provider, shopName, shopPhone),
+        appBar: AppBar(
+          title: Text(
+            AppStrings.tr(context, 'partner_capital_title'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
-        ],
-      ),
-      body: LiquidCrystalBackground(
-        child: SingleChildScrollView(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: MColors.textPrimary,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.print, color: MColors.primary),
+              tooltip: 'Print Equity Report',
+              onPressed: partners.isEmpty ? null : () => _printReport(provider, shopName, shopPhone),
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -146,7 +146,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
                     builder: (_) => const AddPartnerDialog(),
                   ),
                   icon: const Icon(Icons.person_add, color: Colors.white, size: 18),
-                  label: const Text('نیا حصہ دار (Add Partner)', style: TextStyle(color: Colors.white)),
+                  label: Text(AppStrings.tr(context, 'add_partner_btn'), style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.teal[800]),
                 ),
                 ElevatedButton.icon(
@@ -157,7 +157,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
                             builder: (_) => const RecordPartnerDrawingDialog(isCapitalInjection: false),
                           ),
                   icon: const Icon(Icons.money_off, color: Colors.white, size: 18),
-                  label: const Text('ذاتی خرچ (Record Drawing)', style: TextStyle(color: Colors.white)),
+                  label: Text(AppStrings.tr(context, 'record_drawing_btn'), style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.amber[900]),
                 ),
                 ElevatedButton.icon(
@@ -168,7 +168,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
                             builder: (_) => const RecordPartnerDrawingDialog(isCapitalInjection: true),
                           ),
                   icon: const Icon(Icons.add_circle, color: Colors.white, size: 18),
-                  label: const Text('سرمایہ اضافہ (Inject Capital)', style: TextStyle(color: Colors.white)),
+                  label: Text(AppStrings.tr(context, 'inject_capital_btn'), style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.green[800]),
                 ),
                 ElevatedButton.icon(
@@ -179,7 +179,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
                             builder: (_) => const DistributeProfitWizardDialog(),
                           ),
                   icon: const Icon(Icons.pie_chart, color: Colors.white, size: 18),
-                  label: const Text('منافع تقسیم (Distribute Profit)', style: TextStyle(color: Colors.white)),
+                  label: Text(AppStrings.tr(context, 'distribute_profit_btn'), style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo[800]),
                 ),
               ],
@@ -190,9 +190,9 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'حصہ داران و سرمایہ بیلنس (Partner Capital Balances)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Text(
+                  AppStrings.tr(context, 'partner_balances_header'),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
                   '${partners.length} Partners',
@@ -223,9 +223,9 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'حالیہ ٹرانزیکشنز و منافع تفصیل (Recent Transactions)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Text(
+                  AppStrings.tr(context, 'recent_transactions_header'),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
                   '${provider.transactions.length} Records',
@@ -366,7 +366,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Total Drawings (نکلوانا)', style: TextStyle(color: Colors.grey.shade600, fontSize: 11)),
+                    Text(AppStrings.tr(context, 'total_drawings'), style: TextStyle(color: Colors.grey.shade600, fontSize: 11)),
                     Text('Rs. ${_currencyFmt.format(partner.totalDrawings)}',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.amber.shade900)),
                   ],
@@ -374,7 +374,7 @@ class _PartnerCapitalPageState extends State<PartnerCapitalPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('Current Capital (موجودہ سرمایہ)',
+                    Text(AppStrings.tr(context, 'current_capital'),
                         style: TextStyle(color: Colors.teal.shade900, fontSize: 11, fontWeight: FontWeight.bold)),
                     Text(
                       'Rs. ${_currencyFmt.format(partner.currentCapital)}',

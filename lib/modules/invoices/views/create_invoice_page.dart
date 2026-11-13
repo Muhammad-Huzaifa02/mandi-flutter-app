@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/mandi_calculator.dart';
 import 'package:mandi/data/models/customer_model.dart';
@@ -113,9 +114,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           : 0;
 
   void _addItemDialog() {
+    final isUrdu = AppStrings.isUrdu(context);
     final allProducts = context.read<ProductProvider>().products;
 
-    // Filter products: when creating a Supplier invoice, show products offered by that supplier
+    // Filter products: when creating a Farmer invoice, show products offered by that farmer
     List<Product> products = allProducts;
     if (_invoiceType == 'supplier' && _selectedSupplier != null) {
       final supplierProducts = allProducts
@@ -133,9 +135,15 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
     if (products.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_selectedSupplier != null
-              ? 'No products listed for ${_selectedSupplier!.name} yet.'
-              : 'Please add products first.'),
+          content: Text(
+            _selectedSupplier != null
+                ? (isUrdu
+                    ? '${_selectedSupplier!.name} کے لیے کوئی جنس دستیاب نہیں۔'
+                    : 'No products listed for ${_selectedSupplier!.name} yet.')
+                : (isUrdu
+                    ? 'براہ کرم پہلے جنس شامل کریں۔'
+                    : 'Please add products first.'),
+          ),
         ),
       );
       return;
@@ -167,7 +175,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           final calcTotal = MandiCalculator.calculateLineTotal(totalWeightKg, rate);
 
           return AlertDialog(
-            title: const Text('Add Product Item'),
+            title: Text(isUrdu ? 'جنس شامل کریں' : 'Add Product Item'),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -175,11 +183,17 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 children: [
                   DropdownButtonFormField<Product>(
                     initialValue: selectedProduct,
-                    decoration: const InputDecoration(labelText: 'Select Product *'),
+                    decoration: InputDecoration(
+                      labelText: isUrdu ? 'جنس منتخب کریں *' : 'Select Product *',
+                    ),
                     items: products
                         .map((prod) => DropdownMenuItem(
                               value: prod,
-                              child: Text('${prod.name} (Stock: ${prod.currentStock}kg)'),
+                              child: Text(
+                                isUrdu
+                                    ? '${prod.name} (اسٹاک: ${prod.currentStock} کلو)'
+                                    : '${prod.name} (Stock: ${prod.currentStock}kg)',
+                              ),
                             ))
                         .toList(),
                     onChanged: (p) {
@@ -195,11 +209,22 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
                   DropdownButtonFormField<String>(
                     initialValue: bagType,
-                    decoration: const InputDecoration(labelText: 'Bag Weight Type'),
-                    items: const [
-                      DropdownMenuItem(value: '50 KG Bag', child: Text('50 KG Bag / Bori')),
-                      DropdownMenuItem(value: '100 KG Bag', child: Text('100 KG Bag / Bori')),
-                      DropdownMenuItem(value: 'Custom Weight', child: Text('Custom Weight per Bag')),
+                    decoration: InputDecoration(
+                      labelText: isUrdu ? 'بوری کے وزن کی قسم' : 'Bag Weight Type',
+                    ),
+                    items: [
+                      DropdownMenuItem(
+                        value: '50 KG Bag',
+                        child: Text(isUrdu ? '50 کلو بوری' : '50 KG Bag'),
+                      ),
+                      DropdownMenuItem(
+                        value: '100 KG Bag',
+                        child: Text(isUrdu ? '100 کلو بوری' : '100 KG Bag'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'Custom Weight',
+                        child: Text(isUrdu ? 'مخصوص وزن فی بوری' : 'Custom Weight per Bag'),
+                      ),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -217,9 +242,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                           keyboardType:
                               const TextInputType.numberWithOptions(decimal: true),
                           onChanged: (_) => setDialogState(() {}),
-                          decoration: const InputDecoration(
-                            labelText: 'No. of Bags / Bori *',
-                            hintText: 'e.g. 10',
+                          decoration: InputDecoration(
+                            labelText: isUrdu ? 'تعداد بوریاں *' : 'No. of Bags *',
+                            hintText: isUrdu ? 'مثلاً 10' : 'e.g. 10',
                           ),
                         ),
                       ),
@@ -231,10 +256,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                             keyboardType:
                                 const TextInputType.numberWithOptions(decimal: true),
                             onChanged: (_) => setDialogState(() {}),
-                            decoration: const InputDecoration(
-                              labelText: 'KG per Bag *',
-                              hintText: 'e.g. 70',
-                              suffixText: 'KG',
+                            decoration: InputDecoration(
+                              labelText: isUrdu ? 'کلوگرام فی بوری *' : 'KG per Bag *',
+                              hintText: isUrdu ? 'مثلاً 70' : 'e.g. 70',
+                              suffixText: isUrdu ? 'کلو' : 'KG',
                             ),
                           ),
                         ),
@@ -248,10 +273,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     onChanged: (_) => setDialogState(() {}),
-                    decoration: const InputDecoration(
-                      labelText: 'Rate per 40 KG (Maund) *',
-                      hintText: 'e.g. 4000',
-                      suffixText: 'PKR',
+                    decoration: InputDecoration(
+                      labelText: isUrdu ? 'نرخ فی 40 کلو (من) *' : 'Rate per 40 KG (Maund) *',
+                      hintText: isUrdu ? 'مثلاً 4000' : 'e.g. 4000',
+                      suffixText: isUrdu ? 'روپے' : 'PKR',
                     ),
                   ),
 
@@ -268,19 +293,28 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Mandi Maund Breakdown:', style: MText.labelMd),
+                        Text(
+                          isUrdu ? 'منڈی من کا حساب:' : 'Mandi Maund Breakdown:',
+                          style: MText.labelMd,
+                        ),
                         const SizedBox(height: 2),
                         Text(
-                          '${bags.toStringAsFixed(0)} Bags × ${weightPerBag.toStringAsFixed(0)} KG = ${totalWeightKg.toStringAsFixed(0)} KG (${manns.toStringAsFixed(2)} Manns)',
+                          isUrdu
+                              ? '${bags.toStringAsFixed(0)} بوریاں × ${weightPerBag.toStringAsFixed(0)} کلو = ${totalWeightKg.toStringAsFixed(0)} کلو (${manns.toStringAsFixed(2)} من)'
+                              : '${bags.toStringAsFixed(0)} Bags × ${weightPerBag.toStringAsFixed(0)} KG = ${totalWeightKg.toStringAsFixed(0)} KG (${manns.toStringAsFixed(2)} Manns)',
                           style: MText.bodySm.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          '${manns.toStringAsFixed(2)} Manns @ Rs. ${rate.toStringAsFixed(0)} / 40kg',
+                          isUrdu
+                              ? '${manns.toStringAsFixed(2)} من @ روپے ${rate.toStringAsFixed(0)} / 40 کلو'
+                              : '${manns.toStringAsFixed(2)} Manns @ Rs. ${rate.toStringAsFixed(0)} / 40kg',
                           style: MText.bodySm,
                         ),
                         const Divider(height: MSpacing.sm),
                         Text(
-                          'Line Total: Rs. ${calcTotal.toStringAsFixed(0)}',
+                          isUrdu
+                              ? 'کل رقم: روپے ${calcTotal.toStringAsFixed(0)}'
+                              : 'Line Total: Rs. ${calcTotal.toStringAsFixed(0)}',
                           style: MText.titleLg.copyWith(color: MColors.primary),
                         ),
                       ],
@@ -292,7 +326,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogCtx),
-                child: const Text('Cancel'),
+                child: Text(isUrdu ? 'منسوخ' : 'Cancel'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -309,8 +343,13 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
                   if (totalWeight <= 0 || rateVal <= 0) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Please enter valid bags and price.')),
+                      SnackBar(
+                        content: Text(
+                          isUrdu
+                              ? 'براہ کرم درست بوریاں اور نرخ درج کریں۔'
+                              : 'Please enter valid bags and price.',
+                        ),
+                      ),
                     );
                     return;
                   }
@@ -326,7 +365,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                   });
                   Navigator.pop(dialogCtx);
                 },
-                child: const Text('Add Item'),
+                child: Text(isUrdu ? 'شامل کریں' : 'Add Item'),
               ),
             ],
           );
@@ -336,10 +375,17 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
   }
 
   Future<void> _submit() async {
+    final isUrdu = AppStrings.isUrdu(context);
     if (!_formKey.currentState!.validate()) return;
     if (_items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one line item.')),
+        SnackBar(
+          content: Text(
+            isUrdu
+                ? 'براہ کرم کم از کم ایک آئٹم شامل کریں۔'
+                : 'Please add at least one line item.',
+          ),
+        ),
       );
       return;
     }
@@ -377,7 +423,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         id: '',
         shopId: shopId,
         customerId: validCustomerId,
-        customerName: _selectedCustomer?.name ?? (_invoiceType == 'customer' ? 'Walk-in Customer' : ''),
+        customerName: _selectedCustomer?.name ?? (_invoiceType == 'customer' ? (isUrdu ? 'عام گاہک' : 'Walk-in Customer') : ''),
         supplierId: validSupplierId,
         supplierName: _selectedSupplier?.name ?? '',
         invoiceNumber: _invoiceNumberCtrl.text.trim(),
@@ -388,14 +434,6 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
         total: _grandTotal,
         receivedAmount: _receivedAmount,
         pendingAmount: _pendingAmount,
-        // Option A: Consignment Sale — net payout owed to the supplier.
-        // create_invoice_with_stock_deduction credits this to
-        // suppliers.running_balance atomically with the invoice and
-        // stock changes (see supabase/schema.sql); it used to be applied
-        // here instead, as a separate select-then-update with no lock —
-        // two near-simultaneous invoices for the same supplier could
-        // read the same starting balance and the slower one's credit
-        // would be lost.
         supplierPayout: _invoiceType == 'supplier' ? _netSupplierPayout : 0,
         paymentMethod: _paymentMethod,
       );
@@ -408,7 +446,12 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Invoice $id created & stock deducted successfully.')),
+          content: Text(
+            isUrdu
+                ? 'انوائس $id کامیابی کے ساتھ بن گئی اور اسٹاک ایڈجسٹ ہو گیا۔'
+                : 'Invoice $id created & stock deducted successfully.',
+          ),
+        ),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -429,12 +472,13 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final customers = context.watch<CustomerProvider>().customers;
     final suppliers = context.watch<SupplierProvider>().suppliers;
 
     final titleStr = _invoiceType == 'customer'
-        ? 'Create Customer Sales Invoice'
-        : 'Create Supplier Consignment Invoice';
+        ? (isUrdu ? 'گاہک سیلز انوائس بنائیں' : 'Create Customer Sales Invoice')
+        : (isUrdu ? 'زمیندار مال انوائس بنائیں' : 'Create Farmer Consignment Invoice');
 
     return Scaffold(
       appBar: AppBar(title: Text(titleStr)),
@@ -445,18 +489,18 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Segmented Button to switch Customer vs Supplier Invoice
+              // Segmented Button to switch Customer vs Farmer Invoice
               SegmentedButton<String>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: 'customer',
-                    label: Text('For Customer (Buyer)'),
-                    icon: Icon(Icons.person_outlined),
+                    label: Text(isUrdu ? 'گاہک کے لیے' : 'For Customer'),
+                    icon: const Icon(Icons.person_outlined),
                   ),
                   ButtonSegment(
                     value: 'supplier',
-                    label: Text('For Farmer (Zamindar / Aawak)'),
-                    icon: Icon(Icons.agriculture_outlined),
+                    label: Text(isUrdu ? 'زمیندار کے لیے' : 'For Farmer'),
+                    icon: const Icon(Icons.agriculture_outlined),
                   ),
                 ],
                 selected: {_invoiceType},
@@ -474,11 +518,11 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                   Expanded(
                     child: TextFormField(
                       controller: _invoiceNumberCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Invoice Number *',
+                      decoration: InputDecoration(
+                        labelText: isUrdu ? 'انوائس نمبر *' : 'Invoice Number *',
                       ),
                       validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Required' : null,
+                          (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
                     ),
                   ),
                 ],
@@ -488,10 +532,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               if (_invoiceType == 'customer')
                 DropdownButtonFormField<Customer>(
                   initialValue: _selectedCustomer,
-                  decoration: const InputDecoration(
-                    labelText: 'Customer (Buyer / Walk-in)',
+                  decoration: InputDecoration(
+                    labelText: isUrdu ? 'گاہک *' : 'Customer *',
                   ),
-                  hint: const Text('Select Customer'),
+                  hint: Text(isUrdu ? 'گاہک منتخب کریں' : 'Select Customer'),
                   items: customers
                       .map((c) => DropdownMenuItem(
                             value: c,
@@ -503,10 +547,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               else
                 DropdownButtonFormField<Supplier>(
                   initialValue: _selectedSupplier,
-                  decoration: const InputDecoration(
-                    labelText: 'Farmer / Zamindar (Aawak Consignment) *',
+                  decoration: InputDecoration(
+                    labelText: isUrdu ? 'زمیندار *' : 'Farmer *',
                   ),
-                  hint: const Text('Select Farmer (زمیندار)'),
+                  hint: Text(isUrdu ? 'زمیندار منتخب کریں' : 'Select Farmer'),
                   items: suppliers
                       .map((s) => DropdownMenuItem(
                             value: s,
@@ -515,7 +559,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       .toList(),
                   onChanged: (s) => setState(() => _selectedSupplier = s),
                   validator: (v) =>
-                      v == null ? 'Please select a farmer' : null,
+                      v == null ? (isUrdu ? 'براہ کرم زمیندار منتخب کریں' : 'Please select a farmer') : null,
                 ),
 
               const SizedBox(height: MSpacing.lg),
@@ -524,11 +568,14 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Invoice Items', style: MText.titleLg),
+                  Text(
+                    isUrdu ? 'انوائس آئٹمز' : 'Invoice Items',
+                    style: MText.titleLg,
+                  ),
                   OutlinedButton.icon(
                     onPressed: _addItemDialog,
                     icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add Item'),
+                    label: Text(isUrdu ? 'آئٹم شامل کریں' : 'Add Item'),
                   ),
                 ],
               ),
@@ -544,9 +591,12 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Center(
-                    child: Text('No items added yet. Click "+ Add Item".',
-                        style: MText.bodyMd
-                            .copyWith(color: MColors.textSecondary)),
+                    child: Text(
+                      isUrdu
+                          ? 'ابھی کوئی آئٹم شامل نہیں ہے۔ "+ آئٹم شامل کریں" پر کلک کریں۔'
+                          : 'No items added yet. Click "+ Add Item".',
+                      style: MText.bodyMd.copyWith(color: MColors.textSecondary),
+                    ),
                   ),
                 )
               else
@@ -569,6 +619,7 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                           MandiCalculator.formatCalculationBreakdown(
                             weightKg: item.weightKg,
                             pricePer40kg: item.unitPrice,
+                            isUrdu: isUrdu,
                           ),
                           style: MText.bodySm
                               .copyWith(color: MColors.textSecondary),
@@ -576,9 +627,12 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('Rs. ${item.lineTotal.toStringAsFixed(0)}',
-                                style: MText.titleLg
-                                    .copyWith(color: MColors.primary)),
+                            Text(
+                              isUrdu
+                                  ? 'روپے ${item.lineTotal.toStringAsFixed(0)}'
+                                  : 'Rs. ${item.lineTotal.toStringAsFixed(0)}',
+                              style: MText.titleLg.copyWith(color: MColors.primary),
+                            ),
                             IconButton(
                               icon: const Icon(Icons.delete_outline,
                                   color: MColors.danger),
@@ -595,7 +649,10 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
               const SizedBox(height: MSpacing.lg),
 
               // Mandi Calculations
-              const Text('Mandi Commission & Expenses', style: MText.titleLg),
+              Text(
+                isUrdu ? 'کمیشن اور اخراجات' : 'Commission & Expenses',
+                style: MText.titleLg,
+              ),
               const SizedBox(height: MSpacing.sm),
               Row(
                 children: [
@@ -605,8 +662,8 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
-                        labelText: 'Commission %',
+                      decoration: InputDecoration(
+                        labelText: isUrdu ? 'کمیشن فیصد' : 'Commission %',
                         suffixText: '%',
                       ),
                     ),
@@ -618,9 +675,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
-                        labelText: 'Mazdoori / Kiraya (Expenses)',
-                        suffixText: 'PKR',
+                      decoration: InputDecoration(
+                        labelText: isUrdu ? 'مزدوری و کرایہ' : 'Labor & Freight',
+                        suffixText: isUrdu ? 'روپے' : 'PKR',
                       ),
                     ),
                   ),
@@ -632,24 +689,29 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
-                  labelText: 'Discount (PKR)',
-                  suffixText: 'PKR',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'رعایت' : 'Discount',
+                  suffixText: isUrdu ? 'روپے' : 'PKR',
                 ),
               ),
 
               const SizedBox(height: MSpacing.lg),
 
               // Payment Section
-              const Text('Payment Details', style: MText.titleLg),
+              Text(
+                isUrdu ? 'ادائیگی کی تفصیلات' : 'Payment Details',
+                style: MText.titleLg,
+              ),
               const SizedBox(height: MSpacing.sm),
               DropdownButtonFormField<PaymentMethod>(
                 initialValue: _paymentMethod,
-                decoration: const InputDecoration(labelText: 'Payment Method'),
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'طریقہ ادائیگی' : 'Payment Method',
+                ),
                 items: PaymentMethod.values
                     .map((m) => DropdownMenuItem(
                           value: m,
-                          child: Text(m.displayName),
+                          child: Text(m.label(isUrdu)),
                         ))
                     .toList(),
                 onChanged: (m) {
@@ -663,9 +725,9 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                     const TextInputType.numberWithOptions(decimal: true),
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
-                  labelText: 'Received Amount (PKR)',
+                  labelText: isUrdu ? 'وصول شدہ رقم' : 'Received Amount',
                   hintText: _grandTotal.toStringAsFixed(0),
-                  suffixText: 'PKR',
+                  suffixText: isUrdu ? 'روپے' : 'PKR',
                 ),
               ),
 
@@ -682,31 +744,47 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                 child: Column(
                   children: [
                     _SummaryRow(
-                        label: 'Products Subtotal:',
-                        value: 'Rs. ${_productsSubtotal.toStringAsFixed(0)}'),
+                      label: isUrdu ? 'مصنوعات کی کل رقم:' : 'Products Subtotal:',
+                      value: isUrdu
+                          ? 'روپے ${_productsSubtotal.toStringAsFixed(0)}'
+                          : 'Rs. ${_productsSubtotal.toStringAsFixed(0)}',
+                    ),
                     _SummaryRow(
-                        label: 'Commission ($_commissionPercent%):',
-                        value:
-                            '+ Rs. ${_commissionAmount.toStringAsFixed(0)}'),
+                      label: isUrdu
+                          ? 'کمیشن ($_commissionPercent%):'
+                          : 'Commission ($_commissionPercent%):',
+                      value: isUrdu
+                          ? '+ روپے ${_commissionAmount.toStringAsFixed(0)}'
+                          : '+ Rs. ${_commissionAmount.toStringAsFixed(0)}',
+                    ),
                     _SummaryRow(
-                        label: 'Mazdoori / Kiraya:',
-                        value: '+ Rs. ${_expensesAmount.toStringAsFixed(0)}'),
+                      label: isUrdu ? 'مزدوری و کرایہ:' : 'Labor & Freight:',
+                      value: isUrdu
+                          ? '+ روپے ${_expensesAmount.toStringAsFixed(0)}'
+                          : '+ Rs. ${_expensesAmount.toStringAsFixed(0)}',
+                    ),
                     if (_discountAmount > 0)
                       _SummaryRow(
-                          label: 'Discount:',
-                          value:
-                              '- Rs. ${_discountAmount.toStringAsFixed(0)}'),
+                        label: isUrdu ? 'رعایت:' : 'Discount:',
+                        value: isUrdu
+                            ? '- روپے ${_discountAmount.toStringAsFixed(0)}'
+                            : '- Rs. ${_discountAmount.toStringAsFixed(0)}',
+                      ),
                     const Divider(height: MSpacing.md),
                     _SummaryRow(
-                      label: 'Grand Total:',
-                      value: 'Rs. ${_grandTotal.toStringAsFixed(0)}',
+                      label: isUrdu ? 'کل رقم:' : 'Grand Total:',
+                      value: isUrdu
+                          ? 'روپے ${_grandTotal.toStringAsFixed(0)}'
+                          : 'Rs. ${_grandTotal.toStringAsFixed(0)}',
                       isBold: true,
                     ),
                     if (_invoiceType == 'supplier' && _selectedSupplier != null) ...[
                       const Divider(height: MSpacing.md),
                       _SummaryRow(
-                        label: 'Net Payout to Farmer (صافی رقم):',
-                        value: 'Rs. ${_netSupplierPayout.toStringAsFixed(0)}',
+                        label: isUrdu ? 'زمیندار کی صافی رقم:' : 'Net Payout to Farmer:',
+                        value: isUrdu
+                            ? 'روپے ${_netSupplierPayout.toStringAsFixed(0)}'
+                            : 'Rs. ${_netSupplierPayout.toStringAsFixed(0)}',
                         color: Colors.green,
                         isBold: true,
                       ),
@@ -728,9 +806,15 @@ class _CreateInvoicePageState extends State<CreateInvoicePage> {
                           color: Colors.white,
                         ),
                       )
-                    : Text(_invoiceType == 'customer'
-                        ? 'Issue Customer Sales Invoice'
-                        : 'Issue Supplier Consignment Invoice'),
+                    : Text(
+                        _invoiceType == 'customer'
+                            ? (isUrdu
+                                ? 'گاہک سیلز انوائس جاری کریں'
+                                : 'Issue Customer Sales Invoice')
+                            : (isUrdu
+                                ? 'زمیندار انوائس جاری کریں'
+                                : 'Issue Farmer Consignment Invoice'),
+                      ),
               ),
             ],
           ),
@@ -760,18 +844,11 @@ class _SummaryRow extends StatelessWidget {
         : MText.bodyMd.copyWith(color: color ?? MColors.textPrimary);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: MSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: style,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(width: MSpacing.xs),
+          Text(label, style: style),
           Text(value, style: style),
         ],
       ),

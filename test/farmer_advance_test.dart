@@ -113,14 +113,14 @@ void main() {
     test('returns localized labels for advance types and statuses', () {
       expect(FarmerAdvanceType.cash.labelEnglish, 'Cash Advance');
       expect(FarmerAdvanceType.cash.labelUrdu, 'نقد رقم ایڈوانس');
-      expect(FarmerAdvanceType.fertilizer.labelEnglish, 'Fertilizer (کھاد)');
+      expect(FarmerAdvanceType.fertilizer.labelEnglish, 'Fertilizer');
       expect(FarmerAdvanceType.seed.labelUrdu, 'زرعی بیج');
-      expect(FarmerAdvanceType.pesticide.labelUrdu, 'سپرے / زرعی ادویات');
+      expect(FarmerAdvanceType.pesticide.labelUrdu, 'سپرے زرعی ادویات');
 
-      expect(FarmerAdvanceStatus.active.labelEnglish, 'Active (Pending)');
+      expect(FarmerAdvanceStatus.active.labelEnglish, 'Active');
       expect(FarmerAdvanceStatus.active.labelUrdu, 'واپسی واجب الادا');
       expect(FarmerAdvanceStatus.fullyRecovered.labelEnglish, 'Fully Recovered');
-      expect(FarmerAdvanceStatus.fullyRecovered.labelUrdu, 'مکمل بیباق (وصول)');
+      expect(FarmerAdvanceStatus.fullyRecovered.labelUrdu, 'مکمل بیباق');
     });
 
     test('copyWith updates properties properly', () {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/bardana_model.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
@@ -87,12 +88,15 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
   }
 
   Future<void> _submit() async {
+    final isUrdu = AppStrings.isUrdu(context);
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
 
     try {
       final shopId = context.read<ShopContextProvider>().currentShopId;
-      if (shopId == null) throw Exception('No active shop context.');
+      if (shopId == null) {
+        throw Exception(isUrdu ? 'کوئی فعال دکان منتخب نہیں کی گئی۔' : 'No active shop context.');
+      }
 
       final count = int.tryParse(_bagCountCtrl.text.trim()) ?? 0;
       final rate = double.tryParse(_depositRateCtrl.text.trim()) ?? 0.0;
@@ -125,8 +129,12 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
           SnackBar(
             content: Text(
               _direction == BardanaDirection.issued
-                  ? 'Bardana issued and logged in party ledger.'
-                  : 'Bardana return recorded successfully.',
+                  ? (isUrdu
+                      ? 'باردانہ جاری کر کے کھاتے میں درج کر دیا گیا۔'
+                      : 'Bardana issued and logged in party ledger.')
+                  : (isUrdu
+                      ? 'باردانہ واپسی کامیابی کے ساتھ درج ہو گئی۔'
+                      : 'Bardana return recorded successfully.'),
             ),
             backgroundColor: MColors.primary,
           ),
@@ -137,7 +145,9 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error recording Bardana: $e'),
+            content: Text(
+              isUrdu ? 'باردانہ کے اندراج میں خرابی: $e' : 'Error recording Bardana: $e',
+            ),
             backgroundColor: MColors.danger,
           ),
         );
@@ -147,6 +157,7 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final suppliers = context.watch<SupplierProvider>().suppliers;
     final customers = context.watch<CustomerProvider>().customers;
 
@@ -177,8 +188,8 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                         const SizedBox(width: 8),
                         Text(
                           _direction == BardanaDirection.issued
-                              ? 'Issue Bardana (باردانہ جاری کریں)'
-                              : 'Return Bardana (باردانہ واپسی درج کریں)',
+                              ? (isUrdu ? 'باردانہ جاری کریں' : 'Issue Bardana')
+                              : (isUrdu ? 'باردانہ واپسی درج کریں' : 'Return Bardana'),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -199,12 +210,12 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                   children: [
                     Expanded(
                       child: ChoiceChip(
-                        label: const Row(
+                        label: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.arrow_upward, size: 14),
-                            SizedBox(width: 4),
-                            Text('Issue to Party (دیا گیا)'),
+                            const Icon(Icons.arrow_upward, size: 14),
+                            const SizedBox(width: 4),
+                            Text(isUrdu ? 'پارٹی کو جاری کریں' : 'Issue to Party'),
                           ],
                         ),
                         selected: _direction == BardanaDirection.issued,
@@ -217,12 +228,12 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: ChoiceChip(
-                        label: const Row(
+                        label: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.arrow_downward, size: 14),
-                            SizedBox(width: 4),
-                            Text('Return from Party (واپس موصول)'),
+                            const Icon(Icons.arrow_downward, size: 14),
+                            const SizedBox(width: 4),
+                            Text(isUrdu ? 'پارٹی سے واپسی' : 'Return from Party'),
                           ],
                         ),
                         selected: _direction == BardanaDirection.returned,
@@ -238,7 +249,7 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
 
                 // Bardana Type Chips
                 Text(
-                  'Packaging / Bardana Type (قسم باردانہ):',
+                  isUrdu ? 'باردانہ کی قسم:' : 'Packaging Type:',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -249,24 +260,24 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                   runSpacing: 6,
                   children: [
                     ChoiceChip(
-                      label: const Text('Jute Sack (پٹ سن بوری)'),
+                      label: Text(isUrdu ? 'پٹ سن بوری' : 'Jute Sack'),
                       selected: _bardanaType == BardanaType.jute,
                       onSelected: (_) => _onBardanaTypeChanged(BardanaType.jute),
                     ),
                     ChoiceChip(
-                      label: const Text('Plastic Bag PP (تھیلا)'),
+                      label: Text(isUrdu ? 'پلاسٹک تھیلا' : 'Plastic Bag PP'),
                       selected: _bardanaType == BardanaType.plasticPp,
                       onSelected: (_) =>
                           _onBardanaTypeChanged(BardanaType.plasticPp),
                     ),
                     ChoiceChip(
-                      label: const Text('Wooden Crate (پیٹی)'),
+                      label: Text(isUrdu ? 'لکڑی کریٹ' : 'Wooden Crate'),
                       selected: _bardanaType == BardanaType.woodenCrate,
                       onSelected: (_) =>
                           _onBardanaTypeChanged(BardanaType.woodenCrate),
                     ),
                     ChoiceChip(
-                      label: const Text('Plastic Crate (کریٹ)'),
+                      label: Text(isUrdu ? 'پلاسٹک کریٹ' : 'Plastic Crate'),
                       selected: _bardanaType == BardanaType.plasticCrate,
                       onSelected: (_) =>
                           _onBardanaTypeChanged(BardanaType.plasticCrate),
@@ -279,14 +290,14 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                 Row(
                   children: [
                     Text(
-                      'Party Category: ',
+                      isUrdu ? 'پارٹی زمرہ: ' : 'Party Category: ',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     const SizedBox(width: 8),
                     ChoiceChip(
-                      label: const Text('Farmer (زمیندار)'),
+                      label: Text(isUrdu ? 'زمیندار' : 'Farmer'),
                       selected: _partyType == 'supplier',
                       onSelected: (v) {
                         if (v) {
@@ -300,7 +311,7 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                     ),
                     const SizedBox(width: 6),
                     ChoiceChip(
-                      label: const Text('Customer / Buyer (خریدار)'),
+                      label: Text(isUrdu ? 'خریدار' : 'Customer'),
                       selected: _partyType == 'customer',
                       onSelected: (v) {
                         if (v) {
@@ -320,9 +331,9 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                 if (_partyType == 'supplier' && suppliers.isNotEmpty)
                   DropdownButtonFormField<String>(
                     initialValue: _partyId,
-                    decoration: const InputDecoration(
-                      labelText: 'Select Farmer (زمیندار) *',
-                      prefixIcon: Icon(Icons.person),
+                    decoration: InputDecoration(
+                      labelText: isUrdu ? 'زمیندار منتخب کریں *' : 'Select Farmer *',
+                      prefixIcon: const Icon(Icons.person),
                     ),
                     items: suppliers.map((s) {
                       return DropdownMenuItem(
@@ -340,15 +351,15 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                       }
                     },
                     validator: (v) => _partyNameCtrl.text.trim().isEmpty
-                        ? 'Please select or enter farmer name'
+                        ? (isUrdu ? 'براہ کرم زمیندار منتخب کریں' : 'Please select or enter farmer name')
                         : null,
                   )
                 else if (_partyType == 'customer' && customers.isNotEmpty)
                   DropdownButtonFormField<String>(
                     initialValue: _partyId,
-                    decoration: const InputDecoration(
-                      labelText: 'Select Buyer / Customer (خریدار) *',
-                      prefixIcon: Icon(Icons.person),
+                    decoration: InputDecoration(
+                      labelText: isUrdu ? 'خریدار منتخب کریں *' : 'Select Customer *',
+                      prefixIcon: const Icon(Icons.person),
                     ),
                     items: customers.map((c) {
                       return DropdownMenuItem(
@@ -366,18 +377,18 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                       }
                     },
                     validator: (v) => _partyNameCtrl.text.trim().isEmpty
-                        ? 'Please select or enter customer name'
+                        ? (isUrdu ? 'براہ کرم خریدار منتخب کریں' : 'Please select or enter customer name')
                         : null,
                   )
                 else
                   TextFormField(
                     controller: _partyNameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Party Name *',
-                      prefixIcon: Icon(Icons.person_outline),
+                    decoration: InputDecoration(
+                      labelText: isUrdu ? 'پارٹی کا نام *' : 'Party Name *',
+                      prefixIcon: const Icon(Icons.person_outline),
                     ),
                     validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Please enter party name'
+                        ? (isUrdu ? 'براہ کرم نام درج کریں' : 'Please enter party name')
                         : null,
                   ),
                 const SizedBox(height: 14),
@@ -388,17 +399,21 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                     Expanded(
                       child: TextFormField(
                         controller: _bagCountCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Quantity / Bags (تعداد) *',
+                        decoration: InputDecoration(
+                          labelText: isUrdu ? 'تعداد بوریاں *' : 'Quantity / Bags *',
                           hintText: '50',
-                          prefixIcon: Icon(Icons.pin),
+                          prefixIcon: const Icon(Icons.pin),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (_) => setState(() {}),
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Required';
+                          if (v == null || v.trim().isEmpty) {
+                            return isUrdu ? 'لازمی ہے' : 'Required';
+                          }
                           final n = int.tryParse(v.trim());
-                          if (n == null || n <= 0) return 'Must be > 0';
+                          if (n == null || n <= 0) {
+                            return isUrdu ? '0 سے بڑا ہونا چاہیے' : 'Must be > 0';
+                          }
                           return null;
                         },
                       ),
@@ -408,10 +423,12 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                       child: TextFormField(
                         controller: _depositRateCtrl,
                         decoration: InputDecoration(
-                          labelText: 'Deposit / Bag (سیکیورٹی ریٹ)',
+                          labelText: isUrdu ? 'سیکیورٹی ریٹ فی بوری' : 'Deposit per Bag',
                           hintText: '250',
                           prefixIcon: const Icon(Icons.monetization_on_outlined),
-                          suffixText: 'Rs. ${_currencyFmt.format(_totalDeposit)}',
+                          suffixText: isUrdu
+                              ? 'روپے ${_currencyFmt.format(_totalDeposit)}'
+                              : 'Rs. ${_currencyFmt.format(_totalDeposit)}',
                           suffixStyle: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
@@ -441,9 +458,9 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                           if (picked != null) setState(() => _txDate = picked);
                         },
                         child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: 'Date',
-                            prefixIcon: Icon(Icons.calendar_today, size: 18),
+                          decoration: InputDecoration(
+                            labelText: isUrdu ? 'تاریخ' : 'Date',
+                            prefixIcon: const Icon(Icons.calendar_today, size: 18),
                           ),
                           child: Text(_dateFmt.format(_txDate)),
                         ),
@@ -465,10 +482,10 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                             }
                           },
                           child: InputDecorator(
-                            decoration: const InputDecoration(
-                              labelText: 'Return Due Date (واپسی تاریخ)',
+                            decoration: InputDecoration(
+                              labelText: isUrdu ? 'واپسی کی تاریخ' : 'Return Due Date',
                               prefixIcon:
-                                  Icon(Icons.event_available, size: 18),
+                                  const Icon(Icons.event_available, size: 18),
                             ),
                             child: Text(_dateFmt.format(_dueReturnDate)),
                           ),
@@ -482,10 +499,10 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                 // Notes
                 TextFormField(
                   controller: _notesCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes / Vehicle / Gate Pass',
-                    hintText: 'e.g. Sent via Suzuki Pick-up #LES-881',
-                    prefixIcon: Icon(Icons.note_alt_outlined),
+                  decoration: InputDecoration(
+                    labelText: isUrdu ? 'تفصیل و گاڑی نمبر' : 'Notes & Vehicle Info',
+                    hintText: isUrdu ? 'مثلاً سوزوکی پک اپ #LES-881' : 'e.g. Sent via Suzuki Pick-up #LES-881',
+                    prefixIcon: const Icon(Icons.note_alt_outlined),
                   ),
                 ),
 
@@ -498,7 +515,7 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                     TextButton(
                       onPressed:
                           _isSaving ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text(isUrdu ? 'منسوخ' : 'Cancel'),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -515,8 +532,8 @@ class _RecordBardanaDialogState extends State<RecordBardanaDialog> {
                           : const Icon(Icons.check),
                       label: Text(
                         _direction == BardanaDirection.issued
-                            ? 'Issue Bardana'
-                            : 'Record Return',
+                            ? (isUrdu ? 'باردانہ جاری کریں' : 'Issue Bardana')
+                            : (isUrdu ? 'واپسی درج کریں' : 'Record Return'),
                       ),
                     ),
                   ],

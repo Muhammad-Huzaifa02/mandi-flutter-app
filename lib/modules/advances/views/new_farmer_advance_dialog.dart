@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/farmer_advance_model.dart';
 import 'package:mandi/data/models/supplier_model.dart';
@@ -197,19 +198,27 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Disburse Farmer Advance (پیشگی قرضہ)',
-                              style: TextStyle(
+                              AppStrings.val(
+                                context,
+                                en: 'Disburse Farmer Advance',
+                                ur: 'زمیندار پیشگی ایڈوانس',
+                              ),
+                              style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              'Pre-harvest cash & agricultural inputs (کھاد، بیج، سپرے)',
-                              style: TextStyle(fontSize: 11, color: Colors.grey),
+                              AppStrings.val(
+                                context,
+                                en: 'Pre-harvest cash & agricultural inputs',
+                                ur: 'پیشگی نقد رقم و زرعی سامان (کھاد، بیج)',
+                              ),
+                              style: const TextStyle(fontSize: 11, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -234,14 +243,24 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                         DropdownButtonFormField<Supplier>(
                           initialValue: _selectedSupplier,
                           decoration: InputDecoration(
-                            labelText: 'Select Registered Farmer / Supplier',
+                            labelText: AppStrings.val(
+                              context,
+                              en: 'Select Registered Farmer',
+                              ur: 'رجسٹرڈ زمیندار منتخب کریں',
+                            ),
                             border: OutlineInputBorder(borderRadius: MRadius.sm),
                             prefixIcon: const Icon(Icons.person_outline),
                           ),
                           items: [
-                            const DropdownMenuItem<Supplier>(
+                            DropdownMenuItem<Supplier>(
                               value: null,
-                              child: Text('Custom / Walk-in Farmer'),
+                              child: Text(
+                                AppStrings.val(
+                                  context,
+                                  en: 'Custom / Walk-in Farmer',
+                                  ur: 'غیر رجسٹرڈ / نیا زمیندار',
+                                ),
+                              ),
                             ),
                             ...suppliers.map((s) {
                               return DropdownMenuItem(
@@ -270,14 +289,18 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                                 child: TextFormField(
                                   controller: _customFarmerNameCtrl,
                                   decoration: InputDecoration(
-                                    labelText: 'Farmer Name (زمیندار کا نام) *',
+                                    labelText: AppStrings.val(
+                                      context,
+                                      en: 'Farmer Name *',
+                                      ur: 'زمیندار کا نام *',
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: MRadius.sm,
                                     ),
                                   ),
                                   validator: (v) => (_selectedSupplier == null &&
                                           (v == null || v.trim().isEmpty))
-                                      ? 'Required'
+                                      ? AppStrings.val(context, en: 'Required', ur: 'لازمی')
                                       : null,
                                 ),
                               ),
@@ -288,7 +311,11 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                                   controller: _customPhoneCtrl,
                                   keyboardType: TextInputType.phone,
                                   decoration: InputDecoration(
-                                    labelText: 'Phone (فون نمبر)',
+                                    labelText: AppStrings.val(
+                                      context,
+                                      en: 'Phone Number',
+                                      ur: 'فون نمبر',
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: MRadius.sm,
                                     ),
@@ -309,7 +336,11 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                               child: DropdownButtonFormField<FarmerAdvanceType>(
                                 initialValue: _selectedType,
                                 decoration: InputDecoration(
-                                  labelText: 'Advance Type (قسم)',
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Advance Type',
+                                    ur: 'ایڈوانس کی قسم',
+                                  ),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -318,7 +349,7 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                                   return DropdownMenuItem(
                                     value: t,
                                     child: Text(
-                                      '${t.labelEnglish} (${t.labelUrdu})',
+                                      AppStrings.val(context, en: t.labelEnglish, ur: t.labelUrdu),
                                       style: const TextStyle(fontSize: 12),
                                     ),
                                   );
@@ -336,9 +367,16 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                               child: TextFormField(
                                 controller: _descriptionCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Details / Items (کھاد، بیج تفصیل)',
-                                  hintText:
-                                      'e.g. 50 Bags DAP Fertilizer, 100L Diesel',
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Details / Items',
+                                    ur: 'تفصیل و سامان',
+                                  ),
+                                  hintText: AppStrings.val(
+                                    context,
+                                    en: 'e.g. 50 Bags DAP Fertilizer, 100L Diesel',
+                                    ur: 'مثلاً 50 بوری کھاد، 100 لیٹر ڈیزل',
+                                  ),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -366,7 +404,11 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                                   color: Colors.green,
                                 ),
                                 decoration: InputDecoration(
-                                  labelText: 'Principal Amount (اصل رقم Rs) *',
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Principal Amount (Rs.) *',
+                                    ur: 'اصل رقم روپے *',
+                                  ),
                                   prefixText: 'Rs. ',
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
@@ -377,7 +419,7 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                                 onChanged: (_) => setState(() {}),
                                 validator: (val) {
                                   if (val == null || val.trim().isEmpty) {
-                                    return 'Amount required';
+                                    return AppStrings.val(context, en: 'Amount required', ur: 'رقم لازمی ہے');
                                   }
                                   final num = double.tryParse(val.trim());
                                   if (num == null || num <= 0) {
@@ -446,9 +488,13 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  const Text(
-                                    'Total Loan Recoverable (کل قابلِ واپسی)',
-                                    style: TextStyle(
+                                  Text(
+                                    AppStrings.val(
+                                      context,
+                                      en: 'Total Loan Recoverable',
+                                      ur: 'کل قابلِ واپسی قرضہ',
+                                    ),
+                                    style: const TextStyle(
                                       fontSize: 10,
                                       color: Colors.grey,
                                     ),
@@ -477,8 +523,16 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                               child: TextFormField(
                                 controller: _targetCropCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Committed Crop (فصل کا وعدہ)',
-                                  hintText: 'e.g. Wheat (گندم), Paddy (دھان)',
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Committed Crop',
+                                    ur: 'فصل کا وعدہ',
+                                  ),
+                                  hintText: AppStrings.val(
+                                    context,
+                                    en: 'e.g. Wheat, Rice, Cotton',
+                                    ur: 'مثلاً گندم، دھان، کپاس',
+                                  ),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -494,7 +548,11 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                                 borderRadius: MRadius.sm,
                                 child: InputDecorator(
                                   decoration: InputDecoration(
-                                    labelText: 'Expected Harvest (کٹائی تاریخ)',
+                                    labelText: AppStrings.val(
+                                      context,
+                                      en: 'Expected Harvest Date',
+                                      ur: 'متوقع تاریخ کٹائی',
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: MRadius.sm,
                                     ),
@@ -505,7 +563,11 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                                   child: Text(
                                     _expectedHarvestDate != null
                                         ? _dateFmt.format(_expectedHarvestDate!)
-                                        : 'Select Harvest Date',
+                                        : AppStrings.val(
+                                            context,
+                                            en: 'Select Harvest Date',
+                                            ur: 'تاریخ منتخب کریں',
+                                          ),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: _expectedHarvestDate != null
@@ -530,7 +592,11 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                                 borderRadius: MRadius.sm,
                                 child: InputDecorator(
                                   decoration: InputDecoration(
-                                    labelText: 'Disbursement Date (تاریخ ادائیگی)',
+                                    labelText: AppStrings.val(
+                                      context,
+                                      en: 'Disbursement Date',
+                                      ur: 'تاریخ ادائیگی',
+                                    ),
                                     border: OutlineInputBorder(
                                       borderRadius: MRadius.sm,
                                     ),
@@ -547,23 +613,33 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                               child: DropdownButtonFormField<String>(
                                 initialValue: _paymentMethod,
                                 decoration: InputDecoration(
-                                  labelText: 'Disbursed Via (ادائیگی بذریعہ)',
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Disbursed Via',
+                                    ur: 'طریقہ ادائیگی',
+                                  ),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
                                 ),
-                                items: const [
+                                items: [
                                   DropdownMenuItem(
                                     value: 'cash',
-                                    child: Text('Cash in Hand (نقد)'),
+                                    child: Text(
+                                      AppStrings.val(context, en: 'Cash in Hand', ur: 'نقد رقم'),
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'bank_transfer',
-                                    child: Text('Bank Transfer (بینک)'),
+                                    child: Text(
+                                      AppStrings.val(context, en: 'Bank Transfer', ur: 'بینک ٹرانسفر'),
+                                    ),
                                   ),
                                   DropdownMenuItem(
                                     value: 'cheque',
-                                    child: Text('Cheque (چیک)'),
+                                    child: Text(
+                                      AppStrings.val(context, en: 'Cheque', ur: 'چیک'),
+                                    ),
                                   ),
                                 ],
                                 onChanged: (val) {
@@ -582,7 +658,11 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                           DropdownButtonFormField<String>(
                             initialValue: _selectedBankAccountId,
                             decoration: InputDecoration(
-                              labelText: 'From Bank Account (بینک اکاؤنٹ)',
+                              labelText: AppStrings.val(
+                                context,
+                                en: 'From Bank Account',
+                                ur: 'بینک اکاؤنٹ سے',
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: MRadius.sm,
                               ),
@@ -604,7 +684,11 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                         TextFormField(
                           controller: _notesCtrl,
                           decoration: InputDecoration(
-                            labelText: 'Special Conditions / Notes (شرائط و نوٹس)',
+                            labelText: AppStrings.val(
+                              context,
+                              en: 'Special Conditions / Notes',
+                              ur: 'شرائط و تفصیل',
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: MRadius.sm,
                             ),
@@ -624,7 +708,9 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(
+                        AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں'),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -640,7 +726,9 @@ class _NewFarmerAdvanceDialogState extends State<NewFarmerAdvanceDialog> {
                             )
                           : const Icon(Icons.check_circle_outline),
                       label: Text(
-                        _isSaving ? 'Disbursing...' : 'Disburse Advance (محفوظ کریں)',
+                        _isSaving
+                            ? AppStrings.val(context, en: 'Disbursing...', ur: 'ادائیگی جاری ہے...')
+                            : AppStrings.val(context, en: 'Disburse Advance', ur: 'ایڈوانس محفوظ کریں'),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade800,

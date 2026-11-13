@@ -1,8 +1,9 @@
 // Dialog to Relocate Bay Stock to Another Bay
-// (*ایک خانے سے دوسرے خانے میں مال منتقلی*).
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/data/models/warehouse_grid_model.dart';
 import 'package:mandi/modules/warehouse_grid/providers/warehouse_grid_provider.dart';
 
@@ -21,6 +22,7 @@ class _RelocateBayStockDialogState extends State<RelocateBayStockDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final provider = context.watch<WarehouseGridProvider>();
     final targetBays = provider.bays
         .where((b) => b.id != widget.sourceBay.id && b.currentBags == 0)
@@ -33,7 +35,9 @@ class _RelocateBayStockDialogState extends State<RelocateBayStockDialog> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Relocate Stock from Bay ${widget.sourceBay.bayCode}\n(مال کی دوسرے خانے میں منتقلی)',
+              isUrdu
+                  ? 'خانہ ${widget.sourceBay.bayCode} سے مال کی منتقلی'
+                  : 'Relocate Stock from Bay ${widget.sourceBay.bayCode}',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
@@ -44,20 +48,23 @@ class _RelocateBayStockDialogState extends State<RelocateBayStockDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Moving ${widget.sourceBay.currentBags} Bags of ${widget.sourceBay.cropName ?? 'Commodity'} '
-            '(Farmer: ${widget.sourceBay.farmerName ?? 'N/A'})',
+            isUrdu
+                ? '${widget.sourceBay.currentBags} بوریاں ${widget.sourceBay.cropName ?? 'مال'} (کسان: ${widget.sourceBay.farmerName ?? 'نامعلوم'})'
+                : 'Moving ${widget.sourceBay.currentBags} Bags of ${widget.sourceBay.cropName ?? 'Commodity'} (Farmer: ${widget.sourceBay.farmerName ?? 'N/A'})',
             style: const TextStyle(fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Select Destination Empty Bay / نیا خالی خانہ:',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          Text(
+            isUrdu ? 'نیا خالی خانہ منتخب کریں:' : 'Select Destination Empty Bay:',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
           const SizedBox(height: 8),
           if (targetBays.isEmpty)
-            const Text(
-              'No empty bays available in this chamber for relocation.',
-              style: TextStyle(color: Colors.red, fontSize: 12),
+            Text(
+              isUrdu
+                  ? 'منتقلی کے لیے اس چیمبر میں کوئی خالی خانہ دستیاب نہیں۔'
+                  : 'No empty bays available in this chamber for relocation.',
+              style: const TextStyle(color: Colors.red, fontSize: 12),
             )
           else
             DropdownButtonFormField<String>(
@@ -69,7 +76,11 @@ class _RelocateBayStockDialogState extends State<RelocateBayStockDialog> {
               items: targetBays.map((b) {
                 return DropdownMenuItem<String>(
                   value: b.id,
-                  child: Text('Bay ${b.bayCode} (Capacity: ${b.maxCapacityBags} Bags)'),
+                  child: Text(
+                    isUrdu
+                        ? 'خانہ ${b.bayCode} (گنجائش: ${b.maxCapacityBags} بوریاں)'
+                        : 'Bay ${b.bayCode} (Capacity: ${b.maxCapacityBags} Bags)',
+                  ),
                 );
               }).toList(),
               onChanged: (val) {
@@ -81,7 +92,7 @@ class _RelocateBayStockDialogState extends State<RelocateBayStockDialog> {
       actions: [
         TextButton(
           onPressed: _isRelocating ? null : () => Navigator.pop(context),
-          child: const Text('منسوخ (Cancel)'),
+          child: Text(isUrdu ? 'منسوخ' : 'Cancel'),
         ),
         ElevatedButton(
           onPressed: (_isRelocating || targetBays.isEmpty)
@@ -101,15 +112,19 @@ class _RelocateBayStockDialogState extends State<RelocateBayStockDialog> {
                   if (success) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Stock Relocated Successfully! (مال منتقل ہو گیا)'),
+                      SnackBar(
+                        content: Text(
+                          isUrdu
+                              ? 'مال کامیابی کے ساتھ دوسرے خانے میں منتقل ہو گیا!'
+                              : 'Stock Relocated Successfully!',
+                        ),
                         backgroundColor: Colors.teal,
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(provider.errorMessage ?? 'Relocation failed'),
+                        content: Text(provider.errorMessage ?? (isUrdu ? 'منتقلی میں خرابی' : 'Relocation failed')),
                         backgroundColor: Colors.red,
                       ),
                     );
@@ -122,7 +137,10 @@ class _RelocateBayStockDialogState extends State<RelocateBayStockDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : const Text('منتقل کریں (Confirm Relocate)', style: TextStyle(color: Colors.white)),
+              : Text(
+                  isUrdu ? 'منتقل کریں' : 'Confirm Relocate',
+                  style: const TextStyle(color: Colors.white),
+                ),
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/customer_model.dart';
 import 'package:mandi/data/models/supplier_model.dart';
@@ -58,6 +59,7 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final isUrdu = AppStrings.isUrdu(context);
     final partyId = _partyType == 'customer'
         ? _selectedCustomer?.id
         : _selectedSupplier?.id;
@@ -65,7 +67,14 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
     if (partyId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Please select a $_partyType.')),
+          content: Text(
+            isUrdu
+                ? (_partyType == 'customer'
+                    ? 'براہ کرم گاہک منتخب کریں۔'
+                    : 'براہ کرم زمیندار منتخب کریں۔')
+                : 'Please select a ${_partyType == "customer" ? "customer" : "farmer"}.',
+          ),
+        ),
       );
       return;
     }
@@ -111,9 +120,16 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(_partyType == 'customer'
-                ? 'Customer receipt recorded.'
-                : 'Supplier payment recorded.')),
+          content: Text(
+            isUrdu
+                ? (_partyType == 'customer'
+                    ? 'گاہک کی وصولی درج ہو گئی۔'
+                    : 'زمیندار کی ادائیگی درج ہو گئی۔')
+                : (_partyType == 'customer'
+                    ? 'Customer receipt recorded.'
+                    : 'Farmer payment recorded.'),
+          ),
+        ),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -135,8 +151,16 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
         widget.initialSupplier != null;
 
     final appBarTitle = _partyType == 'customer'
-        ? 'Record Customer Receipt'
-        : 'Record Supplier Payment';
+        ? AppStrings.val(
+            context,
+            en: 'Record Customer Receipt',
+            ur: 'گاہک کی وصولی درج کریں',
+          )
+        : AppStrings.val(
+            context,
+            en: 'Record Farmer Payment',
+            ur: 'زمیندار کی ادائیگی درج کریں',
+          );
 
     return Scaffold(
       appBar: AppBar(title: Text(appBarTitle)),
@@ -147,19 +171,27 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Party Type Selector (hidden if opened from Customer/Supplier profile)
+              // Party Type Selector
               if (!isLockedParty) ...[
                 SegmentedButton<String>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: 'customer',
-                      label: Text('Customer Receipt'),
-                      icon: Icon(Icons.download_outlined),
+                      label: Text(AppStrings.val(
+                        context,
+                        en: 'Customer Receipt',
+                        ur: 'گاہک کی وصولی',
+                      )),
+                      icon: const Icon(Icons.download_outlined),
                     ),
                     ButtonSegment(
                       value: 'supplier',
-                      label: Text('Farmer Payment (زمیندار)'),
-                      icon: Icon(Icons.upload_outlined),
+                      label: Text(AppStrings.val(
+                        context,
+                        en: 'Farmer Payment',
+                        ur: 'زمیندار کی ادائیگی',
+                      )),
+                      icon: const Icon(Icons.upload_outlined),
                     ),
                   ],
                   selected: {_partyType},
@@ -177,34 +209,56 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
               if (_partyType == 'customer')
                 DropdownButtonFormField<Customer>(
                   initialValue: _selectedCustomer,
-                  decoration:
-                      const InputDecoration(labelText: 'Select Customer *'),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'Select Customer *',
+                      ur: 'گاہک منتخب کریں *',
+                    ),
+                  ),
                   items: customers
                       .map((c) => DropdownMenuItem(
                             value: c,
                             child: Text(
-                                '${c.name} (Balance: Rs. ${c.runningBalance.toStringAsFixed(0)})'),
+                              '${c.name} (${AppStrings.val(context, en: "Balance: Rs.", ur: "بقایا: روپے")} ${c.runningBalance.toStringAsFixed(0)})',
+                            ),
                           ))
                       .toList(),
                   onChanged: (c) => setState(() => _selectedCustomer = c),
-                  validator: (v) =>
-                      v == null ? 'Please select a customer' : null,
+                  validator: (v) => v == null
+                      ? AppStrings.val(
+                          context,
+                          en: 'Please select a customer',
+                          ur: 'براہ کرم گاہک منتخب کریں',
+                        )
+                      : null,
                 )
               else
                 DropdownButtonFormField<Supplier>(
                   initialValue: _selectedSupplier,
-                  decoration:
-                      const InputDecoration(labelText: 'Select Farmer (زمیندار) *'),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'Select Farmer *',
+                      ur: 'زمیندار منتخب کریں *',
+                    ),
+                  ),
                   items: suppliers
                       .map((s) => DropdownMenuItem(
                             value: s,
                             child: Text(
-                                '${s.name} (Payable: Rs. ${s.runningBalance.toStringAsFixed(0)})'),
+                              '${s.name} (${AppStrings.val(context, en: "Payable: Rs.", ur: "واجب الادا: روپے")} ${s.runningBalance.toStringAsFixed(0)})',
+                            ),
                           ))
                       .toList(),
                   onChanged: (s) => setState(() => _selectedSupplier = s),
-                  validator: (v) =>
-                      v == null ? 'Please select a farmer' : null,
+                  validator: (v) => v == null
+                      ? AppStrings.val(
+                          context,
+                          en: 'Please select a farmer',
+                          ur: 'براہ کرم زمیندار منتخب کریں',
+                        )
+                      : null,
                 ),
 
               const SizedBox(height: MSpacing.md),
@@ -213,15 +267,31 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
                 controller: _amountCtrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Payment Amount (PKR) *',
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(
+                    context,
+                    en: 'Payment Amount (PKR) *',
+                    ur: 'ادائیگی کی رقم (روپے) *',
+                  ),
                   hintText: 'e.g. 10000',
                   suffixText: 'PKR',
                 ),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
+                  if (v == null || v.trim().isEmpty) {
+                    return AppStrings.val(
+                      context,
+                      en: 'Required',
+                      ur: 'ضروری ہے',
+                    );
+                  }
                   final val = double.tryParse(v.trim());
-                  if (val == null || val <= 0) return 'Enter a valid amount';
+                  if (val == null || val <= 0) {
+                    return AppStrings.val(
+                      context,
+                      en: 'Enter a valid amount',
+                      ur: 'درست رقم درج کریں',
+                    );
+                  }
                   return null;
                 },
               ),
@@ -230,12 +300,24 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
 
               DropdownButtonFormField<String>(
                 initialValue: _method,
-                decoration: const InputDecoration(labelText: 'Payment Method'),
-                items: const [
-                  DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                  DropdownMenuItem(value: 'bank', child: Text('Bank Transfer')),
-                  DropdownMenuItem(value: 'jazzCash', child: Text('JazzCash')),
-                  DropdownMenuItem(value: 'easypaisa', child: Text('Easypaisa')),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(
+                    context,
+                    en: 'Payment Method',
+                    ur: 'ادائیگی کا ذریعہ',
+                  ),
+                ),
+                items: [
+                  DropdownMenuItem(
+                    value: 'cash',
+                    child: Text(AppStrings.val(context, en: 'Cash', ur: 'نقد کیش')),
+                  ),
+                  DropdownMenuItem(
+                    value: 'bank',
+                    child: Text(AppStrings.val(context, en: 'Bank Transfer', ur: 'بینک ٹرانسفر')),
+                  ),
+                  const DropdownMenuItem(value: 'jazzCash', child: Text('JazzCash')),
+                  const DropdownMenuItem(value: 'easypaisa', child: Text('Easypaisa')),
                 ],
                 onChanged: (m) {
                   if (m != null) setState(() => _method = m);
@@ -246,9 +328,17 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
 
               TextFormField(
                 controller: _referenceCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Reference / Voucher #',
-                  hintText: 'e.g. Cheque #40129 / Transaction ID',
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(
+                    context,
+                    en: 'Reference / Voucher #',
+                    ur: 'حوالہ / واؤچر نمبر',
+                  ),
+                  hintText: AppStrings.val(
+                    context,
+                    en: 'e.g. Cheque #40129 / Transaction ID',
+                    ur: 'مثلاً چیک نمبر 40129 / ٹرانزیکشن آئی ڈی',
+                  ),
                 ),
               ),
 
@@ -266,8 +356,8 @@ class _AddPaymentPageState extends State<AddPaymentPage> {
                         ),
                       )
                     : Text(_partyType == 'customer'
-                        ? 'Record Receipt'
-                        : 'Record Payment'),
+                        ? AppStrings.val(context, en: 'Record Receipt', ur: 'وصولی محفوظ کریں')
+                        : AppStrings.val(context, en: 'Record Payment', ur: 'ادائیگی محفوظ کریں')),
               ),
             ],
           ),

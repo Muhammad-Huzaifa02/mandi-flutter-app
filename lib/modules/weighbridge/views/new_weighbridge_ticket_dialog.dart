@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/scale_service.dart';
 import 'package:mandi/data/models/weighbridge_ticket_model.dart';
@@ -38,15 +39,18 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
   bool _isSaving = false;
   double _liveScaleWeight = 0.0;
   bool _scaleIsStable = true;
-  StreamSubscription<ScaleReading>? _scaleSub;
+  StreamSubscription<ScaleReading>? _scaleSubscription;
 
   final _numberFmt = NumberFormat('#,##0.00', 'en_US');
 
   @override
   void initState() {
     super.initState();
-    // Listen to scale stream
-    _scaleSub = ScaleService().readingStream.listen((reading) {
+    _connectScaleListener();
+  }
+
+  void _connectScaleListener() {
+    _scaleSubscription = ScaleService().readingStream.listen((reading) {
       if (mounted) {
         setState(() {
           _liveScaleWeight = reading.weightKg;
@@ -58,7 +62,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
 
   @override
   void dispose() {
-    _scaleSub?.cancel();
+    _scaleSubscription?.cancel();
     _vehicleNumberCtrl.dispose();
     _driverNameCtrl.dispose();
     _driverPhoneCtrl.dispose();
@@ -94,8 +98,14 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
     final grossWeight = double.tryParse(_grossWeightCtrl.text.trim()) ?? 0.0;
     if (grossWeight <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid Gross Weight (وزن بھرا) > 0 KG'),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Please enter a valid Gross Weight > 0 KG',
+              ur: 'برائے مہربانی درست بھرا وزن درج کریں (> 0 کلوگرام)',
+            ),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -124,9 +134,13 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
       if (mounted) {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              '1st Weight recorded successfully. Awaiting empty vehicle (Tare weight)!',
+              AppStrings.val(
+                context,
+                en: '1st Weight recorded successfully. Awaiting empty vehicle (Tare weight)!',
+                ur: 'گاڑی کا پہلا وزن کامیابی سے درج ہو گیا۔ اب خالی گاڑی کا وزن درکار ہے۔',
+              ),
             ),
             backgroundColor: Colors.green,
           ),
@@ -137,7 +151,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save ticket: $e'),
+            content: Text('${AppStrings.val(context, en: "Failed to save ticket", ur: "پرچی محفوظ کرنے میں خرابی")}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -147,15 +161,16 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final enteredGross = double.tryParse(_grossWeightCtrl.text.trim()) ?? 0.0;
     final enteredMaunds = enteredGross / 40.0;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: MRadius.lg),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 620, maxHeight: 780),
+        constraints: const BoxConstraints(maxWidth: 680, maxHeight: 720),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -180,19 +195,27 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Record 1st Weight (Gross / بھرا)',
-                              style: TextStyle(
+                              AppStrings.val(
+                                context,
+                                en: 'Record 1st Weight (Gross)',
+                                ur: 'گاڑی کا پہلا وزن (بھرا گاڑی)',
+                              ),
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              'دھرم کنڈا: گاڑی کا پہلا وزن درج کریں',
-                              style: TextStyle(
+                              AppStrings.val(
+                                context,
+                                en: 'Weighbridge: Record gross weight of loaded vehicle',
+                                ur: 'دھرم کنڈا: بھری گاڑی کا ابتدائی وزن درج کریں',
+                              ),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
                               ),
@@ -248,17 +271,29 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'Digital Scale Indicator',
-                                        style: TextStyle(
+                                      Text(
+                                        AppStrings.val(
+                                          context,
+                                          en: 'Digital Scale Indicator',
+                                          ur: 'الیکٹرانک ترازو پیمانہ',
+                                        ),
+                                        style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                       Text(
                                         _scaleIsStable
-                                            ? 'Status: STABLE (ST)'
-                                            : 'Status: MOTION (US)...',
+                                            ? AppStrings.val(
+                                                context,
+                                                en: 'Status: STABLE (ST)',
+                                                ur: 'حالت: مستحکم (ST)',
+                                              )
+                                            : AppStrings.val(
+                                                context,
+                                                en: 'Status: MOTION (US)...',
+                                                ur: 'حالت: متحرک (US)...',
+                                              ),
                                         style: TextStyle(
                                           fontSize: 10,
                                           color: _scaleIsStable
@@ -284,7 +319,13 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                   ElevatedButton.icon(
                                     onPressed: _fetchFromScale,
                                     icon: const Icon(Icons.download, size: 16),
-                                    label: const Text('Capture'),
+                                    label: Text(
+                                      AppStrings.val(
+                                        context,
+                                        en: 'Capture',
+                                        ur: 'وزن لیں',
+                                      ),
+                                    ),
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 10,
@@ -312,7 +353,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                 textCapitalization:
                                     TextCapitalization.characters,
                                 decoration: InputDecoration(
-                                  labelText: 'Vehicle Number * (گاڑی نمبر)',
+                                  labelText: '${AppStrings.val(context, en: 'Vehicle Number', ur: 'گاڑی نمبر')} *',
                                   hintText: 'e.g. LES-8920, FDN-4411',
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
@@ -322,7 +363,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                 ),
                                 validator: (val) =>
                                     (val == null || val.trim().isEmpty)
-                                        ? 'Required'
+                                        ? AppStrings.val(context, en: 'Required', ur: 'لازمی درج کریں')
                                         : null,
                               ),
                             ),
@@ -332,7 +373,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                               child: DropdownButtonFormField<VehicleType>(
                                 initialValue: _selectedVehicleType,
                                 decoration: InputDecoration(
-                                  labelText: 'Vehicle Type (قسم گاڑی)',
+                                  labelText: AppStrings.val(context, en: 'Vehicle Type', ur: 'گاڑی کی قسم'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -341,7 +382,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                   return DropdownMenuItem(
                                     value: v,
                                     child: Text(
-                                      '${v.labelEnglish} (${v.labelUrdu})',
+                                      isUrdu ? v.labelUrdu : v.labelEnglish,
                                       style: const TextStyle(fontSize: 13),
                                     ),
                                   );
@@ -365,7 +406,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                               child: TextFormField(
                                 controller: _driverNameCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Driver Name (ڈرائیور نام)',
+                                  labelText: AppStrings.val(context, en: 'Driver Name', ur: 'ڈرائیور کا نام'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -379,7 +420,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                 controller: _driverPhoneCtrl,
                                 keyboardType: TextInputType.phone,
                                 decoration: InputDecoration(
-                                  labelText: 'Driver Phone (فون نمبر)',
+                                  labelText: AppStrings.val(context, en: 'Driver Phone', ur: 'ڈرائیور فون نمبر'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -400,7 +441,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                               child: TextFormField(
                                 controller: _partyNameCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Party / Farmer (مالک مال / زمیندار)',
+                                  labelText: AppStrings.val(context, en: 'Farmer / Party Name', ur: 'زمیندار / کھاتہ کا نام'),
                                   hintText: 'e.g. Chaudhry Akram, Haji Bashir',
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
@@ -415,7 +456,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                               child: DropdownButtonFormField<WeighbridgePartyType>(
                                 initialValue: _selectedPartyType,
                                 decoration: InputDecoration(
-                                  labelText: 'Party Type',
+                                  labelText: AppStrings.val(context, en: 'Party Type', ur: 'کھاتہ کی قسم'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -424,7 +465,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                   return DropdownMenuItem(
                                     value: p,
                                     child: Text(
-                                      '${p.labelEnglish} (${p.labelUrdu})',
+                                      isUrdu ? p.labelUrdu : p.labelEnglish,
                                       style: const TextStyle(fontSize: 12),
                                     ),
                                   );
@@ -449,8 +490,8 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                               child: TextFormField(
                                 controller: _commodityCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Commodity (جنس / فصل)',
-                                  hintText: 'e.g. Wheat (گندم), Paddy (دھان)',
+                                  labelText: AppStrings.val(context, en: 'Commodity', ur: 'جنس / فصل'),
+                                  hintText: AppStrings.val(context, en: 'e.g. Wheat, Paddy, Corn', ur: 'مثلاً گندم، دھان، مکئی'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -466,7 +507,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                 controller: _bagCountCtrl,
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
-                                  labelText: 'Bags (تعداد بوری)',
+                                  labelText: AppStrings.val(context, en: 'Bags Count', ur: 'تعداد بوریاں'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -509,7 +550,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                       ),
                                       decoration: InputDecoration(
                                         labelText:
-                                            '1st Weight (Gross / بھرا وزن KG) *',
+                                            '${AppStrings.val(context, en: '1st Weight (Gross KG)', ur: 'پہلا وزن (بھرا وزن کلوگرام)')} *',
                                         suffixText: 'KG',
                                         border: OutlineInputBorder(
                                           borderRadius: MRadius.sm,
@@ -520,11 +561,11 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                       onChanged: (_) => setState(() {}),
                                       validator: (val) {
                                         if (val == null || val.trim().isEmpty) {
-                                          return 'Gross weight required';
+                                          return AppStrings.val(context, en: 'Gross weight required', ur: 'بھرا وزن لازمی درج کریں');
                                         }
                                         final num = double.tryParse(val.trim());
                                         if (num == null || num <= 0) {
-                                          return 'Must be > 0';
+                                          return AppStrings.val(context, en: 'Must be > 0', ur: '0 سے زیادہ ہونا چاہیے');
                                         }
                                         return null;
                                       },
@@ -546,16 +587,16 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const Text(
-                                            'Weight in Maunds (من)',
-                                            style: TextStyle(
+                                          Text(
+                                            AppStrings.val(context, en: 'Weight in Maunds', ur: 'وزن بلحاظ من'),
+                                            style: const TextStyle(
                                               fontSize: 11,
                                               color: Colors.grey,
                                             ),
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            '${_numberFmt.format(enteredMaunds)} Maunds',
+                                            '${_numberFmt.format(enteredMaunds)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                                             style: const TextStyle(
                                               fontSize: 15,
                                               fontWeight: FontWeight.bold,
@@ -589,7 +630,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                 controller: _kandaFeeCtrl,
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
-                                  labelText: 'Kanda Fee (کنڈا فیس Rs)',
+                                  labelText: AppStrings.val(context, en: 'Kanda Fee (PKR)', ur: 'کنڈا فیس (روپے)'),
                                   prefixText: 'Rs. ',
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
@@ -602,7 +643,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                               child: DropdownButtonFormField<WeighbridgeFeePaidBy>(
                                 initialValue: _selectedFeePayer,
                                 decoration: InputDecoration(
-                                  labelText: 'Fee Paid By (فیس دہندہ)',
+                                  labelText: AppStrings.val(context, en: 'Fee Paid By', ur: 'فیس دہندہ'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -611,7 +652,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                                   return DropdownMenuItem(
                                     value: f,
                                     child: Text(
-                                      '${f.labelEnglish} (${f.labelUrdu})',
+                                      isUrdu ? f.labelUrdu : f.labelEnglish,
                                       style: const TextStyle(fontSize: 13),
                                     ),
                                   );
@@ -635,7 +676,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                               child: TextFormField(
                                 controller: _operatorCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Weighmaster / Operator (کنڈا انچارج)',
+                                  labelText: AppStrings.val(context, en: 'Weighmaster / Operator', ur: 'کنڈا انچارج'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -647,7 +688,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                               child: TextFormField(
                                 controller: _notesCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Notes (خصوصی نوٹ)',
+                                  labelText: AppStrings.val(context, en: 'Notes / Remarks', ur: 'خصوصی نوٹ'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -670,7 +711,7 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -686,7 +727,9 @@ class _NewWeighbridgeTicketDialogState extends State<NewWeighbridgeTicketDialog>
                             )
                           : const Icon(Icons.check_circle_outline),
                       label: Text(
-                        _isSaving ? 'Recording...' : 'Record 1st Weight (محفوظ)',
+                        _isSaving
+                            ? AppStrings.val(context, en: 'Recording...', ur: 'محفوظ ہو رہا ہے...')
+                            : AppStrings.val(context, en: 'Record 1st Weight', ur: 'پہلا وزن محفوظ کریں'),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: MColors.primary,

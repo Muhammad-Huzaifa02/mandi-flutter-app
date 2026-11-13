@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:intl/intl.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/inventory_label_pdf_generator.dart';
 import 'package:mandi/data/models/inventory_label_model.dart';
@@ -106,30 +107,26 @@ class _InventoryLabelsPageState extends State<InventoryLabelsPage>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Barcode & QR Labels',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
             Text(
-              'بارکوڈ و کیو آر انوینٹری لیبلز',
-              style: MText.caption.copyWith(color: MColors.primaryLight),
+              AppStrings.val(context, en: 'Barcode & QR Labels', ur: 'بارکوڈ و کیو آر لیبلز'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
           ],
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.lightBlueAccent),
-            tooltip: 'Scan & Verify Label',
+            tooltip: AppStrings.val(context, en: 'Scan & Verify Label', ur: 'لیبل سکین اور تصدیق'),
             onPressed: _openScanDialog,
           ),
           IconButton(
             icon: const Icon(Icons.grid_view_rounded, color: Colors.amberAccent),
-            tooltip: 'Print 4-Up Adhesive Stickers',
+            tooltip: AppStrings.val(context, en: 'Print 4-Up Adhesive Stickers', ur: 'سٹیکرز پرنٹ کریں'),
             onPressed: _print4UpStickers,
           ),
           IconButton(
             icon: const Icon(Icons.print_outlined, color: Colors.tealAccent),
-            tooltip: 'Print Warehouse Inventory Roster',
+            tooltip: AppStrings.val(context, en: 'Print Warehouse Inventory Roster', ur: 'گودام انوینٹری رجسٹر پرنٹ'),
             onPressed: _printRoster,
           ),
           const SizedBox(width: 8),
@@ -142,15 +139,15 @@ class _InventoryLabelsPageState extends State<InventoryLabelsPage>
           tabs: [
             Tab(
               icon: const Icon(Icons.inventory_2_outlined, size: 20),
-              text: 'Active (${provider.totalActiveLabels})',
+              text: '${AppStrings.val(context, en: 'Active', ur: 'موجود')} (${provider.totalActiveLabels})',
             ),
             Tab(
               icon: const Icon(Icons.local_shipping_outlined, size: 20),
-              text: 'Dispatched (${provider.totalDispatchedLabels})',
+              text: '${AppStrings.val(context, en: 'Dispatched', ur: 'روانہ شدہ')} (${provider.totalDispatchedLabels})',
             ),
-            const Tab(
-              icon: Icon(Icons.qr_code_2_rounded, size: 20),
-              text: 'Scan Terminal',
+            Tab(
+              icon: const Icon(Icons.qr_code_2_rounded, size: 20),
+              text: AppStrings.val(context, en: 'Scan Terminal', ur: 'سکین ٹرمینل'),
             ),
           ],
         ),
@@ -159,7 +156,7 @@ class _InventoryLabelsPageState extends State<InventoryLabelsPage>
         backgroundColor: MColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New Label / نیا لیبل'),
+        label: Text(AppStrings.val(context, en: 'New Label', ur: 'نیا لیبل')),
         onPressed: _openCreateDialog,
       ),
       body: Column(
@@ -185,26 +182,26 @@ class _InventoryLabelsPageState extends State<InventoryLabelsPage>
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _metricTile(
-                    'Active Pallets',
+                    AppStrings.val(context, en: 'Active Pallets', ur: 'موجود پیلیٹس'),
                     '${provider.totalActiveLabels}',
                     Icons.layers_outlined,
                     Colors.lightBlueAccent,
                   ),
                   _metricTile(
-                    'Total Bags',
+                    AppStrings.val(context, en: 'Total Bags', ur: 'کل بوریاں'),
                     _numberFmt.format(provider.totalActiveBags),
                     Icons.shopping_bag_outlined,
                     Colors.orangeAccent,
                   ),
                   _metricTile(
-                    'Net Maunds (من)',
+                    AppStrings.val(context, en: 'Net Maunds', ur: 'خالص وزن (من)'),
                     '${provider.totalActiveNetMaunds.toStringAsFixed(1)} M',
                     Icons.scale_rounded,
                     MColors.primaryLight,
                     isBig: true,
                   ),
                   _metricTile(
-                    'Total Net KG',
+                    AppStrings.val(context, en: 'Total Net KG', ur: 'کل صاف کلوگرام'),
                     _numberFmt.format(provider.totalActiveNetKg),
                     Icons.fitness_center_rounded,
                     Colors.white70,
@@ -271,7 +268,7 @@ class _InventoryLabelsPageState extends State<InventoryLabelsPage>
             child: Row(
               children: [
                 FilterChip(
-                  label: const Text('All Types'),
+                  label: Text(AppStrings.val(context, en: 'All Types', ur: 'تمام اقسام')),
                   selected: provider.filterType == null,
                   onSelected: (_) => provider.setFilterType(null),
                 ),
@@ -280,7 +277,7 @@ class _InventoryLabelsPageState extends State<InventoryLabelsPage>
                   return Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: FilterChip(
-                      label: Text(t.labelEnglish),
+                      label: Text(AppStrings.isUrdu(context) ? t.labelUrdu : t.labelEnglish),
                       selected: provider.filterType == t,
                       onSelected: (s) => provider.setFilterType(s ? t : null),
                     ),
@@ -404,7 +401,7 @@ class _InventoryLabelsPageState extends State<InventoryLabelsPage>
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          lbl.labelType.labelEnglish,
+                          AppStrings.isUrdu(context) ? lbl.labelType.labelUrdu : lbl.labelType.labelEnglish,
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,

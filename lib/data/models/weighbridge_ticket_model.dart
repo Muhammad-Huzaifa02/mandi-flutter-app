@@ -86,22 +86,22 @@ extension WeighbridgePartyTypeExt on WeighbridgePartyType {
   String get labelEnglish {
     switch (this) {
       case WeighbridgePartyType.farmer:
-        return 'Farmer / Supplier';
+        return 'Farmer';
       case WeighbridgePartyType.buyer:
-        return 'Buyer / Trader';
+        return 'Buyer';
       case WeighbridgePartyType.other:
-        return 'Other Party';
+        return 'Other';
     }
   }
 
   String get labelUrdu {
     switch (this) {
       case WeighbridgePartyType.farmer:
-        return 'زمیندار / کسان';
+        return 'زمیندار';
       case WeighbridgePartyType.buyer:
-        return 'بیوپاری / خریدار مل';
+        return 'خریدار';
       case WeighbridgePartyType.other:
-        return 'دیگر کھاتہ';
+        return 'دیگر';
     }
   }
 }
@@ -122,9 +122,9 @@ extension WeighbridgeFeePaidByExt on WeighbridgeFeePaidBy {
       case WeighbridgeFeePaidBy.buyer:
         return 'Buyer';
       case WeighbridgeFeePaidBy.shop:
-        return 'Shop / Aarthi';
+        return 'Shop';
       case WeighbridgeFeePaidBy.waived:
-        return 'Waived / Free';
+        return 'Waived';
     }
   }
 
@@ -135,9 +135,9 @@ extension WeighbridgeFeePaidByExt on WeighbridgeFeePaidBy {
       case WeighbridgeFeePaidBy.buyer:
         return 'خریدار';
       case WeighbridgeFeePaidBy.shop:
-        return 'دکان / آڑھتی';
+        return 'دکان';
       case WeighbridgeFeePaidBy.waived:
-        return 'معاف / مفت';
+        return 'معاف';
     }
   }
 }

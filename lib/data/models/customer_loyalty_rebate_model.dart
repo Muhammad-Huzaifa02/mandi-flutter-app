@@ -25,11 +25,11 @@ enum RebateTierLevel {
       case RebateTierLevel.standard:
         return 'سٹینڈرڈ گاہک';
       case RebateTierLevel.silver:
-        return 'سلور ٹریڈر (Silver)';
+        return 'سلور ٹریڈر';
       case RebateTierLevel.gold:
-        return 'گولڈ خریدار (Gold)';
+        return 'گولڈ خریدار';
       case RebateTierLevel.platinum:
-        return 'پلاٹینم والیم پارٹنر (Platinum)';
+        return 'پلاٹینم پارٹنر';
     }
   }
 
@@ -105,9 +105,9 @@ enum RebateStatus {
       case RebateStatus.accruing:
         return 'سیزن دوران جمع ہو رہا ہے';
       case RebateStatus.approved:
-        return 'منظور شدہ (کریڈٹ تیار)';
+        return 'منظور شدہ';
       case RebateStatus.credited:
-        return 'کھاتہ میں منتقل شدہ (کریڈٹ نوٹ جاری)';
+        return 'کھاتہ میں منتقل شدہ';
       case RebateStatus.cancelled:
         return 'منسوخ';
     }

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/farmer_advance_pdf_generator.dart';
 import 'package:mandi/data/models/farmer_advance_model.dart';
@@ -112,33 +113,47 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Farmer Advances (زمیندار ایڈوانس)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              AppStrings.val(
+                context,
+                en: 'Farmer Advances',
+                ur: 'زمیندار پیشگی ایڈوانس',
+              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             Text(
-              'Pre-Harvest Financing & Agricultural Input Ledger',
-              style: TextStyle(fontSize: 11, color: Colors.grey),
+              AppStrings.val(
+                context,
+                en: 'Pre-harvest financing & input ledger',
+                ur: 'پیشگی قرضہ و زرعی کھاتہ',
+              ),
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
             ),
           ],
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf_outlined),
-            tooltip: 'Export Advances Register',
+            tooltip: AppStrings.val(context, en: 'Export Register', ur: 'رجسٹر پرنٹ کریں'),
             onPressed: () => _exportRegisterPdf(shopName, advProv),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
+            tooltip: AppStrings.val(context, en: 'Refresh', ur: 'ریفریش کریں'),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Advances data synced in real-time'),
-                  duration: Duration(seconds: 1),
+                SnackBar(
+                  content: Text(
+                    AppStrings.val(
+                      context,
+                      en: 'Advances data synced in real-time',
+                      ur: 'ایڈوانس ڈیٹا سنک ہو گیا',
+                    ),
+                  ),
+                  duration: const Duration(seconds: 1),
                 ),
               );
             },
@@ -150,7 +165,13 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
         backgroundColor: Colors.green.shade800,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_circle_outline),
-        label: const Text('Disburse Advance (+ ایڈوانس)'),
+        label: Text(
+          AppStrings.val(
+            context,
+            en: 'Disburse Advance',
+            ur: 'نیا ایڈوانس دیں',
+          ),
+        ),
       ),
       body: advProv.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -189,33 +210,35 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
     return Row(
       children: [
         _buildStatCard(
-          label: 'Active Loans (قرضہ)',
+          label: AppStrings.val(context, en: 'Active Loans', ur: 'فعال قرضہ جات'),
           value: '${s.activeCount}',
-          subtitle: 'Farmers financing',
+          subtitle: AppStrings.val(context, en: 'Farmers financing', ur: 'کسان فنانسنگ'),
           icon: Icons.people_outline,
           color: Colors.orange,
         ),
         const SizedBox(width: 8),
         _buildStatCard(
-          label: 'Disbursed (کل ایڈوانس)',
+          label: AppStrings.val(context, en: 'Disbursed', ur: 'کل ایڈوانس'),
           value: 'Rs. ${_currencyFmt.format(s.totalPrincipalDisbursed)}',
-          subtitle: 'Cash + Inputs',
+          subtitle: AppStrings.val(context, en: 'Cash + Inputs', ur: 'نقد و کھاد بیج'),
           icon: Icons.outbox_rounded,
           color: Colors.blue,
         ),
         const SizedBox(width: 8),
         _buildStatCard(
-          label: 'Recovered (وصول شدہ)',
+          label: AppStrings.val(context, en: 'Recovered', ur: 'وصول شدہ'),
           value: 'Rs. ${_currencyFmt.format(s.totalRecovered)}',
-          subtitle: 'From crop auctions',
+          subtitle: AppStrings.val(context, en: 'From crop auctions', ur: 'فصل نیلامی سے'),
           icon: Icons.move_to_inbox_rounded,
           color: Colors.green,
         ),
         const SizedBox(width: 8),
         _buildStatCard(
-          label: 'Net Balance (بقایا قرضہ)',
+          label: AppStrings.val(context, en: 'Net Balance', ur: 'بقایا قرضہ'),
           value: 'Rs. ${_currencyFmt.format(s.netOutstandingBalance)}',
-          subtitle: s.overdueCount > 0 ? '${s.overdueCount} Overdue!' : 'Healthy',
+          subtitle: s.overdueCount > 0
+              ? '${s.overdueCount} ${AppStrings.val(context, en: "Overdue!", ur: "تاخیر شدہ")}'
+              : AppStrings.val(context, en: 'Healthy', ur: 'درست'),
           icon: Icons.account_balance_wallet_outlined,
           color: s.overdueCount > 0 ? Colors.red : Colors.purple,
           isAlert: s.overdueCount > 0,
@@ -468,9 +491,9 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
                           color: Colors.red.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text(
-                          'OVERDUE (تاخیر)',
-                          style: TextStyle(
+                        child: Text(
+                          AppStrings.val(context, en: 'OVERDUE', ur: 'تاخیر شدہ'),
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: Colors.red,
@@ -491,7 +514,11 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        advance.advanceType.labelEnglish,
+                        AppStrings.val(
+                          context,
+                          en: advance.advanceType.labelEnglish,
+                          ur: advance.advanceType.labelUrdu,
+                        ),
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -519,7 +546,7 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Crop: ${advance.targetCrop}',
+                      '${AppStrings.val(context, en: "Crop", ur: "فصل")}: ${advance.targetCrop}',
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                     const SizedBox(width: 12),
@@ -550,11 +577,11 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Recovery Progress: ${(progress * 100).toStringAsFixed(0)}%',
+                      '${AppStrings.val(context, en: "Recovery Progress", ur: "وصولی پیش رفت")}: ${(progress * 100).toStringAsFixed(0)}%',
                       style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                     Text(
-                      'Disbursed: ${_dateFmt.format(advance.disbursementDate)}',
+                      '${AppStrings.val(context, en: "Disbursed", ur: "ادائیگی")}: ${_dateFmt.format(advance.disbursementDate)}',
                       style: const TextStyle(fontSize: 11, color: Colors.grey),
                     ),
                   ],
@@ -585,24 +612,24 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildAmountCell(
-                  'Principal (اصل)',
+                  AppStrings.val(context, en: 'Principal', ur: 'اصل رقم'),
                   'Rs. ${_currencyFmt.format(advance.principalAmount)}',
                   Colors.blueGrey.shade800,
                 ),
                 _buildAmountCell(
-                  'Markup (منافع)',
+                  AppStrings.val(context, en: 'Markup', ur: 'منافع'),
                   advance.computedMarkupAmount > 0
                       ? '+Rs. ${_currencyFmt.format(advance.computedMarkupAmount)}'
                       : '0',
                   Colors.purple.shade700,
                 ),
                 _buildAmountCell(
-                  'Total Recovered',
+                  AppStrings.val(context, en: 'Total Recovered', ur: 'کل وصولی'),
                   'Rs. ${_currencyFmt.format(advance.recoveredAmount)}',
                   Colors.green.shade800,
                 ),
                 _buildAmountCell(
-                  'Remaining Balance',
+                  AppStrings.val(context, en: 'Remaining Balance', ur: 'بقایا رقم'),
                   'Rs. ${_currencyFmt.format(advance.computedRemainingBalance)}',
                   advance.computedRemainingBalance > 0
                       ? Colors.red.shade800
@@ -620,7 +647,7 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
               children: [
                 if (advance.expectedHarvestDate != null)
                   Text(
-                    'Harvest: ${_dateFmt.format(advance.expectedHarvestDate!)}',
+                    '${AppStrings.val(context, en: "Harvest", ur: "کٹائی")}: ${_dateFmt.format(advance.expectedHarvestDate!)}',
                     style: TextStyle(
                       fontSize: 11,
                       color: isOverdue ? Colors.red.shade800 : Colors.grey,
@@ -636,7 +663,9 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
                       ElevatedButton.icon(
                         onPressed: () => _openRecoveryDialog(advance),
                         icon: const Icon(Icons.price_check, size: 16),
-                        label: const Text('Deduct Recovery (کٹوتی)'),
+                        label: Text(
+                          AppStrings.val(context, en: 'Deduct Recovery', ur: 'کٹوتی درج کریں'),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green.shade800,
                           foregroundColor: Colors.white,
@@ -651,7 +680,9 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
                     OutlinedButton.icon(
                       onPressed: () => _printFarmerStatement(shopName, advance),
                       icon: const Icon(Icons.print, size: 14),
-                      label: const Text('Print Slip'),
+                      label: Text(
+                        AppStrings.val(context, en: 'Print Slip', ur: 'پرچہ پرنٹ کریں'),
+                      ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: MColors.primary,
                         padding: const EdgeInsets.symmetric(
@@ -711,15 +742,27 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
             color: Colors.grey.shade400,
           ),
           const SizedBox(height: 14),
-          const Text(
-            'No Farmer Advances Recorded',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            AppStrings.val(
+              context,
+              en: 'No Farmer Advances Recorded',
+              ur: 'کوئی پیشگی ایڈوانس ریکارڈ نہیں ملا',
+            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
           Text(
             advProv.searchQuery.isNotEmpty
-                ? 'No loans match "${advProv.searchQuery}".'
-                : 'Click "Disburse Advance" to record pre-harvest cash or fertilizer/seed credit provided to farmers.',
+                ? AppStrings.val(
+                    context,
+                    en: 'No loans match "${advProv.searchQuery}".',
+                    ur: 'تلاش سے مطابقت رکھنے والا کوئی قرضہ نہیں ملا۔',
+                  )
+                : AppStrings.val(
+                    context,
+                    en: 'Click "Disburse Advance" to record pre-harvest cash or fertilizer/seed credit provided to farmers.',
+                    ur: 'کسانوں کو پیشگی نقد یا کھاد بیج دینے کے لیے "نیا ایڈوانس دیں" پر کلک کریں۔',
+                  ),
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
@@ -727,7 +770,13 @@ class _FarmerAdvancePageState extends State<FarmerAdvancePage> {
           ElevatedButton.icon(
             onPressed: _openNewAdvanceDialog,
             icon: const Icon(Icons.add),
-            label: const Text('Disburse Advance (+ ایڈوانس)'),
+            label: Text(
+              AppStrings.val(
+                context,
+                en: 'Disburse Advance',
+                ur: 'نیا ایڈوانس دیں',
+              ),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade800,
               foregroundColor: Colors.white,

@@ -1,8 +1,8 @@
-// Dialog to Add a Shop Partner
-// (*نیا حصہ دار / شراکت دار شامل کریں*).
+// Dialog to Add a Shop Partner.
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/modules/partner_capital/providers/partner_capital_provider.dart';
 
 class AddPartnerDialog extends StatefulWidget {
@@ -58,8 +58,14 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
       if (success) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Partner Added Successfully! (حصہ دار شامل ہو گیا)'),
+          SnackBar(
+            content: Text(
+              AppStrings.val(
+                context,
+                en: 'Partner added successfully!',
+                ur: 'حصہ دار کامیابی سے شامل ہو گیا!',
+              ),
+            ),
             backgroundColor: Colors.teal,
           ),
         );
@@ -77,13 +83,17 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.handshake, color: Colors.teal),
-          SizedBox(width: 8),
+          const Icon(Icons.handshake, color: Colors.teal),
+          const SizedBox(width: 8),
           Text(
-            'Add Shop Partner\n(نیا حصہ دار شامل کریں)',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            AppStrings.val(
+              context,
+              en: 'Add Shop Partner',
+              ur: 'نیا شراکت دار شامل کریں',
+            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -95,12 +105,18 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
             children: [
               TextFormField(
                 controller: _nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Partner Name / نام *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(
+                    context,
+                    en: 'Partner Name *',
+                    ur: 'شراکت دار کا نام *',
+                  ),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.person),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? AppStrings.val(context, en: 'Required', ur: 'لازمی')
+                    : null,
               ),
               const SizedBox(height: 12),
               Row(
@@ -109,10 +125,14 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
                     child: TextFormField(
                       controller: _phoneCtrl,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: 'Phone / فون',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.phone),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(
+                          context,
+                          en: 'Phone',
+                          ur: 'فون نمبر',
+                        ),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.phone),
                       ),
                     ),
                   ),
@@ -120,10 +140,14 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _cnicCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'CNIC / شناختی کارڈ',
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(
+                          context,
+                          en: 'CNIC',
+                          ur: 'شناختی کارڈ نمبر',
+                        ),
                         hintText: '35201-...',
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ),
@@ -136,13 +160,19 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
                     child: TextFormField(
                       controller: _ratioCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Profit Share % (منافع تناسب) *',
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(
+                          context,
+                          en: 'Profit Share % *',
+                          ur: 'منافع کا تناسب % *',
+                        ),
                         hintText: 'e.g. 50.0',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.percent),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.percent),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? AppStrings.val(context, en: 'Required', ur: 'لازمی')
+                          : null,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -150,13 +180,19 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
                     child: TextFormField(
                       controller: _capitalCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Opening Capital (ابتدائی سرمایہ) *',
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(
+                          context,
+                          en: 'Opening Capital *',
+                          ur: 'ابتدائی سرمایہ *',
+                        ),
                         hintText: 'Rs.',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.account_balance),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.account_balance),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? AppStrings.val(context, en: 'Required', ur: 'لازمی')
+                          : null,
                     ),
                   ),
                 ],
@@ -164,9 +200,13 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _notesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Notes / شرائط و تفصیل',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(
+                    context,
+                    en: 'Notes / Remarks',
+                    ur: 'تفصیل و شرائط',
+                  ),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -176,7 +216,9 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('منسوخ (Cancel)'),
+          child: Text(
+            AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں'),
+          ),
         ),
         ElevatedButton(
           onPressed: _isSaving ? null : _submit,
@@ -187,7 +229,14 @@ class _AddPartnerDialogState extends State<AddPartnerDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : const Text('محفوظ کریں (Save Partner)', style: TextStyle(color: Colors.white)),
+              : Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Save Partner',
+                    ur: 'شراکت دار محفوظ کریں',
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                ),
         ),
       ],
     );

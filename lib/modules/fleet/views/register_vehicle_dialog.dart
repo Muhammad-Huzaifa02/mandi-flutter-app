@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/fleet_model.dart';
 import 'package:mandi/modules/fleet/providers/fleet_provider.dart';
@@ -70,16 +71,16 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Register Vehicle (نئی گاڑی اندراج)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Register Vehicle', ur: 'نئی گاڑی کا اندراج'),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Transport Fleet & Cargo Carrier Management',
+                            AppStrings.val(context, en: 'Transport Fleet & Cargo Carrier Management', ur: 'ٹرانسپورٹ اور کارگو گاڑیوں کا انتظام'),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -99,9 +100,9 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                 const SizedBox(height: 12),
 
                 // Registration Number
-                const Text(
-                  'Registration Number / گاڑی نمبر *',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(context, en: 'Registration Number *', ur: 'گاڑی کا رجسٹریشن نمبر *'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -128,9 +129,9 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Vehicle Type / قسم گاڑی',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Vehicle Type', ur: 'گاڑی کی قسم'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -146,7 +147,7 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                             items: VehicleType.values.map((t) {
                               return DropdownMenuItem(
                                 value: t,
-                                child: Text(t.labelEnglish,
+                                child: Text(AppStrings.isUrdu(context) ? t.labelUrdu : t.labelEnglish,
                                     style: const TextStyle(fontSize: 12)),
                               );
                             }).toList(),
@@ -164,9 +165,9 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Ownership / ملکیت',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Ownership', ur: 'ملکیت'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -182,7 +183,7 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                             items: OwnershipType.values.map((o) {
                               return DropdownMenuItem(
                                 value: o,
-                                child: Text(o.labelEnglish,
+                                child: Text(AppStrings.isUrdu(context) ? o.labelUrdu : o.labelEnglish,
                                     style: const TextStyle(fontSize: 12)),
                               );
                             }).toList(),
@@ -206,9 +207,9 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Driver Name / ڈرائیور نام',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Driver Name', ur: 'ڈرائیور کا نام'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -233,9 +234,9 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Driver Phone / موبائل',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Driver Phone', ur: 'ڈرائیور کا موبائل'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -267,9 +268,9 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Capacity / گنجائش (من)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Capacity (Maunds)', ur: 'گنجائش (من)'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -278,7 +279,7 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
                             decoration: InputDecoration(
-                              suffixText: 'من (Maunds)',
+                              suffixText: AppStrings.val(context, en: 'Maunds', ur: 'من'),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -294,9 +295,9 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Odometer / میٹر ریڈنگ (KM)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Odometer (KM)', ur: 'میٹر ریڈنگ (کلومیٹر)'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -321,9 +322,9 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                 const SizedBox(height: 14),
 
                 // Notes
-                const Text(
-                  'Remarks / تفصیل',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(context, en: 'Remarks', ur: 'تفصیل و ریمارکس'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -345,7 +346,7 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -366,7 +367,7 @@ class _RegisterVehicleDialogState extends State<RegisterVehicleDialog> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.check),
-                      label: const Text('Register Vehicle (محفوظ کریں)'),
+                      label: Text(AppStrings.val(context, en: 'Register Vehicle', ur: 'گاڑی درج کریں')),
                     ),
                   ],
                 ),

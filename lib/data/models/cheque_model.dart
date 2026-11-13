@@ -97,13 +97,13 @@ class Cheque {
   String get statusLabelUrdu {
     switch (status) {
       case ChequeStatus.inHand:
-        return isPdc ? 'پی ڈی سی (پاس موجود)' : 'پاس موجود';
+        return isPdc ? 'پی ڈی سی چیک' : 'پاس موجود';
       case ChequeStatus.deposited:
         return 'بینک میں جمع شدہ';
       case ChequeStatus.cleared:
         return 'کلیئر شدہ';
       case ChequeStatus.bounced:
-        return 'باؤنس شدہ (مسترد)';
+        return 'باؤنس شدہ';
       case ChequeStatus.returned:
         return 'واپس شدہ';
     }

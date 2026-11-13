@@ -12,6 +12,17 @@ class AppStrings {
     'switch_shop': {'en': 'Switch Shop', 'ur': 'دکان تبدیل کریں'},
     'switch_mandi_shop': {'en': 'Switch Mandi Shop', 'ur': 'منڈی دکان تبدیل کریں'},
     'no_other_shops': {'en': 'No other shops available for this account.', 'ur': 'اس اکاؤنٹ کے لیے کوئی دوسری دکان دستیاب نہیں ہے۔'},
+    'connected_commission_shop': {'en': 'Connected Commission Shop', 'ur': 'منسلک آڑھت / کمیشن شاپ'},
+    'shop_details': {'en': 'Shop Details', 'ur': 'دکان تفصیلات'},
+    'grain_market': {'en': 'Grain Market', 'ur': 'غلہ منڈی'},
+    'contact_shop': {'en': 'Call Shop', 'ur': 'دکان پر کال کریں'},
+    'whatsapp_shop': {'en': 'WhatsApp', 'ur': 'واٹس ایپ'},
+    'shop_info': {'en': 'Shop Info', 'ur': 'دکان کی معلومات'},
+    'shop_address': {'en': 'Mandi Address', 'ur': 'منڈی کا پتہ'},
+    'shop_phone': {'en': 'Phone Number', 'ur': 'فون نمبر'},
+    'commission_agent': {'en': 'Commission Agent / Arhti', 'ur': 'آڑھتی / کمیشن ایجنٹ'},
+    'switch_active_shop': {'en': 'Switch Active Shop', 'ur': 'فعال دکان تبدیل کریں'},
+    'commission_shop': {'en': 'Commission Shop', 'ur': 'کمیشن شاپ'},
     'manage': {'en': 'Manage', 'ur': 'انتظام و کھاتہ جات'},
     'welcome': {'en': 'Welcome', 'ur': 'خوش آمدید'},
     'role': {'en': 'Role', 'ur': 'عہدہ'},
@@ -23,9 +34,9 @@ class AppStrings {
 
     // Manage Hub Modules
     'employees': {'en': 'Employees', 'ur': 'ملازمین'},
-    'customers': {'en': 'Customers', 'ur': 'گاہک (خریدار)'},
-    'suppliers': {'en': 'Farmers', 'ur': 'زمیندار (کسان)'},
-    'farmers': {'en': 'Farmers', 'ur': 'زمیندار (کسان)'},
+    'customers': {'en': 'Customers', 'ur': 'گاہک'},
+    'suppliers': {'en': 'Farmers', 'ur': 'زمیندار'},
+    'farmers': {'en': 'Farmers', 'ur': 'زمیندار'},
     'add_farmer': {'en': 'Add Farmer', 'ur': 'نیا زمیندار درج کریں'},
     'farmer_details': {'en': 'Farmer Khata', 'ur': 'زمیندار کھاتہ'},
     'purchases': {'en': 'Purchases', 'ur': 'خریداری'},
@@ -39,7 +50,7 @@ class AppStrings {
     'roznamcha': {'en': 'Daily Roznamcha', 'ur': 'روزنامچہ کھاتہ'},
     'bank_and_cheques': {'en': 'Bank & Cheques', 'ur': 'بینک و چیکس'},
     'godown_and_bardana': {'en': 'Godown & Bardana', 'ur': 'گودام و باردانہ'},
-    'weighbridge': {'en': 'Weighbridge (Kanda)', 'ur': 'دھرم کنڈا'},
+    'weighbridge': {'en': 'Weighbridge', 'ur': 'دھرم کنڈا'},
     'farmer_advances': {'en': 'Farmer Advances', 'ur': 'زمیندار پیشگی کھاتہ'},
     'border_trade': {'en': 'Border Trade', 'ur': 'سرحدی تجارتی مال'},
     'sms_gateway': {'en': 'SMS Gateway', 'ur': 'ایس ایم ایس گیٹ وے'},
@@ -62,9 +73,46 @@ class AppStrings {
     'audit_logs': {'en': 'Audit Logs', 'ur': 'سسٹم لاگز'},
     'settings': {'en': 'Shop Settings', 'ur': 'ترتیبات'},
 
+    // Dashboard & Common Terms
+    'receivables': {'en': 'Receivables', 'ur': 'وصولی'},
+    'payables': {'en': 'Payables', 'ur': 'ادائیگی'},
+    'bills': {'en': 'Bills', 'ur': 'بلز'},
+    'this_season': {'en': 'This Season', 'ur': 'موجودہ سیزن'},
+    'my_balance': {'en': 'My Outstanding Balance', 'ur': 'میرا بقایا بیلنس'},
+    'buyer_services': {'en': 'Buyer Services', 'ur': 'خریدار سہولیات'},
+    'my_khata': {'en': 'My Khata', 'ur': 'میرا کھاتہ'},
+    'farmer_services': {'en': 'Farmer & Crop Services', 'ur': 'زمیندار اور فصل سروسز'},
+    'farmer_dashboard': {'en': 'Farmer Dashboard', 'ur': 'زمیندار ڈیش بورڈ'},
+    'customer_dashboard': {'en': 'Customer Dashboard', 'ur': 'گاہک ڈیش بورڈ'},
+    'customer': {'en': 'Customer', 'ur': 'گاہک'},
+    'farmer': {'en': 'Farmer', 'ur': 'زمیندار'},
+    'at_this_shop': {'en': 'at', 'ur': 'نزد'},
+    'money_owed_to_me': {'en': 'Money Owed to Me', 'ur': 'دکان پر میری بقایا رقم'},
+    'send_reminder': {'en': 'Send Payment Reminder to Shop Owner', 'ur': 'دکان مالک کو یاددہانی میسج بھیجیں'},
+    'offer_crop': {'en': 'Offer Crop', 'ur': 'فصل پیش کریں'},
+    'khata_ledger': {'en': 'Khata Ledger', 'ur': 'کھاتہ لیجر'},
+    'payable_to_farmer_urdu': {'en': 'Payable to farmer', 'ur': 'واجب الادا رقم'},
+    'advance_to_farmer_urdu': {'en': 'Advance paid to farmer', 'ur': 'پیشگی رقم'},
+    'settled': {'en': 'Settled', 'ur': 'بے باق'},
+    'no_pending_dues': {'en': 'No pending dues', 'ur': 'کوئی بقایا نہیں'},
+    'account_ledger_history': {'en': 'Account Ledger History', 'ur': 'کھاتہ لیجر ہسٹری'},
+    'transactions': {'en': 'Transactions', 'ur': 'ٹرانزیکشنز'},
+    'pay_farmer': {'en': 'Pay Farmer', 'ur': 'ادائیگی کریں'},
+    'record_receipt': {'en': 'Record Receipt', 'ur': 'وصولی درج کریں'},
+    'whatsapp': {'en': 'WhatsApp', 'ur': 'واٹس ایپ'},
+    'edit_profile': {'en': 'Edit Profile', 'ur': 'پروفائل تبدیل کریں'},
+    'print_ledger_pdf': {'en': 'Print Ledger Statement PDF', 'ur': 'لیجر اسٹیٹمنٹ پرنٹ کریں'},
+    'outstanding_khata_balance': {'en': 'Outstanding Khata Balance', 'ur': 'موجودہ بقایا کھاتہ بیلنس'},
+    'outstanding_payable_balance': {'en': 'Outstanding Payable Balance', 'ur': 'واجب الادا بقایا رقم'},
+    'customer_owes_you': {'en': 'Customer owes you', 'ur': 'گاہک کے ذمے بقایا'},
+    'advance_received': {'en': 'Advance payment received', 'ur': 'پیشگی وصول شدہ'},
+    'khata_settled': {'en': 'Khata Settled', 'ur': 'کھاتہ بے باق ہے'},
+    'loyalty_points': {'en': 'Loyalty Points', 'ur': 'پوائنٹس'},
+    'spent': {'en': 'spent', 'ur': 'خرچ'},
+
     // Live Auction Screen
     'auction_terminal_title': {'en': 'Live Auction Terminal', 'ur': 'لائیو نیلامی بولی اسکرین'},
-    'new_heap': {'en': 'New Heap (Boli)', 'ur': 'نئی ڈھیری شروع کریں'},
+    'new_heap': {'en': 'New Auction Lot', 'ur': 'نئی ڈھیری شروع کریں'},
     'maunds': {'en': 'Maunds', 'ur': 'من'},
     'bags': {'en': 'Bags', 'ur': 'بوریاں'},
     'per_maund': {'en': 'per Maund', 'ur': 'فی من'},
@@ -72,7 +120,7 @@ class AppStrings {
     'auction_sold': {'en': 'SOLD! AUCTION CLOSED', 'ur': 'بولی مکمل ہو گئی'},
     'hammer_gavel_callout': {'en': 'Going Once, Going Twice, SOLD!', 'ur': 'ایک، دو، تین — ہو گیا!'},
     'quick_increment': {'en': 'Quick Bid Increments', 'ur': 'فوری بولی اضافہ'},
-    'registered_buyers': {'en': 'Registered Buyers (Paddles)', 'ur': 'رجسٹرڈ خریدار (پیڈل نمبر)'},
+    'registered_buyers': {'en': 'Registered Buyers', 'ur': 'رجسٹرڈ خریدار'},
     'live_bid_log': {'en': 'Live Bid Log', 'ur': 'بولی کی تاریخ'},
     'print_thermal_slip': {'en': 'Print Boli Slip', 'ur': 'بولی پرچی پرنٹ'},
 
@@ -114,8 +162,71 @@ class AppStrings {
     'stored_stock': {'en': 'Stored Stock', 'ur': 'موجودہ مال'},
     'active_bays': {'en': 'Active Bays', 'ur': 'زیر استعمال خانے'},
     'store_crop_btn': {'en': 'Store Crop', 'ur': 'مال رکھیں'},
+    'edit_stock_btn': {'en': 'Edit Stock', 'ur': 'مال تبدیل کریں'},
     'relocate_stock_btn': {'en': 'Relocate Stock', 'ur': 'مال منتقل کریں'},
     'clear_bay_btn': {'en': 'Clear Bay', 'ur': 'خانہ خالی کریں'},
+    'floor_plan': {'en': '2D Floor Plan', 'ur': 'گودام تصویری نقشہ'},
+
+    // Language & Settings
+    'app_language': {'en': 'App Language', 'ur': 'ایپ کی زبان'},
+    'language_english': {'en': 'English', 'ur': 'انگریزی'},
+    'language_urdu': {'en': 'Urdu', 'ur': 'اردو'},
+    'print_test_receipt': {'en': 'Print Test Thermal Receipt', 'ur': 'ٹیسٹ تھرمل رسید پرنٹ کریں'},
+    'test_print': {'en': 'TEST PRINT', 'ur': 'ٹیسٹ پرنٹ'},
+    'payable_to_shop': {'en': 'Payable to shop', 'ur': 'واجب الادا رقم نزد دکان'},
+
+    // Live Auction & Modals
+    'new_auction_heap_title': {'en': 'New Auction Heap Details', 'ur': 'پھڑ ڈھیری تفصیل درج کریں'},
+    'heap_lot_code': {'en': 'Heap / Lot Code', 'ur': 'ڈھیری / لاٹ کوڈ'},
+    'commodity': {'en': 'Commodity', 'ur': 'جنس'},
+    'farmer_name': {'en': "Farmer's Name", 'ur': 'زمیندار کا نام'},
+    'weight_in_maunds': {'en': 'Weight in Maunds', 'ur': 'وزن (من)'},
+    'estimated_bags': {'en': 'Estimated Bags', 'ur': 'متوقع بوریاں'},
+    'base_price_per_maund': {'en': 'Base Price per Maund', 'ur': 'ابتدائی بولی فی من'},
+    'start_boli': {'en': 'Start Boli', 'ur': 'شروع کریں'},
+
+    // Gate Pass & Weighment
+    'callout_btn': {'en': 'Callout', 'ur': 'کال آؤٹ'},
+    'issue_first_token_btn': {'en': 'Issue First Token', 'ur': 'پہلا ٹوکن جاری کریں'},
+    'clear_gate_out_btn': {'en': 'Clear Gate-Out', 'ur': 'گیٹ آؤٹ کلیئر کریں'},
+    'reprint_pass_btn': {'en': 'Reprint Pass', 'ur': 'پاس دوبارہ پرنٹ کریں'},
+    'callout_dialog_title': {'en': 'Callout for Unloading', 'ur': 'پھڑ پر کال آؤٹ و لائن نمبر'},
+    'select_unloading_platform': {'en': 'Select Unloading Platform', 'ur': 'پھڑ کا انتخاب کریں'},
+    'tare_weighment_title': {'en': 'Tare Weighment', 'ur': 'خالی گاڑی وزن و کنڈا اندراج'},
+    'gross_weight': {'en': 'Gross Weight (KG)', 'ur': 'بھرا ہوا وزن (کلوگرام)'},
+    'empty_tare_weight': {'en': 'Empty Tare Weight (KG)', 'ur': 'خالی گاڑی وزن (کلوگرام)'},
+    'net_crop_weight': {'en': 'Net Crop Weight', 'ur': 'خالص فصل کا وزن'},
+    'save_weighment': {'en': 'Save Weighment', 'ur': 'وزن محفوظ کریں'},
+    'issue_token_title': {'en': 'Issue Gate Inward Token', 'ur': 'گیٹ پاس و ٹوکن اجراء'},
+    'vehicle_number': {'en': 'Vehicle Number', 'ur': 'گاڑی نمبر'},
+    'driver_name': {'en': 'Driver Name', 'ur': 'ڈرائیور کا نام'},
+    'driver_phone': {'en': 'Driver Phone', 'ur': 'ڈرائیور کا فون'},
+    'platform_number': {'en': 'Platform Number', 'ur': 'پھڑ نمبر'},
+    'notes': {'en': 'Notes / Remarks', 'ur': 'تفصیل / ہدایات'},
+
+    // Passbook & Partner Capital
+    'total_delivered': {'en': 'Total Delivered', 'ur': 'کل مال'},
+    'gross_auction': {'en': 'Gross Auction', 'ur': 'کل بولی'},
+    'deductions': {'en': 'Deductions', 'ur': 'منہائی و کمیشن'},
+    'cash_paid': {'en': 'Cash Paid', 'ur': 'ادا شدہ رقم'},
+    'delivered_crop_lots': {'en': 'Delivered Crop Lots', 'ur': 'فصل ترسیل و نیلامی تفصیل'},
+    'audio_summary_title': {'en': 'Khata Audio Summary', 'ur': 'کھاتے کا صوتی خلاصہ'},
+    'audio_summary_subtitle': {'en': 'Listen to spoken khata balance', 'ur': 'زمیندار کو بول کر کھاتہ بیلنس سنائیں'},
+    'play': {'en': 'Play', 'ur': 'سنیں'},
+    'stop': {'en': 'Stop', 'ur': 'روکیں'},
+    'close': {'en': 'Close', 'ur': 'بند کریں'},
+    'partner_balances_header': {'en': 'Partner Capital Balances', 'ur': 'حصہ داران و سرمایہ بیلنس'},
+    'recent_transactions_header': {'en': 'Recent Transactions', 'ur': 'حالیہ ٹرانزیکشنز و منافع تفصیل'},
+    'current_capital': {'en': 'Current Capital', 'ur': 'موجودہ سرمایہ'},
+
+    // Mandi Rates
+    'all': {'en': 'All', 'ur': 'تمام'},
+    'bullish': {'en': 'Bullish', 'ur': 'تیزی'},
+    'bearish': {'en': 'Bearish', 'ur': 'مندی'},
+    'record_rate_btn': {'en': 'Record Rate', 'ur': 'اندراج ریٹ'},
+    'commodities': {'en': 'Commodities', 'ur': 'اجناس'},
+    'total_arrivals': {'en': 'Total Arrivals', 'ur': 'کل آمد'},
+    'broadcast_rate_board': {'en': 'Broadcast Rate Board', 'ur': 'براڈکاسٹ ریٹ لسٹ'},
   };
 
   /// Returns localized string by key based on [LocaleProvider.isUrdu].
@@ -137,5 +248,21 @@ class AppStrings {
       return entry[langCode]!;
     }
     return fallback ?? key;
+  }
+
+  /// Returns true if Urdu is currently the selected app language.
+  static bool isUrdu(BuildContext context) {
+    return context.watch<LocaleProvider>().isUrdu;
+  }
+
+  /// Returns [en] if English is selected, or [ur] if Urdu is selected.
+  static String val(BuildContext context, {required String en, required String ur}) {
+    final isUrdu = context.watch<LocaleProvider>().isUrdu;
+    return isUrdu ? ur : en;
+  }
+
+  /// Non-reactive variant using a boolean flag.
+  static String valOf(bool isUrdu, {required String en, required String ur}) {
+    return isUrdu ? ur : en;
   }
 }

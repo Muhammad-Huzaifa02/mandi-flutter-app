@@ -8,6 +8,7 @@ import 'package:printing/printing.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/warehouse_grid_model.dart';
 import 'package:mandi/modules/warehouse_grid/providers/warehouse_grid_provider.dart';
@@ -26,11 +27,17 @@ class WarehouseFloorGridPage extends StatefulWidget {
 class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
   final _numberFmt = NumberFormat('#,##0', 'en_US');
 
-  final List<Map<String, String>> _chambers = [
-    {'code': 'CH-1', 'title': 'Chamber 1 (Wheat & Grain / گندم گودام)'},
-    {'code': 'CH-2', 'title': 'Chamber 2 (Basmati Rice / چاول گودام)'},
-    {'code': 'Cold-A', 'title': 'Cold Store A (Potatoes & Seeds / کولڈ سٹوریج)'},
-  ];
+  List<Map<String, String>> _chambers(bool isUrdu) => isUrdu
+      ? const [
+          {'code': 'CH-1', 'title': 'چیمبر 1 (گندم گودام)'},
+          {'code': 'CH-2', 'title': 'چیمبر 2 (چاول گودام)'},
+          {'code': 'Cold-A', 'title': 'کولڈ سٹور A (آلو اور بیج)'},
+        ]
+      : const [
+          {'code': 'CH-1', 'title': 'Chamber 1 (Wheat & Grain)'},
+          {'code': 'CH-2', 'title': 'Chamber 2 (Basmati Rice)'},
+          {'code': 'Cold-A', 'title': 'Cold Store A (Potatoes & Seeds)'},
+        ];
 
   Future<void> _printReport(WarehouseGridProvider provider, String shopName, String? shopPhone) async {
     final pdfBytes = await WarehouseGridPdfGenerator.generateWarehouseOccupancyReportPdf(
@@ -55,26 +62,26 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
     final provider = context.watch<WarehouseGridProvider>();
     final selectedBay = provider.selectedBay;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.tr(context, 'warehouse_grid_title'),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
+    return LiquidCrystalBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.print, color: Colors.white),
-            tooltip: 'Print Floor Occupancy Report',
-            onPressed: provider.bays.isEmpty ? null : () => _printReport(provider, shopName, shopPhone),
+        appBar: AppBar(
+          title: Text(
+            AppStrings.tr(context, 'warehouse_grid_title'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: MColors.textPrimary),
           ),
-        ],
-      ),
-      body: LiquidCrystalBackground(
-        child: SingleChildScrollView(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: MColors.textPrimary),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.print, color: MColors.textPrimary),
+              tooltip: AppStrings.val(context, en: 'Print Floor Occupancy Report', ur: 'گودام رپورٹ پرنٹ کریں'),
+              onPressed: provider.bays.isEmpty ? null : () => _printReport(provider, shopName, shopPhone),
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -99,7 +106,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                         child: DropdownButton<String>(
                           isExpanded: true,
                           value: provider.selectedChamber,
-                          items: _chambers.map((c) {
+                          items: _chambers(context.watch<LocaleProvider>().isUrdu).map((c) {
                             return DropdownMenuItem<String>(
                               value: c['code'],
                               child: Text(
@@ -128,8 +135,8 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                 Expanded(
                   child: _buildKpiCard(
                     title: AppStrings.tr(context, 'total_capacity'),
-                    value: '${_numberFmt.format(provider.totalCapacityBags)} Bags',
-                    subtitle: '${provider.bays.length} Total Bays',
+                    value: '${_numberFmt.format(provider.totalCapacityBags)} ${AppStrings.val(context, en: 'Bags', ur: 'بوریاں')}',
+                    subtitle: '${provider.bays.length} ${AppStrings.val(context, en: 'Total Bays', ur: 'کل خانے')}',
                     icon: Icons.grid_view,
                     color: Colors.blueGrey,
                   ),
@@ -138,8 +145,8 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                 Expanded(
                   child: _buildKpiCard(
                     title: AppStrings.tr(context, 'stored_stock'),
-                    value: '${_numberFmt.format(provider.totalStoredBags)} Bags',
-                    subtitle: '${provider.overallOccupancyPercent.toStringAsFixed(1)}% Full',
+                    value: '${_numberFmt.format(provider.totalStoredBags)} ${AppStrings.val(context, en: 'Bags', ur: 'بوریاں')}',
+                    subtitle: '${provider.overallOccupancyPercent.toStringAsFixed(1)}% ${AppStrings.val(context, en: 'Full', ur: 'بھرپور')}',
                     icon: Icons.inventory_2,
                     color: Colors.teal,
                   ),
@@ -149,7 +156,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                   child: _buildKpiCard(
                     title: AppStrings.tr(context, 'active_bays'),
                     value: '${provider.occupiedBaysCount} / ${provider.bays.length}',
-                    subtitle: '${provider.emptyBaysCount} Empty',
+                    subtitle: '${provider.emptyBaysCount} ${AppStrings.val(context, en: 'Empty', ur: 'خالی')}',
                     icon: Icons.check_circle_outline,
                     color: Colors.green,
                   ),
@@ -157,9 +164,9 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildKpiCard(
-                    title: 'Overdue >90 Days',
-                    value: '${provider.overdueBaysCount} Bays',
-                    subtitle: 'Warning Alert',
+                    title: AppStrings.val(context, en: 'Overdue >90 Days', ur: 'میعاد 90 دن سے زائد'),
+                    value: '${provider.overdueBaysCount} ${AppStrings.val(context, en: 'Bays', ur: 'خانے')}',
+                    subtitle: AppStrings.val(context, en: 'Warning Alert', ur: 'انتباہ'),
                     icon: Icons.warning_amber,
                     color: provider.overdueBaysCount > 0 ? Colors.red : Colors.grey,
                   ),
@@ -181,7 +188,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '2D FLOOR PLAN: ${provider.selectedChamber} (گودام لے آؤٹ)',
+                          '${AppStrings.tr(context, 'floor_plan')}: ${provider.selectedChamber}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -191,13 +198,13 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                         // Legend
                         Row(
                           children: [
-                            _buildLegendItem(Colors.grey.shade300, 'Empty'),
+                            _buildLegendItem(Colors.grey.shade300, AppStrings.val(context, en: 'Empty', ur: 'خالی')),
                             const SizedBox(width: 8),
-                            _buildLegendItem(Colors.amber.shade300, 'Partial'),
+                            _buildLegendItem(Colors.amber.shade300, AppStrings.val(context, en: 'Partial', ur: 'جزوی')),
                             const SizedBox(width: 8),
-                            _buildLegendItem(Colors.teal.shade600, 'Full'),
+                            _buildLegendItem(Colors.teal.shade600, AppStrings.val(context, en: 'Full', ur: 'مکمل')),
                             const SizedBox(width: 8),
-                            _buildLegendItem(Colors.red.shade600, '>90d Overdue'),
+                            _buildLegendItem(Colors.red.shade600, AppStrings.val(context, en: '>90d Overdue', ur: '>90 دن زائد')),
                           ],
                         ),
                       ],
@@ -294,7 +301,9 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
             ),
             const Spacer(),
             Text(
-              bay.currentBags > 0 ? '${bay.currentBags} Bags' : 'Empty',
+              bay.currentBags > 0
+                  ? '${bay.currentBags} ${AppStrings.val(context, en: 'Bags', ur: 'بوریاں')}'
+                  : AppStrings.val(context, en: 'Empty', ur: 'خالی'),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 11,
@@ -355,11 +364,11 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          bay.cropName ?? 'Empty Bay / کوئی مال نہیں',
+                          bay.cropName ?? AppStrings.val(context, en: 'Empty Bay', ur: 'خالی خانہ'),
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         if (bay.farmerName != null)
-                          Text('Farmer: ${bay.farmerName} • Lot: ${bay.lotCode ?? '-'}',
+                          Text('${AppStrings.val(context, en: 'Farmer', ur: 'زمیندار')}: ${bay.farmerName} • ${AppStrings.val(context, en: 'Lot', ur: 'لاٹ')}: ${bay.lotCode ?? '-'}',
                               style: TextStyle(color: Colors.grey.shade700, fontSize: 12)),
                       ],
                     ),
@@ -370,13 +379,21 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(color: Colors.red.shade100, borderRadius: BorderRadius.circular(6)),
                     child: Text(
-                      'OVERDUE >90 DAYS (${bay.daysInStorage}d)',
+                      AppStrings.val(
+                        context,
+                        en: 'OVERDUE >90 DAYS (${bay.daysInStorage}d)',
+                        ur: 'میعاد 90 دن سے زائد (${bay.daysInStorage} دن)',
+                      ),
                       style: TextStyle(color: Colors.red.shade900, fontWeight: FontWeight.bold, fontSize: 11),
                     ),
                   )
                 else
                   Text(
-                    bay.currentBags > 0 ? '${bay.daysInStorage} Days in Store' : 'Ready to Store',
+                    bay.currentBags > 0
+                        ? (AppStrings.isUrdu(context)
+                            ? '${bay.daysInStorage} دن گودام میں'
+                            : '${bay.daysInStorage} Days in Store')
+                        : AppStrings.val(context, en: 'Ready to Store', ur: 'خالی اور تیار'),
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.bold),
                   ),
               ],
@@ -388,10 +405,10 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildBayDetailItem('Current Bags', '${bay.currentBags} / ${bay.maxCapacityBags}'),
-                _buildBayDetailItem('Occupancy', '${bay.occupancyPercent.toStringAsFixed(1)}%'),
-                _buildBayDetailItem('Storage Date', bay.formattedStartDate),
-                _buildBayDetailItem('Chamber', bay.chamberCode),
+                _buildBayDetailItem(AppStrings.val(context, en: 'Current Bags', ur: 'موجودہ بوریاں'), '${bay.currentBags} / ${bay.maxCapacityBags}'),
+                _buildBayDetailItem(AppStrings.val(context, en: 'Occupancy', ur: 'گنجائش کا استعمال'), '${bay.occupancyPercent.toStringAsFixed(1)}%'),
+                _buildBayDetailItem(AppStrings.val(context, en: 'Storage Date', ur: 'آمد تاریخ'), bay.formattedStartDate),
+                _buildBayDetailItem(AppStrings.val(context, en: 'Chamber', ur: 'چیمبر'), bay.chamberCode),
               ],
             ),
             const SizedBox(height: 14),
@@ -406,7 +423,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                   ),
                   icon: const Icon(Icons.edit, color: Colors.white, size: 16),
                   label: Text(
-                    bay.currentBags > 0 ? 'Edit Stock (تبدیل)' : 'Store Crop (مال رکھیں)',
+                    bay.currentBags > 0 ? AppStrings.tr(context, 'edit_stock_btn') : AppStrings.tr(context, 'store_crop_btn'),
                     style: const TextStyle(color: Colors.white, fontSize: 13),
                   ),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.teal[800]),
@@ -419,7 +436,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                       builder: (_) => RelocateBayStockDialog(sourceBay: bay),
                     ),
                     icon: const Icon(Icons.swap_horiz, color: Colors.white, size: 16),
-                    label: const Text('منتقل کریں (Relocate)', style: TextStyle(color: Colors.white, fontSize: 13)),
+                    label: Text(AppStrings.tr(context, 'relocate_stock_btn'), style: const TextStyle(color: Colors.white, fontSize: 13)),
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.amber[900]),
                   ),
                   const SizedBox(width: 8),
@@ -428,14 +445,18 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(
-                          title: const Text('Clear Bay Stock?'),
-                          content: Text('Confirm checkout / dispatch of all ${bay.currentBags} bags from Bay ${bay.bayCode}?'),
+                          title: Text(AppStrings.val(ctx, en: 'Clear Bay Stock?', ur: 'خانے کا اسٹاک خالی کریں؟')),
+                          content: Text(AppStrings.val(
+                            ctx,
+                            en: 'Confirm checkout / dispatch of all ${bay.currentBags} bags from Bay ${bay.bayCode}?',
+                            ur: 'کیا آپ خانہ ${bay.bayCode} سے تمام ${bay.currentBags} بوریاں نکالنے کی تصدیق کرتے ہیں؟',
+                          )),
                           actions: [
-                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppStrings.tr(ctx, 'cancel'))),
                             ElevatedButton(
                               onPressed: () => Navigator.pop(ctx, true),
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                              child: const Text('Clear Bay', style: TextStyle(color: Colors.white)),
+                              child: Text(AppStrings.tr(ctx, 'clear_bay_btn'), style: const TextStyle(color: Colors.white)),
                             ),
                           ],
                         ),
@@ -445,7 +466,7 @@ class _WarehouseFloorGridPageState extends State<WarehouseFloorGridPage> {
                       }
                     },
                     icon: const Icon(Icons.delete_outline, color: Colors.red, size: 16),
-                    label: const Text('خالی کریں (Clear)', style: TextStyle(color: Colors.red, fontSize: 13)),
+                    label: Text(AppStrings.tr(context, 'clear_bay_btn'), style: const TextStyle(color: Colors.red, fontSize: 13)),
                   ),
                 ],
               ],

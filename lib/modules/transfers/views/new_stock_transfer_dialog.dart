@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/shop_model.dart';
@@ -22,8 +23,8 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
   final _numberFmt = NumberFormat('#,##0.00', 'en_US');
 
   Shop? _selectedDestinationShop;
-  final _commodityCtrl = TextEditingController(text: 'Kinnu (کنو گریڈ A)');
-  final _packageTypeCtrl = TextEditingController(text: 'Crate (پیٹی)');
+  late final TextEditingController _commodityCtrl;
+  late final TextEditingController _packageTypeCtrl;
   final _packageCountCtrl = TextEditingController(text: '300');
   final _weightKgCtrl = TextEditingController(text: '6000'); // 150 Maunds
   final _ratePerMaundCtrl = TextEditingController(text: '3200'); // Rs/Maund
@@ -38,6 +39,8 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
   @override
   void initState() {
     super.initState();
+    _commodityCtrl = TextEditingController(text: 'Kinnu');
+    _packageTypeCtrl = TextEditingController(text: 'Crate');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final shopCtx = context.read<ShopContextProvider>();
       final otherShops = shopCtx.availableShops
@@ -85,8 +88,14 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
 
     if (destShop == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('برائے مہربانی منزل والی دکان/برانچ منتخب کریں (Please select destination branch)'),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Please select destination branch',
+              ur: 'برائے مہربانی منزل والی برانچ منتخب کریں',
+            ),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -95,8 +104,14 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
 
     if (destShop.id == shopCtx.currentShopId) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('منزل کی دکان موجودہ برانچ سے مختلف ہونی چاہیے (Destination cannot be the same shop)'),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Destination cannot be the same shop',
+              ur: 'منزل کی دکان موجودہ برانچ سے مختلف ہونی چاہیے',
+            ),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -129,14 +144,26 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('اسٹاک کی منتقلی کامیابی سے درج ہو گئی ہے (${destShop.name})'),
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Stock transfer recorded successfully (${destShop.name})',
+              ur: 'اسٹاک کی منتقلی کامیابی سے درج ہو گئی ہے (${destShop.name})',
+            ),
+          ),
           backgroundColor: Colors.green,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('منتقلی کے اندراج میں خرابی پیش آگئی (Failed to record stock transfer)'),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Failed to record stock transfer',
+              ur: 'منتقلی کے اندراج میں خرابی پیش آگئی',
+            ),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -145,6 +172,7 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final shopCtx = context.watch<ShopContextProvider>();
     final availableBranches = shopCtx.availableShops
         .where((s) => s.id != shopCtx.currentShopId)
@@ -178,15 +206,19 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'اسٹاک منتقلی چالان (Inter-Shop Stock Transfer)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Inter-Shop Stock Transfer',
+                              ur: 'اسٹاک منتقلی چالان',
+                            ),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            'از: ${shopCtx.currentShop?.name ?? "موجودہ برانچ"} (${shopCtx.currentShop?.city ?? ""})',
+                            '${AppStrings.val(context, en: "From", ur: "از")}: ${shopCtx.currentShop?.name ?? (isUrdu ? "موجودہ برانچ" : "Current Branch")} (${shopCtx.currentShop?.city ?? ""})',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -210,9 +242,13 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                   child: ListView(
                     children: [
                       // Destination Shop Selection
-                      const Text(
-                        'منزل برانچ / دکان (Destination Branch)',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      Text(
+                        AppStrings.val(
+                          context,
+                          en: 'Destination Branch',
+                          ur: 'منزل برانچ',
+                        ),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       if (availableBranches.isEmpty)
@@ -228,10 +264,14 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               Icon(Icons.info_outline,
                                   color: Colors.amber.shade800),
                               const SizedBox(width: 10),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
-                                  'آپ کے اکاؤنٹ کے ساتھ صرف ایک دکان منسلک ہے۔ نئی دکان شامل کرنے کے بعد منتقلی ممکن ہوگی۔',
-                                  style: TextStyle(fontSize: 13),
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Only one shop is attached to your account. Add another shop to enable transfers.',
+                                    ur: 'آپ کے اکاؤنٹ کے ساتھ صرف ایک دکان منسلک ہے۔ نئی دکان شامل کرنے کے بعد منتقلی ممکن ہوگی۔',
+                                  ),
+                                  style: const TextStyle(fontSize: 13),
                                 ),
                               ),
                             ],
@@ -254,7 +294,7 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                             return DropdownMenuItem<Shop>(
                               value: s,
                               child: Text(
-                                '${s.name} — ${s.city} (${s.address.isNotEmpty ? s.address : "Mandi Branch"})',
+                                '${s.name} — ${s.city} (${s.address.isNotEmpty ? s.address : (isUrdu ? "منڈی برانچ" : "Mandi Branch")})',
                                 overflow: TextOverflow.ellipsis,
                               ),
                             );
@@ -263,7 +303,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                             setState(() => _selectedDestinationShop = val);
                           },
                           validator: (val) => val == null
-                              ? 'براہ کرم برانچ منتخب کریں'
+                              ? AppStrings.val(
+                                  context,
+                                  en: 'Please select destination branch',
+                                  ur: 'براہ کرم برانچ منتخب کریں',
+                                )
                               : null,
                         ),
                       const SizedBox(height: 16),
@@ -276,7 +320,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                             child: TextFormField(
                               controller: _commodityCtrl,
                               decoration: InputDecoration(
-                                labelText: 'جنس / مال (Commodity)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Commodity Name',
+                                  ur: 'جنس کا نام',
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -284,7 +332,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               ),
                               validator: (val) =>
                                   (val == null || val.trim().isEmpty)
-                                      ? 'لازمی درج کریں'
+                                      ? AppStrings.val(
+                                          context,
+                                          en: 'Field is required',
+                                          ur: 'لازمی درج کریں',
+                                        )
                                       : null,
                             ),
                           ),
@@ -294,7 +346,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                             child: TextFormField(
                               controller: _packageTypeCtrl,
                               decoration: InputDecoration(
-                                labelText: 'پیکنگ (Type)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Packing Type',
+                                  ur: 'پیکنگ کی قسم',
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -308,7 +364,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               controller: _packageCountCtrl,
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
-                                labelText: 'تعداد (Count)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Package Count',
+                                  ur: 'تعداد بوریاں / پیکنگ',
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -329,9 +389,13 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                                   const TextInputType.numberWithOptions(
                                       decimal: true),
                               decoration: InputDecoration(
-                                labelText: 'کل وزن کلوگرام (Weight KG)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Total Weight (KG)',
+                                  ur: 'کل وزن (کلوگرام)',
+                                ),
                                 helperText:
-                                    '= ${_numberFmt.format(_weightMaunds)} من (Maunds)',
+                                    '= ${_numberFmt.format(_weightMaunds)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -340,7 +404,13 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               onChanged: (_) => setState(() {}),
                               validator: (val) {
                                 final v = double.tryParse(val ?? '');
-                                if (v == null || v <= 0) return 'درست وزن درج کریں';
+                                if (v == null || v <= 0) {
+                                  return AppStrings.val(
+                                    context,
+                                    en: 'Enter valid weight',
+                                    ur: 'درست وزن درج کریں',
+                                  );
+                                }
                                 return null;
                               },
                             ),
@@ -353,7 +423,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                                   const TextInputType.numberWithOptions(
                                       decimal: true),
                               decoration: InputDecoration(
-                                labelText: 'قیمت فی من روپے (Rate / Maund)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Rate / Maund (PKR)',
+                                  ur: 'ریٹ فی من (روپے)',
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -362,7 +436,13 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               onChanged: (_) => setState(() {}),
                               validator: (val) {
                                 final v = double.tryParse(val ?? '');
-                                if (v == null || v <= 0) return 'درست ریٹ درج کریں';
+                                if (v == null || v <= 0) {
+                                  return AppStrings.val(
+                                    context,
+                                    en: 'Enter valid rate',
+                                    ur: 'درست ریٹ درج کریں',
+                                  );
+                                }
                                 return null;
                               },
                             ),
@@ -375,7 +455,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                                   const TextInputType.numberWithOptions(
                                       decimal: true),
                               decoration: InputDecoration(
-                                labelText: 'کرایہ گاڑی / منتقلی (Freight)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Transit Freight (PKR)',
+                                  ur: 'کرایہ گاڑی (روپے)',
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -395,7 +479,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                             child: TextFormField(
                               controller: _vehicleNumberCtrl,
                               decoration: InputDecoration(
-                                labelText: 'گاڑی نمبر (Vehicle No)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Vehicle Number',
+                                  ur: 'گاڑی نمبر',
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -409,7 +497,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                             child: TextFormField(
                               controller: _driverNameCtrl,
                               decoration: InputDecoration(
-                                labelText: 'ڈرائیور کا نام (Driver Name)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Driver Name',
+                                  ur: 'ڈرائیور کا نام',
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -423,7 +515,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               controller: _driverPhoneCtrl,
                               keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
-                                labelText: 'ڈرائیور کا فون (Driver Phone)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Driver Phone',
+                                  ur: 'ڈرائیور فون نمبر',
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -440,7 +536,11 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                         controller: _notesCtrl,
                         maxLines: 2,
                         decoration: InputDecoration(
-                          labelText: 'اضافی ہدایات یا کوالٹی تفصیل (Notes)',
+                          labelText: AppStrings.val(
+                            context,
+                            en: 'Notes / Remarks',
+                            ur: 'اضافی ہدایات یا تفصیل',
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -454,14 +554,18 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(Icons.calculate_outlined,
+                                const Icon(Icons.calculate_outlined,
                                     color: MColors.primary, size: 20),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Text(
-                                  'منتقلی لاگت و من اقتصادی حساب (Consignment Economics)',
-                                  style: TextStyle(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Consignment Economics',
+                                    ur: 'منتقلی لاگت و مالی حساب',
+                                  ),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
@@ -473,9 +577,15 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('مال کی کل مالیت (Stock Value):',
-                                    style: TextStyle(
-                                        color: Colors.grey.shade700)),
+                                Text(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Stock Value:',
+                                    ur: 'مال کی کل مالیت:',
+                                  ),
+                                  style: TextStyle(
+                                      color: Colors.grey.shade700),
+                                ),
                                 Text('Rs. ${_currencyFmt.format(_stockValue)}',
                                     style: const TextStyle(
                                         fontWeight: FontWeight.w600)),
@@ -486,9 +596,15 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('کرایہ گاڑی (Transit Freight):',
-                                    style: TextStyle(
-                                        color: Colors.grey.shade700)),
+                                Text(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Transit Freight:',
+                                    ur: 'کرایہ گاڑی:',
+                                  ),
+                                  style: TextStyle(
+                                      color: Colors.grey.shade700),
+                                ),
                                 Text(
                                     'Rs. ${_currencyFmt.format(_transitFreight)}',
                                     style: const TextStyle(
@@ -500,9 +616,13 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'کل ترسیلی لاگت (Delivered Cost):',
-                                  style: TextStyle(
+                                Text(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Total Delivered Cost:',
+                                    ur: 'کل ترسیلی لاگت:',
+                                  ),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: MColors.primary,
                                   ),
@@ -522,13 +642,19 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('مؤثر لاگت فی من (Landed / Maund):',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600,
-                                    )),
                                 Text(
-                                  'Rs. ${_numberFmt.format(_effectiveCostPerMaund)} / من',
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Landed / Maund:',
+                                    ur: 'مؤثر لاگت فی من:',
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                Text(
+                                  'Rs. ${_numberFmt.format(_effectiveCostPerMaund)} / ${AppStrings.val(context, en: 'Maund', ur: 'من')}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -555,7 +681,13 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                     TextButton(
                       onPressed:
                           _isSaving ? null : () => Navigator.of(context).pop(),
-                      child: const Text('منسوخ کریں (Cancel)'),
+                      child: Text(
+                        AppStrings.val(
+                          context,
+                          en: 'Cancel',
+                          ur: 'منسوخ کریں',
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -581,8 +713,16 @@ class _NewStockTransferDialogState extends State<NewStockTransferDialog> {
                           : const Icon(Icons.send_outlined),
                       label: Text(
                         _isSaving
-                            ? 'روانہ ہو رہا ہے...'
-                            : 'چالان جاری کریں اور روانہ کریں (Dispatch)',
+                            ? AppStrings.val(
+                                context,
+                                en: 'Dispatching...',
+                                ur: 'روانہ ہو رہا ہے...',
+                              )
+                            : AppStrings.val(
+                                context,
+                                en: 'Dispatch Consignment',
+                                ur: 'چالان جاری اور روانہ کریں',
+                              ),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),

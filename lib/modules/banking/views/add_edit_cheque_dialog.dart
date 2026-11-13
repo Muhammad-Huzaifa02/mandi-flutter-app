@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/cheque_model.dart';
 import 'package:mandi/modules/banking/providers/bank_provider.dart';
@@ -109,18 +110,19 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
   }
 
   Future<void> _submit() async {
+    final isUrdu = AppStrings.isUrdu(context);
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
 
     try {
       final shopId = context.read<ShopContextProvider>().currentShopId;
       if (shopId == null) {
-        throw Exception('No active shop context selected.');
+        throw Exception(isUrdu ? 'کوئی فعال دکان منتخب نہیں کی گئی۔' : 'No active shop context selected.');
       }
 
       final amt = double.tryParse(_amountCtrl.text.trim()) ?? 0.0;
       if (amt <= 0) {
-        throw Exception('Amount must be greater than zero.');
+        throw Exception(isUrdu ? 'رقم صفر سے زیادہ ہونی چاہیے۔' : 'Amount must be greater than zero.');
       }
 
       final cheque = Cheque(
@@ -150,9 +152,11 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
       if (mounted) {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Cheque saved successfully in Cheque Register.',
+              isUrdu
+                  ? 'چیک رجسٹر میں کامیابی سے محفوظ ہو گیا۔'
+                  : 'Cheque saved successfully in Cheque Register.',
             ),
             backgroundColor: MColors.primary,
           ),
@@ -163,7 +167,9 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving cheque: $e'),
+            content: Text(
+              isUrdu ? 'چیک محفوظ کرنے میں خرابی: $e' : 'Error saving cheque: $e',
+            ),
             backgroundColor: MColors.danger,
           ),
         );
@@ -205,8 +211,8 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                         const SizedBox(width: 8),
                         Text(
                           isEdit
-                              ? 'Edit Cheque Record'
-                              : 'Record Cheque (چیک درج کریں)',
+                              ? AppStrings.val(context, en: 'Edit Cheque Record', ur: 'چیک ریکارڈ میں ترمیم')
+                              : AppStrings.val(context, en: 'Record Cheque', ur: 'چیک درج کریں'),
                           style:
                               Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -251,7 +257,7 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                             ),
                             alignment: Alignment.center,
                             child: Text(
-                              'Received / وصولی (From Buyer)',
+                              AppStrings.val(context, en: 'Received Cheque', ur: 'وصول شدہ چیک'),
                               style: TextStyle(
                                 color: _type == ChequeType.received
                                     ? Colors.white
@@ -283,7 +289,7 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                             ),
                             alignment: Alignment.center,
                             child: Text(
-                              'Issued / ادائیگی (To Farmer)',
+                              AppStrings.val(context, en: 'Issued Cheque', ur: 'جاری کردہ چیک'),
                               style: TextStyle(
                                 color: _type == ChequeType.issued
                                     ? Colors.black87
@@ -304,14 +310,14 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                 Row(
                   children: [
                     Text(
-                      'Party Category: ',
+                      AppStrings.val(context, en: 'Party Category: ', ur: 'پارٹی کی قسم: '),
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                     ),
                     const SizedBox(width: 8),
                     ChoiceChip(
-                      label: const Text('Customer (خریدار)'),
+                      label: Text(AppStrings.val(context, en: 'Customer', ur: 'خریدار')),
                       selected: _partyType == 'customer',
                       onSelected: (v) {
                         if (v) {
@@ -325,7 +331,7 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                     ),
                     const SizedBox(width: 6),
                     ChoiceChip(
-                      label: const Text('Farmer (زمیندار)'),
+                      label: Text(AppStrings.val(context, en: 'Farmer', ur: 'زمیندار')),
                       selected: _partyType == 'supplier',
                       onSelected: (v) {
                         if (v) {
@@ -339,7 +345,7 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                     ),
                     const SizedBox(width: 6),
                     ChoiceChip(
-                      label: const Text('Other'),
+                      label: Text(AppStrings.val(context, en: 'Other', ur: 'دیگر')),
                       selected: _partyType == 'other',
                       onSelected: (v) {
                         if (v) {
@@ -359,9 +365,9 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                 if (_partyType == 'customer' && customers.isNotEmpty)
                   DropdownButtonFormField<String>(
                     initialValue: _partyId,
-                    decoration: const InputDecoration(
-                      labelText: 'Select Customer (پارٹی کا نام) *',
-                      prefixIcon: Icon(Icons.person),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(context, en: 'Select Customer *', ur: 'خریدار منتخب کریں *'),
+                      prefixIcon: const Icon(Icons.person),
                     ),
                     items: customers.map((c) {
                       return DropdownMenuItem(
@@ -386,9 +392,9 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                 else if (_partyType == 'supplier' && suppliers.isNotEmpty)
                   DropdownButtonFormField<String>(
                     initialValue: _partyId,
-                    decoration: const InputDecoration(
-                      labelText: 'Select Supplier / Farmer (زمیندار) *',
-                      prefixIcon: Icon(Icons.person),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(context, en: 'Select Farmer *', ur: 'زمیندار منتخب کریں *'),
+                      prefixIcon: const Icon(Icons.person),
                     ),
                     items: suppliers.map((s) {
                       return DropdownMenuItem(
@@ -413,9 +419,9 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                 else
                   TextFormField(
                     controller: _partyNameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Party / Drawer Name *',
-                      prefixIcon: Icon(Icons.person_outline),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(context, en: 'Party / Drawer Name *', ur: 'پارٹی کا نام *'),
+                      prefixIcon: const Icon(Icons.person_outline),
                     ),
                     validator: (v) => v == null || v.trim().isEmpty
                         ? 'Please enter party name'
@@ -430,10 +436,10 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                       flex: 3,
                       child: TextFormField(
                         controller: _chequeNoCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Cheque Number (چیک نمبر) *',
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Cheque Number *', ur: 'چیک نمبر *'),
                           hintText: 'e.g. 786012',
-                          prefixIcon: Icon(Icons.tag),
+                          prefixIcon: const Icon(Icons.tag),
                         ),
                         validator: (v) => v == null || v.trim().isEmpty
                             ? 'Required'
@@ -445,10 +451,10 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                       flex: 4,
                       child: TextFormField(
                         controller: _bankNameCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Drawn On Bank (بینک) *',
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Drawn On Bank *', ur: 'بینک کا نام *'),
                           hintText: 'e.g. HBL / MCB',
-                          prefixIcon: Icon(Icons.account_balance),
+                          prefixIcon: const Icon(Icons.account_balance),
                         ),
                         validator: (v) => v == null || v.trim().isEmpty
                             ? 'Required'
@@ -459,13 +465,13 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                 ),
                 const SizedBox(height: 14),
 
-                // Amount (PKR)
+                // Amount
                 TextFormField(
                   controller: _amountCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Cheque Amount (رقم روپیہ) *',
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(context, en: 'Cheque Amount *', ur: 'چیک کی رقم *'),
                     hintText: 'e.g. 250000',
-                    prefixIcon: Icon(Icons.monetization_on_outlined),
+                    prefixIcon: const Icon(Icons.monetization_on_outlined),
                   ),
                   keyboardType: TextInputType.number,
                   validator: (v) {
@@ -477,16 +483,16 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                 ),
                 const SizedBox(height: 14),
 
-                // Issue Date & Due Date (PDC)
+                // Issue Date & Due Date
                 Row(
                   children: [
                     Expanded(
                       child: InkWell(
                         onTap: () => _pickDate(isDueDate: false),
                         child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: 'Issue Date',
-                            prefixIcon: Icon(Icons.calendar_today, size: 18),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.val(context, en: 'Issue Date', ur: 'جاری کرنے کی تاریخ'),
+                            prefixIcon: const Icon(Icons.calendar_today, size: 18),
                           ),
                           child: Text(_dateFmt.format(_issueDate)),
                         ),
@@ -498,7 +504,7 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                         onTap: () => _pickDate(isDueDate: true),
                         child: InputDecorator(
                           decoration: InputDecoration(
-                            labelText: 'Due Date (PDC / تاریخ ادائیگی)',
+                            labelText: AppStrings.val(context, en: 'Due Date', ur: 'ادائیگی کی تاریخ'),
                             prefixIcon:
                                 const Icon(Icons.event_available, size: 18),
                             suffix: _isPdc
@@ -534,14 +540,14 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                 if (bankAccounts.isNotEmpty) ...[
                   DropdownButtonFormField<String?>(
                     initialValue: _targetBankAccountId,
-                    decoration: const InputDecoration(
-                      labelText: 'Deposit In Bank Account (اختیاری)',
-                      prefixIcon: Icon(Icons.account_balance_wallet),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(context, en: 'Deposit Bank Account', ur: 'بینک کھاتہ'),
+                      prefixIcon: const Icon(Icons.account_balance_wallet),
                     ),
                     items: [
-                      const DropdownMenuItem<String?>(
+                      DropdownMenuItem<String?>(
                         value: null,
-                        child: Text('Not Deposited Yet (In Safe/Vault)'),
+                        child: Text(AppStrings.val(context, en: 'Not Deposited Yet', ur: 'ابھی جمع نہیں ہوا')),
                       ),
                       ...bankAccounts.map((b) {
                         return DropdownMenuItem<String?>(
@@ -559,10 +565,10 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                 // Notes / Reference
                 TextFormField(
                   controller: _notesCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes / Remarks (تفصیل)',
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(context, en: 'Notes', ur: 'تفصیل و نوٹ'),
                     hintText: 'e.g. Received against Invoice #102',
-                    prefixIcon: Icon(Icons.note_alt_outlined),
+                    prefixIcon: const Icon(Icons.note_alt_outlined),
                   ),
                 ),
 
@@ -575,7 +581,7 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                     TextButton(
                       onPressed:
                           _isSaving ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -591,7 +597,9 @@ class _AddEditChequeDialogState extends State<AddEditChequeDialog> {
                             )
                           : const Icon(Icons.check),
                       label: Text(
-                        isEdit ? 'Update Cheque' : 'Save Cheque',
+                        isEdit
+                            ? AppStrings.val(context, en: 'Update Cheque', ur: 'چیک اپ ڈیٹ کریں')
+                            : AppStrings.val(context, en: 'Save Cheque', ur: 'چیک محفوظ کریں'),
                       ),
                     ),
                   ],

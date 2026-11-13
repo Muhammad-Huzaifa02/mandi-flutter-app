@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/consolidated_balance_sheet_pdf_generator.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
@@ -71,14 +72,24 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('اسٹاک وصولی کی تصدیق (Acknowledge Receipt)'),
+        title: Text(
+          AppStrings.val(
+            ctx,
+            en: 'Acknowledge Stock Receipt',
+            ur: 'اسٹاک وصولی کی تصدیق',
+          ),
+        ),
         content: Text(
-          'کیا آپ تصدیق کرتے ہیں کہ چالان نمبر ${transfer.transferNumber} کا مال (${transfer.commodityName} - ${_numberFmt.format(transfer.quantityMaunds)} من) بحفاظت پہنچ گیا ہے اور اسٹاک میں جمع کر لیا گیا ہے؟',
+          AppStrings.val(
+            ctx,
+            en: 'Do you confirm that transfer #${transfer.transferNumber} of ${transfer.commodityName} (${_numberFmt.format(transfer.quantityMaunds)} Maunds) has arrived safely and is added to stock?',
+            ur: 'کیا آپ تصدیق کرتے ہیں کہ چالان نمبر ${transfer.transferNumber} کا مال (${transfer.commodityName} - ${_numberFmt.format(transfer.quantityMaunds)} من) بحفاظت پہنچ گیا ہے اور اسٹاک میں جمع کر لیا گیا ہے؟',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('منسوخ کریں (Cancel)'),
+            child: Text(AppStrings.val(ctx, en: 'Cancel', ur: 'منسوخ کریں')),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -86,7 +97,7 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('ہاں، وصول پایا (Confirm Received)'),
+            child: Text(AppStrings.val(ctx, en: 'Confirm Received', ur: 'ہاں، وصول پایا')),
           ),
         ],
       ),
@@ -99,8 +110,12 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(ok
-                ? 'چالان کی وصولی کامیابی سے درج کر لی گئی ہے'
-                : 'وصولی کے اندراج میں خرابی پیش آگئی'),
+                ? AppStrings.val(context,
+                    en: 'Stock receipt acknowledged successfully.',
+                    ur: 'چالان کی وصولی کامیابی سے درج کر لی گئی ہے')
+                : AppStrings.val(context,
+                    en: 'Failed to record receipt.',
+                    ur: 'وصولی کے اندراج میں خرابی پیش آگئی')),
             backgroundColor: ok ? Colors.green : Colors.red,
           ),
         );
@@ -112,14 +127,24 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('چالان کی منسوخی (Cancel Transfer)'),
+        title: Text(
+          AppStrings.val(
+            ctx,
+            en: 'Cancel Transfer Consignment',
+            ur: 'چالان کی منسوخی',
+          ),
+        ),
         content: Text(
-          'کیا آپ واقعی چالان نمبر ${transfer.transferNumber} کو منسوخ کرنا چاہتے ہیں؟',
+          AppStrings.val(
+            ctx,
+            en: 'Are you sure you want to cancel consignment #${transfer.transferNumber}?',
+            ur: 'کیا آپ واقعی چالان نمبر ${transfer.transferNumber} کو منسوخ کرنا چاہتے ہیں؟',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('واپس (Back)'),
+            child: Text(AppStrings.val(ctx, en: 'Back', ur: 'واپس')),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -127,7 +152,7 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('منسوخ کریں (Cancel Consignment)'),
+            child: Text(AppStrings.val(ctx, en: 'Cancel Consignment', ur: 'چالان منسوخ کریں')),
           ),
         ],
       ),
@@ -140,8 +165,12 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(ok
-                ? 'چالان کامیابی سے منسوخ کر دیا گیا'
-                : 'منسوخی میں خرابی پیش آگئی'),
+                ? AppStrings.val(context,
+                    en: 'Consignment cancelled successfully.',
+                    ur: 'چالان کامیابی سے منسوخ کر دیا گیا')
+                : AppStrings.val(context,
+                    en: 'Failed to cancel consignment.',
+                    ur: 'منسوخی میں خرابی پیش آگئی')),
             backgroundColor: ok ? Colors.grey.shade800 : Colors.red,
           ),
         );
@@ -161,19 +190,29 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Multi-Shop & Stock Transfers'),
             Text(
-              'بین المانڈی مشترکہ گوشوارہ و اسٹاک منتقلی',
-              style: TextStyle(fontSize: 11, color: MColors.gold),
+              AppStrings.val(
+                context,
+                en: 'Multi-Shop & Stock Transfers',
+                ur: 'بین المانڈی مشترکہ گوشوارہ',
+              ),
+            ),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'Consolidated Sheet & Inter-Shop Transfers',
+                ur: 'مشترکہ گوشوارہ و اسٹاک منتقلی',
+              ),
+              style: const TextStyle(fontSize: 11, color: MColors.gold),
             ),
           ],
         ),
         actions: [
           IconButton(
-            tooltip: 'ریفریش (Refresh)',
+            tooltip: AppStrings.val(context, en: 'Refresh', ur: 'ریفریش کریں'),
             icon: const Icon(Icons.refresh),
             onPressed: () {
               multiShopProv.loadTransfers();
@@ -182,7 +221,11 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
           ),
           if (balanceSheet != null)
             IconButton(
-              tooltip: 'مشترکہ گوشوارہ پرنٹ کریں (Print Consolidated Sheet)',
+              tooltip: AppStrings.val(
+                context,
+                en: 'Print Consolidated Sheet',
+                ur: 'مشترکہ گوشوارہ پرنٹ کریں',
+              ),
               icon: const Icon(Icons.picture_as_pdf_outlined),
               onPressed: () => _printConsolidatedSheet(
                 balanceSheet,
@@ -197,14 +240,22 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
           labelColor: MColors.primary,
           unselectedLabelColor: Colors.grey.shade600,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          tabs: const [
+          tabs: [
             Tab(
-              icon: Icon(Icons.analytics_outlined),
-              text: 'مشترکہ گوشوارہ (Consolidated Sheet)',
+              icon: const Icon(Icons.analytics_outlined),
+              text: AppStrings.val(
+                context,
+                en: 'Consolidated Sheet',
+                ur: 'مشترکہ گوشوارہ',
+              ),
             ),
             Tab(
-              icon: Icon(Icons.local_shipping_outlined),
-              text: 'اسٹاک منتقلی (Inter-Shop Transfers)',
+              icon: const Icon(Icons.local_shipping_outlined),
+              text: AppStrings.val(
+                context,
+                en: 'Inter-Shop Transfers',
+                ur: 'اسٹاک منتقلی',
+              ),
             ),
           ],
         ),
@@ -215,7 +266,13 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
               foregroundColor: Colors.white,
               onPressed: _openNewTransferDialog,
               icon: const Icon(Icons.add_shopping_cart_outlined),
-              label: const Text('نیا اسٹاک چالان (Dispatch Stock)'),
+              label: Text(
+                AppStrings.val(
+                  context,
+                  en: 'Dispatch Stock',
+                  ur: 'نیا اسٹاک چالان',
+                ),
+              ),
             )
           : null,
       body: TabBarView(
@@ -254,13 +311,21 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
               Icon(Icons.account_balance_outlined,
                   size: 64, color: Colors.grey.shade400),
               const SizedBox(height: 16),
-              const Text(
-                'مشترکہ گوشوارہ کا ڈیٹا دستیاب نہیں ہے',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                AppStrings.val(
+                  context,
+                  en: 'Consolidated balance sheet data not available',
+                  ur: 'مشترکہ گوشوارہ کا ڈیٹا دستیاب نہیں ہے',
+                ),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
-                'برائے مہربانی ریفریش کا بٹن دبائیں یا مزید برانچز کو رجسٹر کریں',
+                AppStrings.val(
+                  context,
+                  en: 'Please tap refresh or register more branch shops',
+                  ur: 'برائے مہربانی ریفریش کا بٹن دبائیں یا مزید برانچز کو رجسٹر کریں',
+                ),
                 style: TextStyle(color: Colors.grey.shade600),
               ),
               const SizedBox(height: 16),
@@ -271,7 +336,9 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                 ),
                 onPressed: () => multiShopProv.loadConsolidatedBalanceSheet(),
                 icon: const Icon(Icons.refresh),
-                label: const Text('لوڈ کریں (Load)'),
+                label: Text(
+                  AppStrings.val(context, en: 'Load Data', ur: 'لوڈ کریں'),
+                ),
               ),
             ],
           ),
@@ -303,7 +370,7 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                         ),
                       ),
                       Text(
-                        'مجموعی اثاثہ جات اور برانچز کا مالیاتی گوشوارہ — ${DateFormat('dd MMMM yyyy').format(sheet.asOfDate)}',
+                        '${AppStrings.val(context, en: 'Enterprise Assets & Branch Financial Sheet', ur: 'مجموعی اثاثہ جات اور برانچز کا مالیاتی گوشوارہ')} — ${DateFormat('dd MMMM yyyy').format(sheet.asOfDate)}',
                         style: TextStyle(
                             fontSize: 12, color: Colors.grey.shade700),
                       ),
@@ -320,7 +387,9 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                       shopCtx.currentShop?.phone,
                     ),
                     icon: const Icon(Icons.print_outlined, size: 18),
-                    label: const Text('A4 پرنٹ کریں (Export PDF)'),
+                    label: Text(
+                      AppStrings.val(context, en: 'Export PDF', ur: 'A4 پرنٹ کریں'),
+                    ),
                   ),
                 ],
               ),
@@ -332,7 +401,11 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                 runSpacing: 12,
                 children: [
                   _buildKpiCard(
-                    title: 'مجموعی برانچ ایکویٹی (Enterprise Equity)',
+                    title: AppStrings.val(
+                      context,
+                      en: 'Enterprise Equity',
+                      ur: 'مجموعی برانچ ایکویٹی',
+                    ),
                     value:
                         'Rs. ${_currencyFmt.format(sheet.totalNetEnterpriseEquityPkr)}',
                     color: Colors.teal.shade700,
@@ -340,35 +413,55 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                     isHighlight: true,
                   ),
                   _buildKpiCard(
-                    title: 'مجموعی مال بکری (Total Turnover)',
+                    title: AppStrings.val(
+                      context,
+                      en: 'Total Turnover',
+                      ur: 'مجموعی مال بکری',
+                    ),
                     value:
                         'Rs. ${_currencyFmt.format(sheet.totalEnterpriseSalesPkr)}',
                     color: Colors.blue.shade700,
                     icon: Icons.point_of_sale,
                   ),
                   _buildKpiCard(
-                    title: 'خالص کمیشن آمدن (Net Commission)',
+                    title: AppStrings.val(
+                      context,
+                      en: 'Net Commission',
+                      ur: 'خالص کمیشن آمدن',
+                    ),
                     value:
                         'Rs. ${_currencyFmt.format(sheet.totalEnterpriseCommissionPkr)}',
                     color: Colors.green.shade700,
                     icon: Icons.monetization_on_outlined,
                   ),
                   _buildKpiCard(
-                    title: 'واجب الوصول گاہک (Receivables)',
+                    title: AppStrings.val(
+                      context,
+                      en: 'Receivables',
+                      ur: 'واجب الوصول گاہک',
+                    ),
                     value:
                         'Rs. ${_currencyFmt.format(sheet.totalEnterpriseReceivablesPkr)}',
                     color: Colors.orange.shade800,
                     icon: Icons.call_received,
                   ),
                   _buildKpiCard(
-                    title: 'واجب الادا زمیندار (Payables)',
+                    title: AppStrings.val(
+                      context,
+                      en: 'Payables',
+                      ur: 'واجب الادا زمیندار',
+                    ),
                     value:
                         'Rs. ${_currencyFmt.format(sheet.totalEnterprisePayablesPkr)}',
                     color: Colors.red.shade700,
                     icon: Icons.call_made,
                   ),
                   _buildKpiCard(
-                    title: 'موجود گودام مالیت (Stock Assets)',
+                    title: AppStrings.val(
+                      context,
+                      en: 'Stock Assets',
+                      ur: 'موجود گودام مالیت',
+                    ),
                     value:
                         'Rs. ${_currencyFmt.format(sheet.totalEnterpriseStockValuePkr)}',
                     color: Colors.purple.shade700,
@@ -392,9 +485,13 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                   const Icon(Icons.storefront_outlined,
                       color: MColors.primary, size: 22),
                   const SizedBox(width: 8),
-                  const Text(
-                    'برانچ وار مالیاتی موازنہ و تفصیلات (Branch Breakdown)',
-                    style: TextStyle(
+                  Text(
+                    AppStrings.val(
+                      context,
+                      en: 'Branch Financial Breakdown',
+                      ur: 'برانچ وار مالیاتی موازنہ و تفصیلات',
+                    ),
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -408,7 +505,11 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${sheet.branches.length} برانچز',
+                      AppStrings.val(
+                        context,
+                        en: '${sheet.branches.length} Branches',
+                        ur: '${sheet.branches.length} برانچز',
+                      ),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -426,41 +527,50 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                       MColors.primary.withValues(alpha: 0.08)),
                   dataRowMinHeight: 48,
                   dataRowMaxHeight: 56,
-                  columns: const [
+                  columns: [
                     DataColumn(
-                        label: Text('برانچ / شہر',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
+                        label: Text(
+                            AppStrings.val(context, en: 'Branch / City', ur: 'برانچ یا شہر'),
+                            style: const TextStyle(fontWeight: FontWeight.bold))),
                     DataColumn(
-                        label: Text('سیلز (Sales)',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(
+                            AppStrings.val(context, en: 'Sales', ur: 'سیلز'),
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         numeric: true),
                     DataColumn(
-                        label: Text('کمیشن (Commission)',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(
+                            AppStrings.val(context, en: 'Commission', ur: 'کمیشن'),
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         numeric: true),
                     DataColumn(
-                        label: Text('اخراجات (Expenses)',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(
+                            AppStrings.val(context, en: 'Expenses', ur: 'اخراجات'),
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         numeric: true),
                     DataColumn(
-                        label: Text('خالص منافع (Profit)',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(
+                            AppStrings.val(context, en: 'Profit', ur: 'خالص منافع'),
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         numeric: true),
                     DataColumn(
-                        label: Text('بقایا گاہک (Receivables)',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(
+                            AppStrings.val(context, en: 'Receivables', ur: 'بقایا گاہک'),
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         numeric: true),
                     DataColumn(
-                        label: Text('بقایا زمیندار (Payables)',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(
+                            AppStrings.val(context, en: 'Payables', ur: 'بقایا زمیندار'),
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         numeric: true),
                     DataColumn(
-                        label: Text('اسٹاک مالیت (Stock)',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(
+                            AppStrings.val(context, en: 'Stock', ur: 'اسٹاک مالیت'),
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         numeric: true),
                     DataColumn(
-                        label: Text('خالص ایکویٹی (Equity)',
-                            style: TextStyle(
+                        label: Text(
+                            AppStrings.val(context, en: 'Equity', ur: 'خالص ایکویٹی'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: MColors.primary)),
                         numeric: true),
@@ -538,8 +648,9 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                       color: WidgetStateProperty.all(
                           MColors.primary.withValues(alpha: 0.12)),
                       cells: [
-                        const DataCell(Text('مجموعہ (Enterprise Total)',
-                            style: TextStyle(fontWeight: FontWeight.bold))),
+                        DataCell(Text(
+                            AppStrings.val(context, en: 'Enterprise Total', ur: 'مجموعہ'),
+                            style: const TextStyle(fontWeight: FontWeight.bold))),
                         DataCell(Text(
                           'Rs. ${_currencyFmt.format(sheet.totalEnterpriseSalesPkr)}',
                           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -668,7 +779,11 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                 child: TextField(
                   controller: _searchCtrl,
                   decoration: InputDecoration(
-                    hintText: 'تلاش کریں (چالان نمبر، جنس، گاڑی، یا دکان)...',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'Search (transfer #, commodity, vehicle, or shop)...',
+                      ur: 'تلاش کریں (چالان نمبر، جنس، گاڑی، یا دکان)...',
+                    ),
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -693,26 +808,26 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                 spacing: 8,
                 children: [
                   ChoiceChip(
-                    label: const Text('تمام (All)'),
+                    label: Text(AppStrings.val(context, en: 'All', ur: 'تمام')),
                     selected: multiShopProv.statusFilter == null,
                     onSelected: (_) => multiShopProv.setStatusFilter(null),
                   ),
                   ChoiceChip(
-                    label: const Text('راستے میں (In Transit)'),
+                    label: Text(AppStrings.val(context, en: 'In Transit', ur: 'راستے میں')),
                     selected: multiShopProv.statusFilter ==
                         StockTransferStatus.inTransit,
                     onSelected: (_) => multiShopProv
                         .setStatusFilter(StockTransferStatus.inTransit),
                   ),
                   ChoiceChip(
-                    label: const Text('موصول شدہ (Received)'),
+                    label: Text(AppStrings.val(context, en: 'Received', ur: 'موصول شدہ')),
                     selected: multiShopProv.statusFilter ==
                         StockTransferStatus.received,
                     onSelected: (_) => multiShopProv
                         .setStatusFilter(StockTransferStatus.received),
                   ),
                   ChoiceChip(
-                    label: const Text('منسوخ (Cancelled)'),
+                    label: Text(AppStrings.val(context, en: 'Cancelled', ur: 'منسوخ')),
                     selected: multiShopProv.statusFilter ==
                         StockTransferStatus.cancelled,
                     onSelected: (_) => multiShopProv
@@ -736,14 +851,22 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                           Icon(Icons.inventory_2_outlined,
                               size: 64, color: Colors.grey.shade400),
                           const SizedBox(height: 12),
-                          const Text(
-                            'کوئی اسٹاک منتقلی چالان نہیں ملا',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'No stock transfer consignments found.',
+                              ur: 'کوئی اسٹاک منتقلی چالان نہیں ملا',
+                            ),
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'نیا چالان جاری کرنے کے لیے نیچے دیے گئے بٹن پر کلک کریں',
+                            AppStrings.val(
+                              context,
+                              en: 'Tap the button below to issue a new stock dispatch challan.',
+                              ur: 'نیا چالان جاری کرنے کے لیے نیچے دیے گئے بٹن پر کلک کریں',
+                            ),
                             style: TextStyle(color: Colors.grey.shade600),
                           ),
                         ],
@@ -824,7 +947,11 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                     border: Border.all(color: statusColor.withValues(alpha: 0.4)),
                   ),
                   child: Text(
-                    '${t.status.labelUrdu} (${t.status.labelEnglish})',
+                    AppStrings.val(
+                      context,
+                      en: t.status.labelEnglish,
+                      ur: t.status.labelUrdu,
+                    ),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -843,9 +970,10 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('روانہ کنندہ دکان (Source)',
-                          style: TextStyle(
-                              fontSize: 11, color: Colors.grey.shade600)),
+                      Text(
+                        AppStrings.val(context, en: 'Source Shop', ur: 'روانہ کنندہ دکان'),
+                        style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      ),
                       Text(
                         t.sourceShopName,
                         style: TextStyle(
@@ -861,9 +989,10 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('منزل برانچ (Destination)',
-                          style: TextStyle(
-                              fontSize: 11, color: Colors.grey.shade600)),
+                      Text(
+                        AppStrings.val(context, en: 'Destination Branch', ur: 'منزل برانچ'),
+                        style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      ),
                       Text(
                         t.destinationShopName,
                         style: TextStyle(
@@ -910,7 +1039,7 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${_numberFmt.format(t.quantityMaunds)} من (Maunds)',
+                        '${_numberFmt.format(t.quantityMaunds)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -918,7 +1047,7 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                         ),
                       ),
                       Text(
-                        'Rs. ${_currencyFmt.format(t.totalDeliveredCostPkr)} کل لاگت',
+                        'Rs. ${_currencyFmt.format(t.totalDeliveredCostPkr)} ${AppStrings.val(context, en: 'Total Cost', ur: 'کل لاگت')}',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -940,14 +1069,14 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                       size: 16, color: Colors.grey),
                   const SizedBox(width: 6),
                   Text(
-                    'گاڑی: ${t.vehicleNumber.isNotEmpty ? t.vehicleNumber : "-"}',
+                    '${AppStrings.val(context, en: 'Vehicle', ur: 'گاڑی')}: ${t.vehicleNumber.isNotEmpty ? t.vehicleNumber : "-"}',
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
                   ),
                   const SizedBox(width: 14),
                   const Icon(Icons.person, size: 16, color: Colors.grey),
                   const SizedBox(width: 6),
                   Text(
-                    'ڈرائیور: ${t.driverName.isNotEmpty ? t.driverName : "-"} ${t.driverPhone.isNotEmpty ? "(${t.driverPhone})" : ""}',
+                    '${AppStrings.val(context, en: 'Driver', ur: 'ڈرائیور')}: ${t.driverName.isNotEmpty ? t.driverName : "-"} ${t.driverPhone.isNotEmpty ? "(${t.driverPhone})" : ""}',
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
                   ),
                 ],
@@ -966,7 +1095,7 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                   ),
                   onPressed: () => _printGatePass(t),
                   icon: const Icon(Icons.receipt_long_outlined, size: 16),
-                  label: const Text('گیٹ پاس (Gate Pass)'),
+                  label: Text(AppStrings.val(context, en: 'Gate Pass', ur: 'گیٹ پاس')),
                 ),
                 const SizedBox(width: 8),
 
@@ -980,7 +1109,7 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                     ),
                     onPressed: () => _confirmCancelTransfer(t),
                     icon: const Icon(Icons.cancel_outlined, size: 16),
-                    label: const Text('منسوخ (Cancel)'),
+                    label: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
                   ),
                   const SizedBox(width: 8),
 
@@ -994,7 +1123,7 @@ class _MultiShopHubPageState extends State<MultiShopHubPage>
                     ),
                     onPressed: () => _confirmAcknowledgeReceipt(t),
                     icon: const Icon(Icons.check_circle_outline, size: 16),
-                    label: const Text('وصول پایا (Receive)'),
+                    label: Text(AppStrings.val(context, en: 'Receive', ur: 'وصول پایا')),
                   ),
                 ],
               ],

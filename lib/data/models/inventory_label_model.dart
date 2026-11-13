@@ -25,13 +25,13 @@ enum InventoryLabelType {
   String get labelUrdu {
     switch (this) {
       case InventoryLabelType.lot:
-        return 'ڈھیری مال (Lot)';
+        return 'ڈھیری مال';
       case InventoryLabelType.palletStack:
-        return 'پیلیٹ / چٹہ اسٹیکنگ (Pallet)';
+        return 'پیلیٹ / چٹہ';
       case InventoryLabelType.godownBay:
-        return 'گودام بلاک / کیبن (Bay)';
+        return 'گودام بلاک';
       case InventoryLabelType.dispatchChallan:
-        return 'روانگی چالان (Challan)';
+        return 'روانگی چالان';
     }
   }
 
@@ -182,13 +182,13 @@ enum LabelStatus {
   String get labelUrdu {
     switch (this) {
       case LabelStatus.active:
-        return 'موجود / اسٹیک شدہ (Active)';
+        return 'موجود';
       case LabelStatus.dispatched:
-        return 'روانہ شدہ / فروخت (Dispatched)';
+        return 'روانہ شدہ';
       case LabelStatus.damaged:
-        return 'خراب / ضائع شدہ (Damaged)';
+        return 'خراب / ضائع شدہ';
       case LabelStatus.archived:
-        return 'محفوظ شدہ (Archived)';
+        return 'محفوظ شدہ';
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/sms_gateway_model.dart';
@@ -226,16 +227,16 @@ class _SmsGatewayPageState extends State<SmsGatewayPage>
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'SMS Gateway & Notifications',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              AppStrings.val(context, en: 'SMS Gateway & Notifications', ur: 'ایس ایم ایس گیٹ وے'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              'خودکار ایس ایم ایس گیٹ وے اور تصدیقی پیغامات',
-              style: TextStyle(fontSize: 11, color: Colors.white70),
+              AppStrings.val(context, en: 'Automated SMS Gateway & Delivery Alerts', ur: 'خودکار پیغامات اور ترسیل کا نظام'),
+              style: const TextStyle(fontSize: 11, color: Colors.white70),
             ),
           ],
         ),
@@ -254,16 +255,16 @@ class _SmsGatewayPageState extends State<SmsGatewayPage>
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(icon: Icon(Icons.tune_rounded), text: 'Gateway Settings (سیٹنگز)'),
-            Tab(icon: Icon(Icons.history_rounded), text: 'Delivery Logs (تاریخچہ)'),
+          tabs: [
+            Tab(icon: const Icon(Icons.tune_rounded), text: AppStrings.val(context, en: 'Gateway Settings', ur: 'گیٹ وے سیٹنگز')),
+            Tab(icon: const Icon(Icons.history_rounded), text: AppStrings.val(context, en: 'Delivery Logs', ur: 'پیغامات کا تاریخچہ')),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: MColors.primary,
         icon: const Icon(Icons.add_comment_rounded, color: Colors.white),
-        label: const Text('Compose SMS', style: TextStyle(color: Colors.white)),
+        label: Text(AppStrings.val(context, en: 'Compose SMS', ur: 'نیا پیغام'), style: const TextStyle(color: Colors.white)),
         onPressed: () {
           showDialog(
             context: context,
@@ -418,11 +419,11 @@ class _SmsGatewayPageState extends State<SmsGatewayPage>
                     // Sender ID Mask
                     TextFormField(
                       controller: _senderIdController,
-                      decoration: const InputDecoration(
-                        labelText: 'Sender ID / Mask (مہر / نام)',
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(context, en: 'Sender ID / Mask', ur: 'سینڈر نام یا مہر'),
                         hintText: 'e.g. MANDI-ERP or AL-REHMAN',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.badge_rounded),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.badge_rounded),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -550,47 +551,51 @@ class _SmsGatewayPageState extends State<SmsGatewayPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Automated Event Triggers (خودکار روانگی)',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    Text(
+                      AppStrings.val(context, en: 'Automated Event Triggers', ur: 'خودکار روانگی کے واقعات'),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Choose which Mandi business actions trigger automatic background SMS dispatch.',
+                      AppStrings.val(
+                        context,
+                        en: 'Choose which Mandi business actions trigger automatic background SMS dispatch.',
+                        ur: 'منتخب کریں کن تجارتی سرگرمیوں پر پس منظر میں خودکار پیغام ارسال ہو۔',
+                      ),
                       style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     ),
                     const Divider(height: 24),
                     SwitchListTile(
-                      title: const Text('Sales Invoices (سیلز بل رسید)'),
-                      subtitle: const Text('Send SMS to customer with grand total & pending balance.'),
+                      title: Text(AppStrings.val(context, en: 'Sales Invoices', ur: 'سیلز بل رسید')),
+                      subtitle: Text(AppStrings.val(context, en: 'Send SMS to customer with grand total & pending balance.', ur: 'گاہک کو کل رقم اور بقایا بیلنس کا پیغام۔')),
                       value: _autoInvoice,
                       activeThumbColor: MColors.primary,
                       onChanged: (val) => setState(() => _autoInvoice = val),
                     ),
                     SwitchListTile(
-                      title: const Text('Payment Receipts (وصولی پرچہ)'),
-                      subtitle: const Text('Send SMS when cash/bank receipt is recorded.'),
+                      title: Text(AppStrings.val(context, en: 'Payment Receipts', ur: 'وصولی پرچہ')),
+                      subtitle: Text(AppStrings.val(context, en: 'Send SMS when cash/bank receipt is recorded.', ur: 'نقدی یا بینک وصولی کے اندراج پر فوری پیغام۔')),
                       value: _autoPayment,
                       activeThumbColor: MColors.primary,
                       onChanged: (val) => setState(() => _autoPayment = val),
                     ),
                     SwitchListTile(
-                      title: const Text('Auction Boli Bids (بولی تصدیق)'),
-                      subtitle: const Text('Send SMS to winning buyer with lot quantity & price/Mann.'),
+                      title: Text(AppStrings.val(context, en: 'Auction Boli Bids', ur: 'بولی تصدیق')),
+                      subtitle: Text(AppStrings.val(context, en: 'Send SMS to winning buyer with lot quantity & price/Mann.', ur: 'کامیاب خریدار کو جنس کی مقدار اور فی من ریٹ کا پیغام۔')),
                       value: _autoBoli,
                       activeThumbColor: MColors.primary,
                       onChanged: (val) => setState(() => _autoBoli = val),
                     ),
                     SwitchListTile(
-                      title: const Text('Weighbridge Kanda (دھرم کنڈا وزن)'),
-                      subtitle: const Text('Send SMS with gross, tare, and certified net weight.'),
+                      title: Text(AppStrings.val(context, en: 'Weighbridge Kanda', ur: 'دھرم کنڈا وزن')),
+                      subtitle: Text(AppStrings.val(context, en: 'Send SMS with gross, tare, and certified net weight.', ur: 'گاڑی کے وزن، کٹوتی اور خالص وزن کی پرچی۔')),
                       value: _autoWeighbridge,
                       activeThumbColor: MColors.primary,
                       onChanged: (val) => setState(() => _autoWeighbridge = val),
                     ),
                     SwitchListTile(
-                      title: const Text('Farmer Advances (زمیندار کٹوتی)'),
-                      subtitle: const Text('Send SMS to farmer upon harvest loan deduction.'),
+                      title: Text(AppStrings.val(context, en: 'Farmer Advances', ur: 'زمیندار کٹوتی')),
+                      subtitle: Text(AppStrings.val(context, en: 'Send SMS to farmer upon harvest loan deduction.', ur: 'زمیندار کو ایڈوانس یا قرض کٹوتی کا پیغام۔')),
                       value: _autoAdvance,
                       activeThumbColor: MColors.primary,
                       onChanged: (val) => setState(() => _autoAdvance = val),
@@ -786,7 +791,7 @@ class _SmsGatewayPageState extends State<SmsGatewayPage>
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        '${log.eventType.labelEnglish} (${log.eventType.labelUrdu})',
+                        AppStrings.isUrdu(context) ? log.eventType.labelUrdu : log.eventType.labelEnglish,
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -854,7 +859,7 @@ class _SmsGatewayPageState extends State<SmsGatewayPage>
                     Icon(statusIcon, size: 14, color: statusColor),
                     const SizedBox(width: 4),
                     Text(
-                      '${log.status.labelEnglish} (${log.status.labelUrdu})',
+                      AppStrings.isUrdu(context) ? log.status.labelUrdu : log.status.labelEnglish,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -933,8 +938,8 @@ class _SmsGatewayPageState extends State<SmsGatewayPage>
                     ),
                   ),
                   Text(
-                    '$title\n($titleUrdu)',
-                    style: TextStyle(fontSize: 10, color: Colors.grey.shade700),
+                    AppStrings.isUrdu(context) ? titleUrdu : title,
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
                     maxLines: 2,
                   ),
                 ],

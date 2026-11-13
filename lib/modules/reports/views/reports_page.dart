@@ -5,6 +5,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/excel_export_service.dart';
@@ -45,28 +46,26 @@ class _ReportsPageState extends State<ReportsPage> {
   ReportPeriod _selectedPeriod = ReportPeriod.allTime;
   DateTimeRange? _customRange;
 
-  String get _periodLabel {
+  String _getPeriodLabel(bool isUrdu) {
     switch (_selectedPeriod) {
       case ReportPeriod.allTime:
-        return 'All Time';
+        return isUrdu ? 'مکمل مدت' : 'All Time';
       case ReportPeriod.today:
-        return 'Today';
+        return isUrdu ? 'آج' : 'Today';
       case ReportPeriod.thisWeek:
-        return 'This Week';
+        return isUrdu ? 'اس ہفتے' : 'This Week';
       case ReportPeriod.thisMonth:
-        return 'This Month';
+        return isUrdu ? 'اس مہینے' : 'This Month';
       case ReportPeriod.custom:
         if (_customRange != null) {
           return '${_customRange!.start.day}/${_customRange!.start.month} - ${_customRange!.end.day}/${_customRange!.end.month}';
         }
-        return 'Custom';
+        return isUrdu ? 'مخصوص مدت' : 'Custom Range';
     }
   }
 
-  bool _isInPeriod(DateTime? date) {
-    if (date == null) return false;
+  bool _isWithinRange(DateTime date) {
     final now = DateTime.now();
-
     switch (_selectedPeriod) {
       case ReportPeriod.allTime:
         return true;
@@ -76,16 +75,18 @@ class _ReportsPageState extends State<ReportsPage> {
             date.day == now.day;
       case ReportPeriod.thisWeek:
         final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        final start = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
-        return date.isAfter(start.subtract(const Duration(seconds: 1)));
+        final startZero =
+            DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+        return date.isAfter(startZero);
       case ReportPeriod.thisMonth:
         return date.year == now.year && date.month == now.month;
       case ReportPeriod.custom:
         if (_customRange == null) return true;
-        final start = DateTime(_customRange!.start.year, _customRange!.start.month, _customRange!.start.day);
-        final end = DateTime(_customRange!.end.year, _customRange!.end.month, _customRange!.end.day, 23, 59, 59);
-        return date.isAfter(start.subtract(const Duration(seconds: 1))) &&
-            date.isBefore(end.add(const Duration(seconds: 1)));
+        final startZero = DateTime(_customRange!.start.year,
+            _customRange!.start.month, _customRange!.start.day);
+        final endZero = DateTime(_customRange!.end.year,
+            _customRange!.end.month, _customRange!.end.day, 23, 59, 59);
+        return date.isAfter(startZero) && date.isBefore(endZero);
     }
   }
 
@@ -93,7 +94,7 @@ class _ReportsPageState extends State<ReportsPage> {
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 1)),
+      lastDate: DateTime.now(),
       initialDateRange: _customRange ??
           DateTimeRange(
             start: DateTime.now().subtract(const Duration(days: 7)),
@@ -102,15 +103,16 @@ class _ReportsPageState extends State<ReportsPage> {
     );
     if (picked != null) {
       setState(() {
-        _selectedPeriod = ReportPeriod.custom;
         _customRange = picked;
+        _selectedPeriod = ReportPeriod.custom;
       });
     }
   }
 
   Future<void> _exportPdfReport({
-    required List<Invoice> filteredInvoices,
-    required List<Expense> filteredExpenses,
+    required List<Invoice> invoices,
+    required List<Expense> expenses,
+    required double totalRevenue,
     required double totalSalesSubtotal,
     required double totalCommission,
     required double expensesSum,
@@ -118,132 +120,139 @@ class _ReportsPageState extends State<ReportsPage> {
     required double totalReceivables,
     required double totalPayables,
   }) async {
-    final pdf = pw.Document();
+    final doc = pw.Document();
 
-    pdf.addPage(
+    doc.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return [
-            pw.Header(
-              level: 0,
-              child: pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('MANDI FINANCIAL REPORT',
-                      style: pw.TextStyle(
-                          fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                  pw.Text('Period: $_periodLabel',
-                      style: const pw.TextStyle(fontSize: 12)),
-                ],
-              ),
+        margin: const pw.EdgeInsets.all(32),
+        build: (pw.Context ctx) => [
+          pw.Header(
+            level: 0,
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Mandi Financial Analytics & Profit/Loss',
+                    style: pw.TextStyle(
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.Text('Period: ${_getPeriodLabel(false)}',
+                    style: const pw.TextStyle(fontSize: 12)),
+              ],
             ),
-            pw.SizedBox(height: 10),
-            pw.Container(
-              padding: const pw.EdgeInsets.all(10),
-              decoration: pw.BoxDecoration(
-                border: pw.Border.all(color: PdfColors.grey400),
-                borderRadius: pw.BorderRadius.circular(6),
-              ),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('Executive Financial Summary',
-                      style: pw.TextStyle(
-                          fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                  pw.SizedBox(height: 6),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text('Total Sales Volume: Rs. ${totalSalesSubtotal.toStringAsFixed(0)}'),
-                      pw.Text('Commission Earned: Rs. ${totalCommission.toStringAsFixed(0)}'),
-                    ],
-                  ),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text('Shop Expenses: Rs. ${expensesSum.toStringAsFixed(0)}'),
-                      pw.Text('Net Mandi Profit: Rs. ${netProfit.toStringAsFixed(0)}',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    ],
-                  ),
-                  pw.Divider(),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text('Customer Receivables: Rs. ${totalReceivables.toStringAsFixed(0)}'),
-                      pw.Text('Supplier Payables: Rs. ${totalPayables.toStringAsFixed(0)}'),
-                    ],
-                  ),
-                ],
-              ),
+          ),
+          pw.SizedBox(height: 12),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.grey400),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
             ),
-            pw.SizedBox(height: 16),
-            pw.Text('Invoices Breakdown (${filteredInvoices.length} Invoices)',
-                style: pw.TextStyle(
-                    fontSize: 12, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 6),
-            pw.TableHelper.fromTextArray(
-              headers: ['Invoice #', 'Customer', 'Subtotal', 'Commission', 'Total', 'Status'],
-              data: filteredInvoices
-                  .map((inv) => [
-                        inv.invoiceNumber,
-                        inv.customerName.isNotEmpty ? inv.customerName : 'Walk-in',
-                        'Rs. ${inv.subtotal.toStringAsFixed(0)}',
-                        'Rs. ${inv.commission.toStringAsFixed(0)}',
-                        'Rs. ${inv.total.toStringAsFixed(0)}',
-                        inv.status.toUpperCase(),
-                      ])
-                  .toList(),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('EXECUTIVE SUMMARY',
+                    style: pw.TextStyle(
+                        fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                pw.Divider(thickness: 0.5),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('Total Products Volume Sold:'),
+                    pw.Text('Rs. ${totalSalesSubtotal.toStringAsFixed(0)}'),
+                  ],
+                ),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('Total Mandi Commission:'),
+                    pw.Text('+ Rs. ${totalCommission.toStringAsFixed(0)}'),
+                  ],
+                ),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('Shop Operating Expenses:'),
+                    pw.Text('- Rs. ${expensesSum.toStringAsFixed(0)}'),
+                  ],
+                ),
+                pw.Divider(thickness: 0.5),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('NET MANDI PROFIT:',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.Text('Rs. ${netProfit.toStringAsFixed(0)}',
+                        style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.green800)),
+                  ],
+                ),
+              ],
             ),
-          ];
-        },
+          ),
+          pw.SizedBox(height: 16),
+          pw.Text('Ledger Balance Summary',
+              style:
+                  pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 6),
+          pw.TableHelper.fromTextArray(
+            headers: ['Ledger Type', 'Total Balance (PKR)'],
+            data: [
+              ['Customer Receivables', 'Rs. ${totalReceivables.toStringAsFixed(0)}'],
+              ['Farmer Payables', 'Rs. ${totalPayables.toStringAsFixed(0)}'],
+            ],
+          ),
+        ],
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-      name: 'Mandi_Report_$_periodLabel.pdf',
-    );
+    await Printing.layoutPdf(onLayout: (format) async => doc.save());
   }
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final allInvoices = context.watch<InvoiceProvider>().invoices;
     final allExpenses = context.watch<ExpenseProvider>().expenses;
     final customers = context.watch<CustomerProvider>().customers;
     final suppliers = context.watch<SupplierProvider>().suppliers;
 
-    final filteredInvoices =
-        allInvoices.where((i) => _isInPeriod(i.createdAt)).toList();
-    final filteredExpenses =
-        allExpenses.where((e) => _isInPeriod(e.createdAt)).toList();
+    final filteredInvoices = allInvoices
+        .where((inv) =>
+            inv.createdAt == null ? true : _isWithinRange(inv.createdAt!))
+        .toList();
+
+    final filteredExpenses = allExpenses
+        .where((exp) =>
+            exp.createdAt == null ? true : _isWithinRange(exp.createdAt!))
+        .toList();
 
     final totalSalesSubtotal =
-        filteredInvoices.fold(0.0, (sum, i) => sum + i.subtotal);
+        filteredInvoices.fold(0.0, (sum, inv) => sum + inv.subtotal);
     final totalCommission =
-        filteredInvoices.fold(0.0, (sum, i) => sum + i.commission);
+        filteredInvoices.fold(0.0, (sum, inv) => sum + inv.commission);
+    final totalRevenue =
+        filteredInvoices.fold(0.0, (sum, inv) => sum + inv.total);
     final expensesSum =
-        filteredExpenses.fold(0.0, (sum, e) => sum + e.amount);
-    final totalRevenue = totalSalesSubtotal + totalCommission;
+        filteredExpenses.fold(0.0, (sum, exp) => sum + exp.amount);
     final netProfit = totalCommission - expensesSum;
 
-    final totalReceivables = customers.fold(
-        0.0, (sum, c) => sum + (c.runningBalance > 0 ? c.runningBalance : 0));
-    final totalPayables = suppliers.fold(
-        0.0, (sum, s) => sum + (s.runningBalance > 0 ? s.runningBalance : 0));
+    final totalReceivables =
+        customers.fold(0.0, (sum, c) => sum + (c.runningBalance > 0 ? c.runningBalance : 0));
+    final totalPayables =
+        suppliers.fold(0.0, (sum, s) => sum + (s.runningBalance > 0 ? s.runningBalance : 0));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reports & Analytics'),
+        title: Text(isUrdu ? 'رپورٹس اور مالیاتی جائزے' : 'Reports & Analytics'),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.file_download_outlined),
-            tooltip: 'Export Report',
+            icon: const Icon(Icons.share_outlined),
+            tooltip: isUrdu ? 'رپورٹ برآمد کریں' : 'Export Report',
             onSelected: (val) {
               if (val == 'excel') {
                 ExcelExportService.exportFinancialSummary(
-                  periodName: _periodLabel,
+                  periodName: _getPeriodLabel(isUrdu),
                   totalSalesSubtotal: totalSalesSubtotal,
                   totalCommission: totalCommission,
                   totalExpenses: expensesSum,
@@ -255,8 +264,9 @@ class _ReportsPageState extends State<ReportsPage> {
                 );
               } else if (val == 'pdf') {
                 _exportPdfReport(
-                  filteredInvoices: filteredInvoices,
-                  filteredExpenses: filteredExpenses,
+                  invoices: filteredInvoices,
+                  expenses: filteredExpenses,
+                  totalRevenue: totalRevenue,
                   totalSalesSubtotal: totalSalesSubtotal,
                   totalCommission: totalCommission,
                   expensesSum: expensesSum,
@@ -267,23 +277,23 @@ class _ReportsPageState extends State<ReportsPage> {
               }
             },
             itemBuilder: (ctx) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'excel',
                 child: Row(
                   children: [
-                    Icon(Icons.table_chart_outlined, color: Colors.green),
-                    SizedBox(width: MSpacing.xs),
-                    Text('Export to Excel (.xlsx)'),
+                    const Icon(Icons.table_chart_outlined, color: Colors.green),
+                    const SizedBox(width: MSpacing.xs),
+                    Text(isUrdu ? 'ایکسل رپورٹ ڈاؤنلوڈ کریں' : 'Export to Excel (.xlsx)'),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'pdf',
                 child: Row(
                   children: [
-                    Icon(Icons.picture_as_pdf_outlined, color: Colors.redAccent),
-                    SizedBox(width: MSpacing.xs),
-                    Text('Export to PDF'),
+                    const Icon(Icons.picture_as_pdf_outlined, color: Colors.redAccent),
+                    const SizedBox(width: MSpacing.xs),
+                    Text(isUrdu ? 'پی ڈی ایف رپورٹ پرنٹ کریں' : 'Export to PDF'),
                   ],
                 ),
               ),
@@ -291,7 +301,7 @@ class _ReportsPageState extends State<ReportsPage> {
           ),
           IconButton(
             icon: const Icon(Icons.menu_book_outlined, color: MColors.gold),
-            tooltip: 'Daily Cash Book (روزنامچہ)',
+            tooltip: isUrdu ? 'روزنامچہ کیش بک' : 'Daily Cash Book',
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const RoznamchaPage()),
@@ -304,1088 +314,241 @@ class _ReportsPageState extends State<ReportsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Quick Roznamcha Action Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: MColors.gold.withValues(alpha: 0.3),
+            // 18 Quick Operational Tiles
+            _QuickActionTile(
+              icon: Icons.menu_book_outlined,
+              accentColor: MColors.gold,
+              title: isUrdu ? 'روزنامچہ کیش بک' : 'Daily Cash Book',
+              description: isUrdu
+                  ? 'صبح کا گلہ، وصولیاں، ادائیگیاں اور اختتامی کیش کا حساب'
+                  : 'Reconcile morning cash drawer, receipts, payments & closing balance',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const RoznamchaPage()),
               ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: MColors.gold.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.menu_book_outlined,
-                      color: MColors.gold,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Daily Cash Book',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'روزنامچہ',
-                              style: MText.caption.copyWith(
-                                color: MColors.gold,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Reconcile morning cash drawer, receipts, payments & closing balance',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Bank Accounts & Cheques Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: MColors.primary.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.account_balance_outlined,
+              accentColor: MColors.primary,
+              title: isUrdu ? 'بینکاری کھاتے اور چیک' : 'Bank Accounts & Cheques',
+              description: isUrdu
+                  ? 'پی ڈی سی چیک، کلیئرنس حالت اور بینک بیلنس کا ریکارڈ'
+                  : 'Track Post-Dated Cheques (PDC), clearance statuses & bank balances',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const BankLedgerPage()),
               ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: MColors.primary.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.account_balance_outlined,
-                      color: MColors.primaryLight,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Bank Accounts & Cheques',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'بینکاری و چیک',
-                              style: MText.caption.copyWith(
-                                color: MColors.primaryLight,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Track Post-Dated Cheques (PDC), clearance statuses & bank balances',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+            ),
+            const SizedBox(height: MSpacing.sm),
+
+            _QuickActionTile(
+              icon: Icons.warehouse_outlined,
+              accentColor: Colors.teal,
+              title: isUrdu ? 'گودام اور باردانہ' : 'Godowns & Bardana',
+              description: isUrdu
+                  ? 'کولڈ اسٹورز، گودام بیجز اور بوریوں کا انتظام'
+                  : 'Monitor Cold Stores, warehouse batches & gunny sacks circulation',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const StorageAndBardanaPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Godowns & Bardana Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.teal.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.scale_rounded,
+              accentColor: Colors.amber.shade800,
+              title: isUrdu ? 'دھرم کنڈا' : 'Mandi Weighbridge',
+              description: isUrdu
+                  ? 'گاڑی بھرا و خالی وزن، کٹوتی اور تصدیق شدہ پرچی'
+                  : 'Vehicle gross/tare weighment, deductions & certified kanda slips',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const StorageAndBardanaPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.warehouse_outlined,
-                      color: Colors.tealAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Godowns & Bardana',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'گودام و باردانہ',
-                              style: MText.caption.copyWith(
-                                color: Colors.tealAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Monitor Cold Stores, warehouse batches & gunny sacks circulation',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const WeighbridgePage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Weighbridge / Kanda Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.amber.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.agriculture_rounded,
+              accentColor: Colors.green.shade700,
+              title: isUrdu ? 'زمیندار پیشگی قرض و کھاد بیج' : 'Farmer Advances & Inputs',
+              description: isUrdu
+                  ? 'پیشگی نقد، کھاد بیج فنانسنگ اور نیلامی سے کٹوتی'
+                  : 'Pre-harvest cash, fertilizer/seed financing & auction recovery deductions',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const WeighbridgePage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.amber.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.scale_rounded,
-                      color: Colors.amberAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Mandi Weighbridge',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'دھرم کنڈا',
-                              style: MText.caption.copyWith(
-                                color: Colors.amberAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Vehicle gross/tare weighment, deductions & certified kanda slips',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const FarmerAdvancePage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Farmer Advances Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.green.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.public_rounded,
+              accentColor: Colors.teal.shade700,
+              title: isUrdu ? 'سرحدی تجارت و کسٹم' : 'Cross-Border Mandi Trade',
+              description: isUrdu
+                  ? 'افغان و ایران مال، غیر ملکی کرنسی کھاتہ اور کسٹم کلیئرنس'
+                  : 'Afghan/Iran import cargo, USD/AFN/IRR currency ledger & customs clearance',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const FarmerAdvancePage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.green.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.agriculture_rounded,
-                      color: Colors.greenAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Farmer Advances & Inputs',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'کھاد بیج و ایڈوانس',
-                              style: MText.caption.copyWith(
-                                color: Colors.greenAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Pre-harvest cash, fertilizer/seed financing & auction recovery deductions',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const CrossBorderPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Cross-Border Trade Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.teal.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.sms_rounded,
+              accentColor: Colors.blue.shade700,
+              title: isUrdu ? 'خودکار ایس ایم ایس الرٹس' : 'SMS Gateway & Alerts',
+              description: isUrdu
+                  ? 'بل، کیش وصولی اور بولی پر خودکار ایس ایم ایس'
+                  : 'Automated SMS dispatch on bills, cash receipts & dheri bids',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const CrossBorderPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.public_rounded,
-                      color: Colors.tealAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Cross-Border Mandi Trade',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'سرحدی تجارت و کسٹم',
-                              style: MText.caption.copyWith(
-                                color: Colors.tealAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Afghan/Iran import cargo, USD/AFN/IRR currency ledger & customs clearance',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const SmsGatewayPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Automated SMS Gateway Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.blue.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.hub_outlined,
+              accentColor: Colors.purple.shade700,
+              title: isUrdu ? 'مشترکہ گوشوارہ و اسٹاک منتقلی' : 'Multi-Shop Consolidated Balance Sheet',
+              description: isUrdu
+                  ? 'تمام برانچز کا مجموعی کھاتہ اور اسٹاک ٹرانسفر چالان'
+                  : 'Multi-branch enterprise balance sheet, branch equity & inter-shop stock transfers',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const SmsGatewayPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.blue.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.sms_rounded,
-                      color: Colors.lightBlueAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'SMS Gateway & Alerts',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'خودکار ایس ایم ایس',
-                              style: MText.caption.copyWith(
-                                color: Colors.lightBlueAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Automated Twilio & Telco SMS dispatch on bills, cash receipts & dheri bids',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const MultiShopHubPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Multi-Shop Consolidated Balance Sheet & Transfers Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.purple.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.mic_rounded,
+              accentColor: Colors.red.shade700,
+              title: isUrdu ? 'منشی صوتی نوٹس اور ڈکٹیشن' : 'Munshi Voice Notes',
+              description: isUrdu
+                  ? 'آواز کی ریکارڈنگ اور منڈی کھاتہ ڈکٹیشن'
+                  : 'Verbal voice recording, Mandi keyword parser & quick khata dictation memos',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const MultiShopHubPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.purple.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.hub_outlined,
-                      color: Colors.purpleAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Multi-Shop Consolidated Balance Sheet',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'مشترکہ گوشوارہ و اسٹاک منتقلی',
-                              style: MText.caption.copyWith(
-                                color: Colors.purpleAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Multi-branch enterprise balance sheet, branch equity & inter-shop stock transfers with gate pass',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const VoiceNotesHubPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Munshi Voice Notes Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.red.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.stars_rounded,
+              accentColor: Colors.amber.shade900,
+              title: isUrdu ? 'گاہک رعایت اور والیم بونس' : 'Customer Loyalty & Volume Rebates',
+              description: isUrdu
+                  ? 'سیزنل خرید پر رعایت اور خودکار کریڈٹ واؤچر'
+                  : 'Seasonal trading volume targets, rebate tiers, automated credit notes & A4 vouchers',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const VoiceNotesHubPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.red.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.mic_rounded,
-                      color: Colors.redAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Munshi Voice Notes',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'صوتی نوٹس اور ڈکٹیشن',
-                              style: MText.caption.copyWith(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Verbal voice recording, Mandi keyword parser & quick khata dictation memos',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const CustomerLoyaltyPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Customer Loyalty & Volume Rebate Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.amber.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.trending_up,
+              accentColor: Colors.teal.shade800,
+              title: isUrdu ? 'روزانہ منڈی ریٹ بورڈ' : 'Daily Mandi Rate Board',
+              description: isUrdu
+                  ? 'مارکیٹ ریٹس، آمد کی تفصیل اور واٹس ایپ براڈکاسٹ'
+                  : 'Market price trends, arrivals volume, WhatsApp broadcast & morning notice prints',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const CustomerLoyaltyPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.amber.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.stars_rounded,
-                      color: Colors.amberAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Customer Loyalty & Volume Rebates',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'گاہک رعایت اور والیم بونس',
-                              style: MText.caption.copyWith(
-                                color: Colors.amberAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Seasonal trading volume targets, rebate tiers, automated credit notes & A4 vouchers',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const MandiRateBoardPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Mandi Rate Board & Price Intelligence Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.teal.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.badge_outlined,
+              accentColor: Colors.indigo.shade700,
+              title: isUrdu ? 'عملہ حاضری اور تنخواہ' : 'Staff Attendance & Payroll',
+              description: isUrdu
+                  ? 'روزانہ حاضری، اوور ٹائم اور تنخواہ سلپ'
+                  : 'Daily biometric attendance, overtime hours, advance recoveries & salary slips',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const MandiRateBoardPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.trending_up,
-                      color: Colors.tealAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Daily Mandi Rate Board',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'روزانہ منڈی ریٹ لسٹ',
-                              style: MText.caption.copyWith(
-                                color: Colors.tealAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Market price trends, arrivals volume, WhatsApp broadcast & A4 morning notice prints',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const StaffPayrollPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Munshi Staff Attendance & Payroll Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.indigo.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.local_shipping_rounded,
+              accentColor: Colors.teal.shade900,
+              title: isUrdu ? 'ٹرانسپورٹ اور گاڑی بلٹی' : 'Fleet Logistics & Bilty',
+              description: isUrdu
+                  ? 'گاڑی کرایہ کھاتہ، بلٹی اور ڈیزل اخراجات'
+                  : 'Vehicle freight ledger, trip bilty printing, diesel expense logs & carrier registers',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const StaffPayrollPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.indigo.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.badge_outlined,
-                      color: Colors.indigoAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Staff Attendance & Payroll',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'عملہ حاضری و تنخواہ کھاتہ',
-                              style: MText.caption.copyWith(
-                                color: Colors.indigoAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Daily biometric attendance, overtime hours, advance recoveries & official A4 salary slips',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const FleetLogisticsPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Fleet Logistics & Bilty Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.teal.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.biotech_rounded,
+              accentColor: Colors.green.shade800,
+              title: isUrdu ? 'جنس کوالٹی لیب اور کولڈ چین' : 'Quality Lab & Cold Chain',
+              description: isUrdu
+                  ? 'نمی ٹیسٹ، کٹوتی پرچہ اور درجہ حرارت لاگ'
+                  : 'Moisture refraction katoti slips, grain grading certificates & temperature logs',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const FleetLogisticsPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.local_shipping_rounded,
-                      color: Colors.tealAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Fleet Logistics & Bilty',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'ٹرانسپورٹ و ڈیزل کھاتہ',
-                              style: MText.caption.copyWith(
-                                color: Colors.tealAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Vehicle freight ledger, trip bilty printing, diesel expense logs & carrier P&L registers',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const QualityLabPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Quality Lab & Moisture Testing Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.lightGreen.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.qr_code_2_rounded,
+              accentColor: Colors.blue.shade800,
+              title: isUrdu ? 'بارکوڈ اور کیو آر لیبلز' : 'Barcode & QR Pallet Tracking',
+              description: isUrdu
+                  ? 'ڈھیری و اسٹاک بارکوڈ اور گودام روسٹر'
+                  : 'Pallet stack placards, Code128 1D barcodes, 2D QR tags & warehouse rosters',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const QualityLabPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.lightGreen.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.biotech_rounded,
-                      color: Colors.lightGreenAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Quality Lab & Cold Chain',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'جنس لیب و کولڈ چین',
-                              style: MText.caption.copyWith(
-                                color: Colors.lightGreenAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Moisture refraction katoti slips, grain grading certificates & cold room HACCP temperature logs',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const InventoryLabelsPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Barcode & QR Lot Inventory Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.blueAccent.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.sync_problem_rounded,
+              accentColor: Colors.orange.shade800,
+              title: isUrdu ? 'آف لائن سنک اور آڈٹ' : 'Offline Sync Engine & Audit',
+              description: isUrdu
+                  ? 'بغیر انٹرنیٹ ڈیٹا محفوظ اور خودکار سنک'
+                  : 'Local mutation queues, automatic conflict resolution & offline sync logs',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const InventoryLabelsPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.blueAccent.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.qr_code_2_rounded,
-                      color: Colors.lightBlueAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Barcode & QR Pallet Tracking',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'بارکوڈ و کیو آر لیبلز',
-                              style: MText.caption.copyWith(
-                                color: Colors.lightBlueAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Pallet stack placards, Code128 1D barcodes, 2D QR tags, 4-up adhesive stickers & warehouse rosters',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const OfflineSyncPage()),
               ),
             ),
             const SizedBox(height: MSpacing.sm),
 
-            // Quick Offline Sync & Audit Reconciliation Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.amber.withValues(alpha: 0.4),
+            _QuickActionTile(
+              icon: Icons.campaign_rounded,
+              accentColor: Colors.teal.shade600,
+              title: isUrdu ? 'ریٹ براڈکاسٹ اور ٹیلی گرام بوٹ' : 'Rate Broadcast & Telegram Bot',
+              description: isUrdu
+                  ? 'واٹس ایپ اور ٹیلی گرام پر خودکار منڈی ریٹ لسٹ'
+                  : 'Automated WhatsApp rate bulletins & Telegram channel broadcaster',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const OfflineSyncPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.amber.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.sync_problem_rounded,
-                      color: Colors.amberAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Offline Sync Engine & Audit',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'آف لائن سنک اور آڈٹ',
-                              style: MText.caption.copyWith(
-                                color: Colors.amberAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Local mutation queues, automatic conflict resolution, offline simulation & audit certificates',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: MSpacing.sm),
-
-            // Quick Mandi Bhav Broadcast & Telegram Bot Card
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.md),
-              borderColor: Colors.teal.withValues(alpha: 0.4),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const BroadcastHubPage()),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.teal.withValues(alpha: 0.2),
-                    child: const Icon(
-                      Icons.campaign_rounded,
-                      color: Colors.tealAccent,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: MSpacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Rate Broadcast & Telegram Bot',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'ریٹ براڈکاسٹ و بوٹ',
-                              style: MText.caption.copyWith(
-                                color: Colors.tealAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Automated WhatsApp rate bulletins, Telegram channel broadcaster & distribution certificates',
-                          style: MText.caption.copyWith(
-                            color: MColors.textOnDarkSub,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.grey,
-                  ),
-                ],
+                MaterialPageRoute(builder: (_) => const BroadcastHubPage()),
               ),
             ),
             const SizedBox(height: MSpacing.md),
@@ -1396,7 +559,7 @@ class _ReportsPageState extends State<ReportsPage> {
               child: Row(
                 children: [
                   ChoiceChip(
-                    label: const Text('All Time'),
+                    label: Text(isUrdu ? 'مکمل مدت' : 'All Time'),
                     selected: _selectedPeriod == ReportPeriod.allTime,
                     onSelected: (s) {
                       if (s) setState(() => _selectedPeriod = ReportPeriod.allTime);
@@ -1404,7 +567,7 @@ class _ReportsPageState extends State<ReportsPage> {
                   ),
                   const SizedBox(width: MSpacing.xs),
                   ChoiceChip(
-                    label: const Text('Today'),
+                    label: Text(isUrdu ? 'آج' : 'Today'),
                     selected: _selectedPeriod == ReportPeriod.today,
                     onSelected: (s) {
                       if (s) setState(() => _selectedPeriod = ReportPeriod.today);
@@ -1412,7 +575,7 @@ class _ReportsPageState extends State<ReportsPage> {
                   ),
                   const SizedBox(width: MSpacing.xs),
                   ChoiceChip(
-                    label: const Text('This Week'),
+                    label: Text(isUrdu ? 'اس ہفتے' : 'This Week'),
                     selected: _selectedPeriod == ReportPeriod.thisWeek,
                     onSelected: (s) {
                       if (s) setState(() => _selectedPeriod = ReportPeriod.thisWeek);
@@ -1420,7 +583,7 @@ class _ReportsPageState extends State<ReportsPage> {
                   ),
                   const SizedBox(width: MSpacing.xs),
                   ChoiceChip(
-                    label: const Text('This Month'),
+                    label: Text(isUrdu ? 'اس مہینے' : 'This Month'),
                     selected: _selectedPeriod == ReportPeriod.thisMonth,
                     onSelected: (s) {
                       if (s) setState(() => _selectedPeriod = ReportPeriod.thisMonth);
@@ -1428,9 +591,7 @@ class _ReportsPageState extends State<ReportsPage> {
                   ),
                   const SizedBox(width: MSpacing.xs),
                   ChoiceChip(
-                    label: Text(_selectedPeriod == ReportPeriod.custom
-                        ? _periodLabel
-                        : 'Custom Range'),
+                    label: Text(_getPeriodLabel(isUrdu)),
                     selected: _selectedPeriod == ReportPeriod.custom,
                     onSelected: (s) => _pickCustomDateRange(),
                   ),
@@ -1440,58 +601,71 @@ class _ReportsPageState extends State<ReportsPage> {
 
             const SizedBox(height: MSpacing.lg),
 
-            // Net Mandi Profit & Loss Summary GlassCard
-            GlassCard(
+            // Net Mandi Profit & Loss Summary Card
+            Container(
               width: double.infinity,
               padding: const EdgeInsets.all(MSpacing.lg),
-              backgroundColor: MColors.primary.withValues(alpha: 0.35),
+              decoration: BoxDecoration(
+                color: MColors.primary.withValues(alpha: 0.08),
+                borderRadius: MRadius.lg,
+                border: Border.all(color: MColors.primary.withValues(alpha: 0.3)),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Net Mandi Profit (Commission - Expenses)',
-                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                      Text(
+                        isUrdu
+                            ? 'خالص منڈی منافع (کمیشن منہا اخراجات)'
+                            : 'Net Mandi Profit (Commission - Expenses)',
+                        style: MText.bodySm.copyWith(color: MColors.textSecondary),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: MColors.gold.withValues(alpha: 0.2),
+                          color: MColors.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          _periodLabel,
+                          _getPeriodLabel(isUrdu),
                           style: const TextStyle(
-                              color: MColors.gold,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold),
+                            color: MColors.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: MSpacing.xs),
                   Text(
-                    'Rs. ${netProfit.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    isUrdu
+                        ? 'روپے ${netProfit.toStringAsFixed(0)}'
+                        : 'Rs. ${netProfit.toStringAsFixed(0)}',
+                    style: TextStyle(
+                      color: netProfit >= 0 ? Colors.green.shade800 : MColors.danger,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Divider(color: Colors.white24, height: MSpacing.lg),
+                  const Divider(height: MSpacing.lg),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _StatColumn(
-                        label: 'Commission Earned',
-                        value: 'Rs. ${totalCommission.toStringAsFixed(0)}',
+                        label: isUrdu ? 'کل کمیشن آمدن' : 'Commission Earned',
+                        value: isUrdu
+                            ? 'روپے ${totalCommission.toStringAsFixed(0)}'
+                            : 'Rs. ${totalCommission.toStringAsFixed(0)}',
                       ),
                       _StatColumn(
-                        label: 'Shop Expenses',
-                        value: 'Rs. ${expensesSum.toStringAsFixed(0)}',
+                        label: isUrdu ? 'دکان کے اخراجات' : 'Shop Expenses',
+                        value: isUrdu
+                            ? 'روپے ${expensesSum.toStringAsFixed(0)}'
+                            : 'Rs. ${expensesSum.toStringAsFixed(0)}',
                       ),
                     ],
                   ),
@@ -1502,157 +676,215 @@ class _ReportsPageState extends State<ReportsPage> {
             const SizedBox(height: MSpacing.xl),
 
             // Financial Analytics Interactive Line Chart
-            Text('Financial Trends',
-                style: MText.titleLg.copyWith(color: Colors.white)),
+            Text(
+              isUrdu ? 'مالیاتی رجحانات' : 'Financial Trends',
+              style: MText.titleLg,
+            ),
             const SizedBox(height: MSpacing.sm),
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Sales vs Commission Trend',
-                          style: MText.labelMd.copyWith(color: Colors.white)),
-                      Row(
-                        children: [
-                          Container(width: 8, height: 8, color: MColors.gold),
-                          const SizedBox(width: 4),
-                          const Text('Sales',
-                              style: TextStyle(color: Colors.white70, fontSize: 11)),
-                          const SizedBox(width: 10),
-                          Container(width: 8, height: 8, color: Colors.greenAccent),
-                          const SizedBox(width: 4),
-                          const Text('Commission',
-                              style: TextStyle(color: Colors.white70, fontSize: 11)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: MSpacing.lg),
-                  SizedBox(
-                    height: 180,
-                    child: LineChart(
-                      LineChartData(
-                        gridData: const FlGridData(show: false),
-                        titlesData: const FlTitlesData(show: false),
-                        borderData: FlBorderData(show: false),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: filteredInvoices.isEmpty
-                                ? const [FlSpot(0, 0), FlSpot(1, 0)]
-                                : List.generate(
-                                    filteredInvoices.length > 6
-                                        ? 6
-                                        : filteredInvoices.length,
-                                    (i) => FlSpot(i.toDouble(),
-                                        filteredInvoices[i].subtotal / 1000),
-                                  ),
-                            isCurved: true,
-                            color: MColors.gold,
-                            barWidth: 3,
-                            dotData: const FlDotData(show: true),
-                          ),
-                          LineChartBarData(
-                            spots: filteredInvoices.isEmpty
-                                ? const [FlSpot(0, 0), FlSpot(1, 0)]
-                                : List.generate(
-                                    filteredInvoices.length > 6
-                                        ? 6
-                                        : filteredInvoices.length,
-                                    (i) => FlSpot(i.toDouble(),
-                                        filteredInvoices[i].commission / 1000),
-                                  ),
-                            isCurved: true,
-                            color: Colors.greenAccent,
-                            barWidth: 3,
-                            dotData: const FlDotData(show: true),
-                          ),
-                        ],
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: MRadius.md,
+                side: BorderSide(color: Colors.grey.shade200),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(MSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isUrdu ? 'فروخت بمقابلہ کمیشن' : 'Sales vs Commission Trend',
+                          style: MText.labelMd,
+                        ),
+                        Row(
+                          children: [
+                            Container(width: 8, height: 8, color: MColors.gold),
+                            const SizedBox(width: 4),
+                            Text(
+                              isUrdu ? 'سیلز' : 'Sales',
+                              style: const TextStyle(color: MColors.textSecondary, fontSize: 11),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(width: 8, height: 8, color: Colors.green),
+                            const SizedBox(width: 4),
+                            Text(
+                              isUrdu ? 'کمیشن' : 'Commission',
+                              style: const TextStyle(color: MColors.textSecondary, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: MSpacing.lg),
+                    SizedBox(
+                      height: 180,
+                      child: LineChart(
+                        LineChartData(
+                          gridData: const FlGridData(show: false),
+                          titlesData: const FlTitlesData(show: false),
+                          borderData: FlBorderData(show: false),
+                          lineBarsData: [
+                            LineChartBarData(
+                              spots: filteredInvoices.isEmpty
+                                  ? const [FlSpot(0, 0), FlSpot(1, 0)]
+                                  : List.generate(
+                                      filteredInvoices.length > 6
+                                          ? 6
+                                          : filteredInvoices.length,
+                                      (i) => FlSpot(i.toDouble(),
+                                          filteredInvoices[i].subtotal / 1000),
+                                    ),
+                              isCurved: true,
+                              color: MColors.gold,
+                              barWidth: 3,
+                              dotData: const FlDotData(show: true),
+                            ),
+                            LineChartBarData(
+                              spots: filteredInvoices.isEmpty
+                                  ? const [FlSpot(0, 0), FlSpot(1, 0)]
+                                  : List.generate(
+                                      filteredInvoices.length > 6
+                                          ? 6
+                                          : filteredInvoices.length,
+                                      (i) => FlSpot(i.toDouble(),
+                                          filteredInvoices[i].commission / 1000),
+                                    ),
+                              isCurved: true,
+                              color: Colors.green,
+                              barWidth: 3,
+                              dotData: const FlDotData(show: true),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
             const SizedBox(height: MSpacing.lg),
 
-            // Mandi Sales & Volume Overview GlassCard
-            Text('Sales & Volume Overview',
-                style: MText.titleLg.copyWith(color: Colors.white)),
+            // Mandi Sales & Volume Overview Card
+            Text(
+              isUrdu ? 'فروخت اور والیوم کا جائزہ' : 'Sales & Volume Overview',
+              style: MText.titleLg,
+            ),
             const SizedBox(height: MSpacing.sm),
-            GlassCard(
-              padding: const EdgeInsets.all(MSpacing.lg),
-              child: Column(
-                children: [
-                  _ReportRow(
-                    label: 'Sales Invoices Count',
-                    value: '${filteredInvoices.length}',
-                  ),
-                  _ReportRow(
-                    label: 'Total Products Volume Sold',
-                    value: 'Rs. ${totalSalesSubtotal.toStringAsFixed(0)}',
-                  ),
-                  _ReportRow(
-                    label: 'Total Mandi Commission',
-                    value: 'Rs. ${totalCommission.toStringAsFixed(0)}',
-                  ),
-                  _ReportRow(
-                    label: 'Total Gross Revenue',
-                    value: 'Rs. ${totalRevenue.toStringAsFixed(0)}',
-                  ),
-                ],
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: MRadius.md,
+                side: BorderSide(color: Colors.grey.shade200),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(MSpacing.lg),
+                child: Column(
+                  children: [
+                    _ReportRow(
+                      label: isUrdu ? 'سیلز انوائسز کی تعداد' : 'Sales Invoices Count',
+                      value: '${filteredInvoices.length}',
+                    ),
+                    _ReportRow(
+                      label: isUrdu ? 'فروخت شدہ مال کا حجم' : 'Total Products Volume Sold',
+                      value: isUrdu
+                          ? 'روپے ${totalSalesSubtotal.toStringAsFixed(0)}'
+                          : 'Rs. ${totalSalesSubtotal.toStringAsFixed(0)}',
+                    ),
+                    _ReportRow(
+                      label: isUrdu ? 'کل منڈی کمیشن' : 'Total Mandi Commission',
+                      value: isUrdu
+                          ? 'روپے ${totalCommission.toStringAsFixed(0)}'
+                          : 'Rs. ${totalCommission.toStringAsFixed(0)}',
+                    ),
+                    _ReportRow(
+                      label: isUrdu ? 'کل مجموعی ریونیو' : 'Total Gross Revenue',
+                      value: isUrdu
+                          ? 'روپے ${totalRevenue.toStringAsFixed(0)}'
+                          : 'Rs. ${totalRevenue.toStringAsFixed(0)}',
+                    ),
+                  ],
+                ),
               ),
             ),
 
             const SizedBox(height: MSpacing.lg),
 
             // Receivables & Payables Ledger Summary
-            Text('Ledger Balance Summary',
-                style: MText.titleLg.copyWith(color: Colors.white)),
+            Text(
+              isUrdu ? 'کھاتہ جات کے بقایا جات' : 'Ledger Balance Summary',
+              style: MText.titleLg,
+            ),
             const SizedBox(height: MSpacing.sm),
             Row(
               children: [
                 Expanded(
-                  child: GlassCard(
-                    padding: const EdgeInsets.all(MSpacing.md),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Customer Receivables',
-                            style: TextStyle(color: Colors.white70, fontSize: 12)),
-                        const SizedBox(height: MSpacing.xs),
-                        Text(
-                          'Rs. ${totalReceivables.toStringAsFixed(0)}',
-                          style: MText.titleLg.copyWith(color: MColors.danger),
-                        ),
-                        const SizedBox(height: 2),
-                        const Text('Money owed to shop',
-                            style: TextStyle(color: Colors.white60, fontSize: 11)),
-                      ],
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: MRadius.md,
+                      side: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(MSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isUrdu ? 'گاہکوں سے وصولی' : 'Customer Receivables',
+                            style: MText.caption.copyWith(color: MColors.textSecondary),
+                          ),
+                          const SizedBox(height: MSpacing.xs),
+                          Text(
+                            isUrdu
+                                ? 'روپے ${totalReceivables.toStringAsFixed(0)}'
+                                : 'Rs. ${totalReceivables.toStringAsFixed(0)}',
+                            style: MText.titleLg.copyWith(color: MColors.danger),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isUrdu ? 'دکان کا واجب الوصول' : 'Money owed to shop',
+                            style: MText.caption.copyWith(color: MColors.textSecondary),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: MSpacing.md),
                 Expanded(
-                  child: GlassCard(
-                    padding: const EdgeInsets.all(MSpacing.md),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Supplier Payables',
-                            style: TextStyle(color: Colors.white70, fontSize: 12)),
-                        const SizedBox(height: MSpacing.xs),
-                        Text(
-                          'Rs. ${totalPayables.toStringAsFixed(0)}',
-                          style: MText.titleLg.copyWith(color: Colors.greenAccent),
-                        ),
-                        const SizedBox(height: 2),
-                        const Text('Money owed by shop',
-                            style: TextStyle(color: Colors.white60, fontSize: 11)),
-                      ],
+                  child: Card(
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: MRadius.md,
+                      side: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(MSpacing.md),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isUrdu ? 'زمینداروں کی ادائیگی' : 'Farmer Payables',
+                            style: MText.caption.copyWith(color: MColors.textSecondary),
+                          ),
+                          const SizedBox(height: MSpacing.xs),
+                          Text(
+                            isUrdu
+                                ? 'روپے ${totalPayables.toStringAsFixed(0)}'
+                                : 'Rs. ${totalPayables.toStringAsFixed(0)}',
+                            style: MText.titleLg.copyWith(color: Colors.green.shade700),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isUrdu ? 'دکان پر واجب الادا' : 'Money owed by shop',
+                            style: MText.caption.copyWith(color: MColors.textSecondary),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -1660,6 +892,67 @@ class _ReportsPageState extends State<ReportsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  final IconData icon;
+  final Color accentColor;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  const _QuickActionTile({
+    required this.icon,
+    required this.accentColor,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      padding: const EdgeInsets.all(MSpacing.md),
+      borderColor: accentColor.withValues(alpha: 0.35),
+      onTap: onTap,
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: accentColor.withValues(alpha: 0.15),
+            child: Icon(icon, color: accentColor, size: 20),
+          ),
+          const SizedBox(width: MSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: MText.bodyMd.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: MColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: MText.caption.copyWith(
+                    color: MColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            size: 14,
+            color: Colors.grey,
+          ),
+        ],
       ),
     );
   }
@@ -1676,14 +969,9 @@ class _StatColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        Text(label, style: MText.caption.copyWith(color: MColors.textSecondary)),
         const SizedBox(height: 2),
-        Text(value,
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold)),
+        Text(value, style: MText.titleLg.copyWith(color: MColors.textPrimary)),
       ],
     );
   }
@@ -1702,9 +990,8 @@ class _ReportRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 14)),
-          Text(value,
-              style: MText.titleLg.copyWith(fontSize: 15, color: MColors.gold)),
+          Text(label, style: MText.bodyMd.copyWith(color: MColors.textPrimary)),
+          Text(value, style: MText.titleLg.copyWith(fontSize: 15, color: MColors.primary)),
         ],
       ),
     );

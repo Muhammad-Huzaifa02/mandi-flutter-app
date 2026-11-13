@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/loyalty_rebate_pdf_generator.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
@@ -10,8 +11,7 @@ import 'package:mandi/modules/loyalty/providers/loyalty_rebate_provider.dart';
 import 'package:mandi/modules/loyalty/views/new_loyalty_rebate_dialog.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
-/// Central Hub for Customer Loyalty, Volume Rebate & Seasonal Brokerage Incentives
-/// (*گاہک رعایت، والیم بونس اور سالانہ انعامات*).
+/// Central Hub for Customer Loyalty, Volume Rebate & Seasonal Brokerage Incentives.
 class CustomerLoyaltyPage extends StatefulWidget {
   const CustomerLoyaltyPage({super.key});
 
@@ -59,14 +59,24 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('کھاتہ میں کریڈٹ منتقل کریں؟'),
+        title: Text(
+          AppStrings.val(
+            ctx,
+            en: 'Apply Credit to Khata?',
+            ur: 'کھاتہ میں کریڈٹ منتقل کریں؟',
+          ),
+        ),
         content: Text(
-          'کیا آپ تصدیق کرتے ہیں کہ ${rebate.customerName} کے کھاتے میں Rs. ${_currencyFmt.format(rebate.rebateAmountPkr)} کا کریڈٹ نوٹ (${rebate.creditNoteNumber}) لاگو کر کے بقایا کم کر دیا جائے؟',
+          AppStrings.val(
+            ctx,
+            en: 'Do you confirm that credit note (${rebate.creditNoteNumber}) of Rs. ${_currencyFmt.format(rebate.rebateAmountPkr)} should be applied to ${rebate.customerName}\'s balance?',
+            ur: 'کیا آپ تصدیق کرتے ہیں کہ ${rebate.customerName} کے کھاتے میں Rs. ${_currencyFmt.format(rebate.rebateAmountPkr)} کا کریڈٹ نوٹ (${rebate.creditNoteNumber}) لاگو کر کے بقایا کم کر دیا جائے؟',
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('منسوخ'),
+            child: Text(AppStrings.val(ctx, en: 'Cancel', ur: 'منسوخ')),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -74,7 +84,7 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
               foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('ہاں، کریڈٹ نوٹ جاری کریں'),
+            child: Text(AppStrings.val(ctx, en: 'Apply Credit Note', ur: 'ہاں، کریڈٹ نوٹ جاری کریں')),
           ),
         ],
       ),
@@ -87,8 +97,12 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(success
-                ? 'کریڈٹ نوٹ کامیابی سے گاہک کھاتہ میں منتقل کر دیا گیا'
-                : 'کھاتہ منتقلی میں خرابی پیش آگئی'),
+                ? AppStrings.val(context,
+                    en: 'Credit note applied to customer khata successfully.',
+                    ur: 'کریڈٹ نوٹ کامیابی سے گاہک کھاتہ میں منتقل کر دیا گیا')
+                : AppStrings.val(context,
+                    en: 'Failed to credit rebate.',
+                    ur: 'کھاتہ منتقلی میں خرابی پیش آگئی')),
             backgroundColor: success ? Colors.green : Colors.red,
           ),
         );
@@ -108,19 +122,29 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Customer Loyalty & Rebates'),
             Text(
-              'گاہک رعایت، والیم بونس اور سالانہ انعامات',
-              style: TextStyle(fontSize: 11, color: MColors.gold),
+              AppStrings.val(
+                context,
+                en: 'Customer Loyalty & Rebates',
+                ur: 'گاہک رعایت و والیم بونس',
+              ),
+            ),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'Seasonal volume incentives & rewards',
+                ur: 'گاہک رعایت، والیم بونس اور سالانہ انعامات',
+              ),
+              style: const TextStyle(fontSize: 11, color: MColors.gold),
             ),
           ],
         ),
         actions: [
           IconButton(
-            tooltip: 'ریفریش (Refresh)',
+            tooltip: AppStrings.val(context, en: 'Refresh', ur: 'ریفریش کریں'),
             icon: const Icon(Icons.refresh),
             onPressed: () => prov.loadRebates(),
           ),
@@ -131,7 +155,13 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
         foregroundColor: Colors.white,
         onPressed: _openNewRebateDialog,
         icon: const Icon(Icons.stars_rounded),
-        label: const Text('نیا رعایت واؤچر (Issue Rebate)'),
+        label: Text(
+          AppStrings.val(
+            context,
+            en: 'Issue Rebate',
+            ur: 'نیا رعایت واؤچر',
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -142,15 +172,19 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.workspace_premium,
+                    const Icon(Icons.workspace_premium,
                         color: Colors.amber, size: 22),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
-                      'سیزنل خریدار ٹرن اوور و رعایت خلاصہ (Seasonal Incentives Summary)',
+                      AppStrings.val(
+                        context,
+                        en: 'Seasonal Buyer Volume & Rebate Summary',
+                        ur: 'سیزنل خریدار ٹرن اوور و رعایت خلاصہ',
+                      ),
                       style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                          const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -160,28 +194,44 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
                   runSpacing: 12,
                   children: [
                     _buildKpiBox(
-                      title: 'اہل سیزن من (Maunds)',
+                      title: AppStrings.val(
+                        context,
+                        en: 'Qualifying Maunds',
+                        ur: 'اہل سیزن من',
+                      ),
                       value:
                           '${_numberFmt.format(summary.totalQualifyingMaunds)} M',
                       color: Colors.blue.shade700,
                       icon: Icons.scale,
                     ),
                     _buildKpiBox(
-                      title: 'اہل تجارتی والیوم (Turnover)',
+                      title: AppStrings.val(
+                        context,
+                        en: 'Qualifying Turnover',
+                        ur: 'اہل تجارتی والیوم',
+                      ),
                       value:
                           'Rs. ${_currencyFmt.format(summary.totalQualifyingTurnoverPkr)}',
                       color: Colors.teal.shade700,
                       icon: Icons.point_of_sale,
                     ),
                     _buildKpiBox(
-                      title: 'منظور شدہ بونس (Accrued)',
+                      title: AppStrings.val(
+                        context,
+                        en: 'Approved Bonus',
+                        ur: 'منظور شدہ بونس',
+                      ),
                       value:
                           'Rs. ${_currencyFmt.format(summary.totalRebatesAccruedPkr)}',
                       color: Colors.amber.shade800,
                       icon: Icons.hourglass_top,
                     ),
                     _buildKpiBox(
-                      title: 'کھاتہ میں منتقل (Credited)',
+                      title: AppStrings.val(
+                        context,
+                        en: 'Credited to Khata',
+                        ur: 'کھاتہ میں منتقل',
+                      ),
                       value:
                           'Rs. ${_currencyFmt.format(summary.totalRebatesCreditedPkr)}',
                       color: Colors.green.shade700,
@@ -202,7 +252,11 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
                 child: TextField(
                   controller: _searchCtrl,
                   decoration: InputDecoration(
-                    hintText: 'تلاش کریں (گاہک کا نام، فون، یا واؤچر نمبر)...',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'Search (customer name, phone, or voucher #)...',
+                      ur: 'تلاش کریں (گاہک کا نام، فون، یا واؤچر نمبر)...',
+                    ),
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -223,19 +277,19 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
               ),
               const SizedBox(width: 8),
               ChoiceChip(
-                label: const Text('تمام'),
+                label: Text(AppStrings.val(context, en: 'All', ur: 'تمام')),
                 selected: prov.statusFilter == null,
                 onSelected: (_) => prov.setStatusFilter(null),
               ),
               const SizedBox(width: 6),
               ChoiceChip(
-                label: const Text('منظور شدہ'),
+                label: Text(AppStrings.val(context, en: 'Approved', ur: 'منظور شدہ')),
                 selected: prov.statusFilter == RebateStatus.approved,
                 onSelected: (_) => prov.setStatusFilter(RebateStatus.approved),
               ),
               const SizedBox(width: 6),
               ChoiceChip(
-                label: const Text('منتقل شدہ'),
+                label: Text(AppStrings.val(context, en: 'Credited', ur: 'منتقل شدہ')),
                 selected: prov.statusFilter == RebateStatus.credited,
                 onSelected: (_) => prov.setStatusFilter(RebateStatus.credited),
               ),
@@ -256,15 +310,23 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
                     Icon(Icons.stars_outlined,
                         size: 64, color: Colors.grey.shade400),
                     const SizedBox(height: 12),
-                    const Text(
-                      'کوئی رعایت یا والیم بونس ریکارڈ نہیں ملا',
+                    Text(
+                      AppStrings.val(
+                        context,
+                        en: 'No loyalty rebates or volume bonuses found.',
+                        ur: 'کوئی رعایت یا والیم بونس ریکارڈ نہیں ملا',
+                      ),
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'نیا بونس واؤچر جاری کرنے کے لیے نیچے بٹن دبائیں',
-                      style: TextStyle(color: Colors.grey),
+                    Text(
+                      AppStrings.val(
+                        context,
+                        en: 'Tap the button below to issue a new rebate voucher.',
+                        ur: 'نیا بونس واؤچر جاری کرنے کے لیے نیچے بٹن دبائیں',
+                      ),
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ],
                 ),
@@ -430,7 +492,7 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
                           color: Colors.blue, size: 16),
                       const SizedBox(width: 4),
                       Text(
-                        '${r.tierLevel.labelEnglish} (${r.rebatePercentage}%)',
+                        '${AppStrings.val(context, en: r.tierLevel.labelEnglish, ur: r.tierLevel.labelUrdu)} (${r.rebatePercentage}%)',
                         style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -457,10 +519,12 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('سیزنل مال خریداری',
-                          style: TextStyle(fontSize: 11, color: Colors.grey)),
                       Text(
-                        '${_numberFmt.format(r.qualifyingMaunds)} من | Rs. ${_currencyFmt.format(r.qualifyingTurnoverPkr)}',
+                        AppStrings.val(context, en: 'Seasonal Purchases', ur: 'سیزنل مال خریداری'),
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      Text(
+                        '${_numberFmt.format(r.qualifyingMaunds)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')} | Rs. ${_currencyFmt.format(r.qualifyingTurnoverPkr)}',
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 13),
                       ),
@@ -469,8 +533,10 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text('رعایت کریڈٹ رقم (Rebate)',
-                          style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      Text(
+                        AppStrings.val(context, en: 'Rebate Credit', ur: 'رعایت کریڈٹ رقم'),
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
                       Text(
                         'Rs. ${_currencyFmt.format(r.rebateAmountPkr)}',
                         style: TextStyle(
@@ -499,7 +565,9 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
                   onPressed: () => _printCreditNote(
                       r, shopName, shop?.address, shop?.phone),
                   icon: const Icon(Icons.receipt_outlined, size: 16),
-                  label: const Text('کریڈٹ واؤچر پرنٹ (Credit Note)'),
+                  label: Text(
+                    AppStrings.val(context, en: 'Print Credit Note', ur: 'کریڈٹ واؤچر پرنٹ کریں'),
+                  ),
                 ),
                 const SizedBox(width: 8),
 
@@ -515,7 +583,9 @@ class _CustomerLoyaltyPageState extends State<CustomerLoyaltyPage> {
                     onPressed: () => _confirmCreditToKhata(r),
                     icon: const Icon(Icons.account_balance_wallet_outlined,
                         size: 16),
-                    label: const Text('کھاتہ میں کریڈٹ کریں (Apply to Khata)'),
+                    label: Text(
+                      AppStrings.val(context, en: 'Apply to Khata', ur: 'کھاتہ میں کریڈٹ کریں'),
+                    ),
                   ),
               ],
             ),

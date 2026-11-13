@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/product_model.dart';
 import 'package:mandi/data/models/farmer_model.dart';
@@ -59,6 +60,7 @@ class _AddEditFarmerProductPageState
   }
 
   Future<void> _submit() async {
+    final isUrdu = AppStrings.isUrdu(context);
     if (!_formKey.currentState!.validate()) return;
 
     final shopId = context.read<ShopContextProvider>().currentShopId;
@@ -99,9 +101,11 @@ class _AddEditFarmerProductPageState
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.product == null
-              ? 'Crop added to mandi catalog.'
-              : 'Crop details updated.'),
+          content: Text(
+            widget.product == null
+                ? (isUrdu ? 'فصل منڈی کیٹلاگ میں شامل ہو گئی۔' : 'Crop added to mandi catalog.')
+                : (isUrdu ? 'فصل کی تفصیلات اپ ڈیٹ ہو گئیں۔' : 'Crop details updated.'),
+          ),
         ),
       );
       Navigator.pop(context);
@@ -117,11 +121,16 @@ class _AddEditFarmerProductPageState
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final isEditing = widget.product != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Edit Crop' : 'Offer Crop (فصل پیش کریں)'),
+        title: Text(
+          isEditing
+              ? (isUrdu ? 'فصل میں ترمیم کریں' : 'Edit Crop')
+              : (isUrdu ? 'فصل پیش کریں' : 'Offer Crop'),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
@@ -131,25 +140,27 @@ class _AddEditFarmerProductPageState
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Farmer: ${widget.supplier.name}',
+                isUrdu
+                    ? 'زمیندار: ${widget.supplier.name}'
+                    : 'Farmer: ${widget.supplier.name}',
                 style: MText.titleMd.copyWith(color: MColors.primary),
               ),
               const SizedBox(height: MSpacing.md),
               TextFormField(
                 controller: _name,
-                decoration: const InputDecoration(
-                  labelText: 'Crop / Commodity Name *',
-                  hintText: 'e.g. Wheat Super, Basmati 1121, Cotton',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'فصل / جنس کا نام *' : 'Crop Name *',
+                  hintText: isUrdu ? 'مثلاً گندم، باسمتی 1121، کپاس' : 'e.g. Wheat Super, Basmati 1121, Cotton',
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
               ),
               const SizedBox(height: MSpacing.md),
               TextFormField(
                 controller: _category,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  hintText: 'e.g. Grains, Oilseeds, Pulses',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'زمرہ' : 'Category',
+                  hintText: isUrdu ? 'مثلاً اناج، تلہن، دالیں' : 'e.g. Grains, Oilseeds, Pulses',
                 ),
               ),
               const SizedBox(height: MSpacing.md),
@@ -157,14 +168,15 @@ class _AddEditFarmerProductPageState
                 controller: _price,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Expected Price per Unit / Maund (PKR)',
-                  hintText: 'e.g. 3800',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'متوقع قیمت فی من' : 'Expected Price per Maund',
+                  hintText: isUrdu ? 'مثلاً 3800' : 'e.g. 3800',
+                  suffixText: isUrdu ? 'روپے' : 'PKR',
                 ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return null;
                   return double.tryParse(v.trim()) == null
-                      ? 'Enter a valid number'
+                      ? (isUrdu ? 'درست نمبر درج کریں' : 'Enter a valid number')
                       : null;
                 },
               ),
@@ -173,14 +185,14 @@ class _AddEditFarmerProductPageState
                 controller: _stock,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Estimated Quantity / Bags (بوریاں / من)',
-                  hintText: 'e.g. 100',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'متوقع مقدار / بوریاں' : 'Estimated Quantity / Bags',
+                  hintText: isUrdu ? 'مثلاً 100' : 'e.g. 100',
                 ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return null;
                   return double.tryParse(v.trim()) == null
-                      ? 'Enter a valid number'
+                      ? (isUrdu ? 'درست نمبر درج کریں' : 'Enter a valid number')
                       : null;
                 },
               ),
@@ -188,9 +200,9 @@ class _AddEditFarmerProductPageState
               TextFormField(
                 controller: _description,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Crop Condition & Notes',
-                  hintText: 'e.g. Moisture 12%, clean wheat from Khanewal farm',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'فصل کی حالت و تفصیل' : 'Crop Condition & Notes',
+                  hintText: isUrdu ? 'مثلاً نمی 12 فیصد، صاف ستھری گندم' : 'e.g. Moisture 12%, clean wheat from Khanewal farm',
                 ),
               ),
               const SizedBox(height: MSpacing.xl),
@@ -205,7 +217,11 @@ class _AddEditFarmerProductPageState
                           color: Colors.white,
                         ),
                       )
-                    : Text(isEditing ? 'Save Changes' : 'Submit Crop Offer'),
+                    : Text(
+                        isEditing
+                            ? (isUrdu ? 'تبدیلیاں محفوظ کریں' : 'Save Changes')
+                            : (isUrdu ? 'فصل کی پیشکش جمع کریں' : 'Submit Crop Offer'),
+                      ),
               ),
             ],
           ),

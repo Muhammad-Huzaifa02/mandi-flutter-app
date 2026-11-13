@@ -47,12 +47,15 @@ class MandiCalculator {
 
   /// Formats weight in both KG and Manns for UI display.
   /// e.g. "120 KG (3.00 Mann)" or "50 KG (1.25 Mann)"
-  static String formatWeightDisplay(double weightKg) {
+  static String formatWeightDisplay(double weightKg, [bool isUrdu = false]) {
     final manns = kgToMann(weightKg);
     final formattedKg = weightKg.toStringAsFixed(
         weightKg.truncateToDouble() == weightKg ? 0 : 1);
     final formattedManns =
         manns.toStringAsFixed(manns.truncateToDouble() == manns ? 0 : 2);
+    if (isUrdu) {
+      return '$formattedKg کلو ($formattedManns من)';
+    }
     return '$formattedKg KG ($formattedManns Mann)';
   }
 
@@ -60,6 +63,7 @@ class MandiCalculator {
   static String formatCalculationBreakdown({
     required double weightKg,
     required double pricePer40kg,
+    bool isUrdu = false,
   }) {
     final manns = kgToMann(weightKg);
     final total = calculateTotalAmount(
@@ -68,6 +72,9 @@ class MandiCalculator {
     final formattedPrice = pricePer40kg.toStringAsFixed(0);
     final formattedTotal = total.toStringAsFixed(0);
 
+    if (isUrdu) {
+      return '${weightKg.toStringAsFixed(0)} کلو = $formattedManns من @ روپے $formattedPrice = کل روپے $formattedTotal';
+    }
     return '${weightKg.toStringAsFixed(0)} KG = $formattedManns Mann @ Rs. $formattedPrice = Rs. $formattedTotal';
   }
 }

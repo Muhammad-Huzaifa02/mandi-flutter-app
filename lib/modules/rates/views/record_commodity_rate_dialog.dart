@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/data/models/mandi_rate_model.dart';
 import 'package:mandi/modules/rates/providers/mandi_rate_provider.dart';
 
@@ -29,24 +31,40 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
   final _notesCtrl = TextEditingController();
 
   DateTime _selectedDate = DateTime.now();
-  String _qualityGrade = 'Grade A (اعلٰی)';
+  String? _qualityGrade;
   bool _isSaving = false;
 
-  final List<String> _commonCommodities = [
-    'Wheat (گندم)',
-    'Rice Super Kernel (چاول سپر کرنل)',
-    'Rice Basmati 1121 (باسمتی 1121)',
-    'Rice Irri-6 (چاول ایری-6)',
-    'Cotton (پھٹی / کپاس)',
-    'Corn / Maize (مکئی)',
-    'Canola / Mustard (سرسوں / رایا)',
-    'Potato (آلو)',
-    'Onion (پیاز)',
-    'Tomato (ٹماٹر)',
-    'Garlic (لہسن)',
-    'Ginger (ادرک)',
-    'Chilli (سرخ مرچ)',
-  ];
+  List<String> _commonCommodities(bool isUrdu) => isUrdu
+      ? const [
+          'گندم',
+          'چاول سپر کرنل',
+          'باسمتی 1121',
+          'چاول ایری-6',
+          'کپاس / پھٹی',
+          'مکئی',
+          'سرسوں / رایا',
+          'آلو',
+          'پیاز',
+          'ٹماٹر',
+          'لہسن',
+          'ادرک',
+          'سرخ مرچ',
+        ]
+      : const [
+          'Wheat',
+          'Rice Super Kernel',
+          'Rice Basmati 1121',
+          'Rice Irri-6',
+          'Cotton',
+          'Corn / Maize',
+          'Canola / Mustard',
+          'Potato',
+          'Onion',
+          'Tomato',
+          'Garlic',
+          'Ginger',
+          'Chilli',
+        ];
 
   @override
   void dispose() {
@@ -100,16 +118,20 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Record Mandi Rate (اندراج ریٹ)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Record Mandi Rate', ur: 'اندراج منڈی ریٹ'),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Daily Commodity Rate & Market Arrival Notice',
+                            AppStrings.val(
+                              context,
+                              en: 'Daily Commodity Rate & Market Arrival Notice',
+                              ur: 'روزانہ منڈی جنس ریٹ اور آمد کا نوٹس',
+                            ),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -129,17 +151,18 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                 const SizedBox(height: 12),
 
                 // Commodity Name Autocomplete
-                const Text(
-                  'Commodity / جنس *',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  '${AppStrings.tr(context, 'commodity')} *',
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 Autocomplete<String>(
                   optionsBuilder: (textEditingValue) {
+                    final commList = _commonCommodities(context.read<LocaleProvider>().isUrdu);
                     if (textEditingValue.text.isEmpty) {
-                      return _commonCommodities;
+                      return commList;
                     }
-                    return _commonCommodities.where((c) => c
+                    return commList.where((c) => c
                         .toLowerCase()
                         .contains(textEditingValue.text.toLowerCase()));
                   },
@@ -178,9 +201,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Variety / قسم',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Variety', ur: 'قسم'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -203,14 +226,14 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Quality Grade / درجہ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Quality Grade', ur: 'معیار و درجہ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
                           DropdownButtonFormField<String>(
-                            initialValue: _qualityGrade,
+                            initialValue: _qualityGrade ?? 'Grade A',
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -218,16 +241,16 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 10),
                             ),
-                            items: const [
+                            items: [
                               DropdownMenuItem(
-                                  value: 'Grade A (اعلٰی)',
-                                  child: Text('Grade A (اعلٰی)')),
+                                  value: 'Grade A',
+                                  child: Text(AppStrings.val(context, en: 'Grade A', ur: 'درجہ اول'))),
                               DropdownMenuItem(
-                                  value: 'Grade B (درمیانہ)',
-                                  child: Text('Grade B (درمیانہ)')),
+                                  value: 'Grade B',
+                                  child: Text(AppStrings.val(context, en: 'Grade B', ur: 'درجہ دوم'))),
                               DropdownMenuItem(
-                                  value: 'Grade C (ہلکا)',
-                                  child: Text('Grade C (ہلکا)')),
+                                  value: 'Grade C',
+                                  child: Text(AppStrings.val(context, en: 'Grade C', ur: 'درجہ سوم'))),
                             ],
                             onChanged: (val) {
                               if (val != null) setState(() => _qualityGrade = val);
@@ -247,9 +270,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Rate Date / تاریخ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Rate Date', ur: 'تاریخ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -291,9 +314,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Arrivals / منڈی آمد (من)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Arrivals in Maunds', ur: 'آمد بمقدار من'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -324,9 +347,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Min Rate (کم از کم)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Min Rate', ur: 'کم از کم ریٹ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -343,7 +366,7 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                                   horizontal: 12, vertical: 12),
                             ),
                             validator: (v) => v == null || v.isEmpty
-                                ? 'Required'
+                                ? AppStrings.tr(context, 'required')
                                 : null,
                           ),
                         ],
@@ -354,9 +377,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Max Rate (زیادہ سے زیادہ)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Max Rate', ur: 'زیادہ سے زیادہ ریٹ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -373,7 +396,7 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                                   horizontal: 12, vertical: 12),
                             ),
                             validator: (v) => v == null || v.isEmpty
-                                ? 'Required'
+                                ? AppStrings.tr(context, 'required')
                                 : null,
                           ),
                         ],
@@ -384,9 +407,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Modal / سودا ریٹ *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Modal Rate *', ur: 'سودا ریٹ *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -404,7 +427,7 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                             ),
                             onChanged: (_) => setState(() {}),
                             validator: (v) => v == null || v.isEmpty
-                                ? 'Required'
+                                ? AppStrings.tr(context, 'required')
                                 : null,
                           ),
                         ],
@@ -422,9 +445,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Previous Modal Rate (گزشتہ بھاؤ)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Previous Modal Rate', ur: 'گزشتہ سودا ریٹ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -450,9 +473,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Market Trend / رجحان مارکیٹ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Market Trend', ur: 'مارکیٹ رجحان'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -493,8 +516,8 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                                 Expanded(
                                   child: Text(
                                     _prevModal > 0
-                                        ? '${trend.labelUrdu} (${changePkr >= 0 ? "+" : ""}${changePkr.toStringAsFixed(0)} PKR / ${changePercent.toStringAsFixed(1)}%)'
-                                        : 'مستحکم (Stable)',
+                                        ? '${context.watch<LocaleProvider>().isUrdu ? trend.labelUrdu : trend.labelEnglish} (${changePkr >= 0 ? "+" : ""}${changePkr.toStringAsFixed(0)} PKR / ${changePercent.toStringAsFixed(1)}%)'
+                                        : AppStrings.val(context, en: 'Stable', ur: 'مستحکم'),
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
@@ -528,9 +551,9 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                 const SizedBox(height: 14),
 
                 // Notes
-                const Text(
-                  'Remarks / منڈی تفصیل',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(context, en: 'Remarks', ur: 'تفصیل / ریمارکس'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -553,7 +576,7 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.tr(context, 'cancel')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -574,7 +597,7 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.check),
-                      label: const Text('Save Rate (ریٹ محفوظ کریں)'),
+                      label: Text(AppStrings.val(context, en: 'Save Rate', ur: 'ریٹ محفوظ کریں')),
                     ),
                   ],
                 ),
@@ -610,7 +633,7 @@ class _RecordCommodityRateDialogState extends State<RecordCommodityRateDialog> {
       modalRatePerMaund: modalRate,
       previousModalRate: prevModalRate,
       arrivalsMaunds: arrivals,
-      qualityGrade: _qualityGrade,
+      qualityGrade: _qualityGrade ?? 'Grade A',
       notes: _notesCtrl.text.trim(),
     );
 

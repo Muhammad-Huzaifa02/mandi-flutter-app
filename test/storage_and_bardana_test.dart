@@ -199,10 +199,10 @@ void main() {
 
       expect(txn.isOverdue, isTrue);
       expect(txn.bardanaTypeLabelEnglish, 'Jute Sack');
-      expect(txn.bardanaTypeLabelUrdu, 'پٹ سن بوری (Jute)');
+      expect(txn.bardanaTypeLabelUrdu, 'پٹ سن بوری');
       expect(txn.directionLabelEnglish, 'Issued');
-      expect(txn.directionLabelUrdu, 'جاری کردہ (دیا گیا)');
-      expect(txn.statusLabelUrdu, 'تاخیر شدہ (واپسی باقی)');
+      expect(txn.directionLabelUrdu, 'جاری کردہ');
+      expect(txn.statusLabelUrdu, 'تاخیر شدہ');
     });
 
     test('BardanaSummary aggregates transaction records accurately', () {

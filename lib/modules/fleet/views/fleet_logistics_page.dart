@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/fleet_logistics_pdf_generator.dart';
 import 'package:mandi/data/models/fleet_model.dart';
@@ -164,7 +165,7 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Mark Completed (مکمل کریں)'),
+              child: Text(AppStrings.val(context, en: 'Mark Completed', ur: 'مکمل کریں')),
             ),
           ],
         );
@@ -210,7 +211,7 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fleet Logistics & Bilty (ٹرانسپورٹ کھاتہ)'),
+        title: Text(AppStrings.val(context, en: 'Fleet Logistics & Bilty', ur: 'ٹرانسپورٹ کھاتہ و بلٹی')),
         elevation: 0,
         actions: [
           IconButton(
@@ -227,7 +228,7 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
                   borderRadius: BorderRadius.circular(8)),
             ),
             icon: const Icon(Icons.local_gas_station, size: 18),
-            label: const Text('Log Diesel'),
+            label: Text(AppStrings.val(context, en: 'Log Diesel', ur: 'ڈیزل خرچ')),
             onPressed: () => _openLogFuelDialog(),
           ),
           const SizedBox(width: 8),
@@ -240,7 +241,7 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
                   borderRadius: BorderRadius.circular(8)),
             ),
             icon: const Icon(Icons.add, size: 18),
-            label: const Text('New Trip (بلٹی)'),
+            label: Text(AppStrings.val(context, en: 'New Trip', ur: 'نیا ٹرپ')),
             onPressed: () => _openNewTripDialog(),
           ),
           const SizedBox(width: 12),
@@ -251,18 +252,18 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
           indicatorWeight: 3,
           labelColor: MColors.primary,
           unselectedLabelColor: Colors.grey,
-          tabs: const [
+          tabs: [
             Tab(
-              icon: Icon(Icons.assignment_outlined),
-              text: 'Trips & Bilty (ٹرپ اور بلٹی)',
+              icon: const Icon(Icons.assignment_outlined),
+              text: AppStrings.val(context, en: 'Trips & Bilty', ur: 'ٹرپ اور بلٹی'),
             ),
             Tab(
-              icon: Icon(Icons.local_shipping_outlined),
-              text: 'Fleet & P&L (گاڑیاں اور کھاتہ)',
+              icon: const Icon(Icons.local_shipping_outlined),
+              text: AppStrings.val(context, en: 'Fleet & P&L', ur: 'گاڑیاں اور کھاتہ'),
             ),
             Tab(
-              icon: Icon(Icons.local_gas_station_outlined),
-              text: 'Fuel & Maintenance (ڈیزل و اخراجات)',
+              icon: const Icon(Icons.local_gas_station_outlined),
+              text: AppStrings.val(context, en: 'Fuel & Maintenance', ur: 'ڈیزل و اخراجات'),
             ),
           ],
         ),
@@ -311,52 +312,52 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
         child: Row(
           children: [
             _buildKpiTile(
-              label: 'Fleet Size / گاڑیاں',
+              label: AppStrings.val(context, en: 'Fleet Size', ur: 'کل گاڑیاں'),
               value:
                   '${provider.activeVehiclesCount} / ${provider.totalVehiclesCount}',
-              subtitle: 'Active Vehicles',
+              subtitle: AppStrings.val(context, en: 'Active Vehicles', ur: 'فعال گاڑیاں'),
               color: Colors.blue,
               icon: Icons.local_shipping,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'In Transit / راستے میں',
+              label: AppStrings.val(context, en: 'In Transit', ur: 'راستے میں'),
               value: '${provider.inTransitTripsCount} Trips',
-              subtitle: 'Active On-Route',
+              subtitle: AppStrings.val(context, en: 'Active On-Route', ur: 'سفر میں'),
               color: Colors.orange,
               icon: Icons.directions_bus,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Total Freight / کل کرایہ',
+              label: AppStrings.val(context, en: 'Total Freight', ur: 'کل کرایہ'),
               value: 'Rs. ${_currencyFmt.format(provider.totalFreightRevenue)}',
-              subtitle: 'Gross Billing',
+              subtitle: AppStrings.val(context, en: 'Gross Billing', ur: 'مجموعی بلنگ'),
               color: Colors.indigo,
               icon: Icons.payments_outlined,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Fuel Logged / ڈیزل خرچ',
+              label: AppStrings.val(context, en: 'Fuel Logged', ur: 'ڈیزل خرچ'),
               value:
                   '${_currencyFmt.format(provider.totalFuelLiters)} Ltr (Rs. ${_currencyFmt.format(provider.totalFuelExpense)})',
-              subtitle: 'Operating Fuel',
+              subtitle: AppStrings.val(context, en: 'Operating Fuel', ur: 'تیل کا خرچہ'),
               color: Colors.amber.shade900,
               icon: Icons.local_gas_station,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Net Fleet Profit / خالص منافع',
+              label: AppStrings.val(context, en: 'Net Fleet Profit', ur: 'خالص منافع'),
               value: 'Rs. ${_currencyFmt.format(provider.totalNetProfit)}',
-              subtitle: 'Revenue - Expenses',
+              subtitle: AppStrings.val(context, en: 'Revenue - Expenses', ur: 'آمدن منہا خرچ'),
               color: Colors.green,
               icon: Icons.trending_up,
             ),
             const SizedBox(width: 12),
             _buildKpiTile(
-              label: 'Pending Payable / بقایا کرایہ',
+              label: AppStrings.val(context, en: 'Pending Payable', ur: 'بقایا کرایہ'),
               value:
                   'Rs. ${_currencyFmt.format(provider.totalPendingFreightPayable)}',
-              subtitle: 'Driver Freight Balance',
+              subtitle: AppStrings.val(context, en: 'Driver Freight Balance', ur: 'ڈرائیور واجب الادا'),
               color: Colors.redAccent,
               icon: Icons.receipt_long,
             ),
@@ -428,8 +429,11 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
                 child: TextField(
                   controller: _searchCtrl,
                   decoration: InputDecoration(
-                    hintText:
-                        'Search trip #, destination, party or cargo (تلاش کریں)...',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'Search trip #, destination, party or cargo...',
+                      ur: 'ٹرپ نمبر، منزل، پارٹی یا جنس تلاش کریں...',
+                    ),
                     prefixIcon: const Icon(Icons.search, size: 20),
                     suffixIcon: _searchCtrl.text.isNotEmpty
                         ? IconButton(
@@ -453,19 +457,19 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
               // Status filter
               DropdownButton<TripStatus?>(
                 value: provider.statusFilter,
-                hint: const Text('All Status'),
+                hint: Text(AppStrings.val(context, en: 'All Status', ur: 'تمام حالات')),
                 items: [
-                  const DropdownMenuItem(
-                      value: null, child: Text('All Status (تمام)')),
+                  DropdownMenuItem(
+                      value: null, child: Text(AppStrings.val(context, en: 'All Status', ur: 'تمام حالات'))),
                   DropdownMenuItem(
                       value: TripStatus.inTransit,
-                      child: Text(TripStatus.inTransit.labelEnglish)),
+                      child: Text(AppStrings.isUrdu(context) ? TripStatus.inTransit.labelUrdu : TripStatus.inTransit.labelEnglish)),
                   DropdownMenuItem(
                       value: TripStatus.completed,
-                      child: Text(TripStatus.completed.labelEnglish)),
+                      child: Text(AppStrings.isUrdu(context) ? TripStatus.completed.labelUrdu : TripStatus.completed.labelEnglish)),
                   DropdownMenuItem(
                       value: TripStatus.cancelled,
-                      child: Text(TripStatus.cancelled.labelEnglish)),
+                      child: Text(AppStrings.isUrdu(context) ? TripStatus.cancelled.labelUrdu : TripStatus.cancelled.labelEnglish)),
                 ],
                 onChanged: (val) => provider.setStatusFilter(val),
               ),
@@ -473,15 +477,15 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
               // Vehicle filter
               DropdownButton<String?>(
                 value: provider.selectedVehicleId,
-                hint: const Text('All Vehicles'),
+                hint: Text(AppStrings.val(context, en: 'All Vehicles', ur: 'تمام گاڑیاں')),
                 items: [
-                  const DropdownMenuItem(
-                      value: null, child: Text('All Vehicles (تمام گاڑیاں)')),
+                  DropdownMenuItem(
+                      value: null, child: Text(AppStrings.val(context, en: 'All Vehicles', ur: 'تمام گاڑیاں'))),
                   ...provider.vehicles.map((v) {
                     return DropdownMenuItem(
                       value: v.id,
                       child: Text(
-                        '${v.registrationNumber} (${v.vehicleType.labelEnglish})',
+                        '${v.registrationNumber} (${AppStrings.isUrdu(context) ? v.vehicleType.labelUrdu : v.vehicleType.labelEnglish})',
                         style: const TextStyle(fontSize: 12),
                       ),
                     );
@@ -505,14 +509,22 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
                           Icon(Icons.local_shipping_outlined,
                               size: 64, color: Colors.grey.shade400),
                           const SizedBox(height: 12),
-                          const Text(
-                            'No Freight Trips Found / کوئی ٹرپ ریکارڈ نہیں',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'No Freight Trips Found',
+                              ur: 'کوئی ٹرپ ریکارڈ نہیں ملا',
+                            ),
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Dispatch your first cargo trip and print official Mandi Bilty.',
+                            AppStrings.val(
+                              context,
+                              en: 'Dispatch your first cargo trip and print official Mandi Bilty.',
+                              ur: 'پہلا کارگو ٹرپ روانہ کریں اور منڈی بلٹی پرنٹ کریں۔',
+                            ),
                             style: TextStyle(
                                 fontSize: 13, color: Colors.grey.shade600),
                           ),
@@ -827,13 +839,21 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
             Icon(Icons.directions_car_outlined,
                 size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            const Text(
-              'No Vehicles in Fleet / کوئی گاڑی درج نہیں',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'No Vehicles in Fleet',
+                ur: 'کوئی گاڑی درج نہیں ہے',
+              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             Text(
-              'Register your transport fleet (Mazda, Shehzore, Tractor Trolley) to manage ledgers.',
+              AppStrings.val(
+                context,
+                en: 'Register your transport fleet (Mazda, Shehzore, Tractor Trolley) to manage ledgers.',
+                ur: 'کھاتہ اور بلٹی کے لیے اپنی ٹرانسپورٹ گاڑیاں (مزدا، شہزور، ٹریکٹر ٹرالی) درج کریں۔',
+              ),
               style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 16),
@@ -843,7 +863,13 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
                 foregroundColor: Colors.white,
               ),
               icon: const Icon(Icons.add),
-              label: const Text('Register Vehicle (گاڑی درج کریں)'),
+              label: Text(
+                AppStrings.val(
+                  context,
+                  en: 'Register Vehicle',
+                  ur: 'گاڑی درج کریں',
+                ),
+              ),
               onPressed: _openRegisterVehicleDialog,
             ),
           ],
@@ -1043,7 +1069,7 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
                       ),
                       Column(
                         children: [
-                          Text('Net Profit (خالص نفع)',
+                          Text(AppStrings.val(context, en: 'Net Profit', ur: 'خالص منافع'),
                               style: TextStyle(
                                   fontSize: 11, color: Colors.grey.shade700)),
                           const SizedBox(height: 2),
@@ -1133,15 +1159,15 @@ class _FleetLogisticsPageState extends State<FleetLogisticsPage>
                   const SizedBox(width: 8),
                   DropdownButton<String?>(
                     value: provider.selectedVehicleId,
-                    hint: const Text('All Vehicles'),
+                    hint: Text(AppStrings.val(context, en: 'All Vehicles', ur: 'تمام گاڑیاں')),
                     items: [
-                      const DropdownMenuItem(
-                          value: null, child: Text('All Vehicles (تمام)')),
+                      DropdownMenuItem(
+                          value: null, child: Text(AppStrings.val(context, en: 'All Vehicles', ur: 'تمام گاڑیاں'))),
                       ...provider.vehicles.map((v) {
                         return DropdownMenuItem(
                           value: v.id,
                           child: Text(
-                            '${v.registrationNumber} (${v.vehicleType.labelEnglish})',
+                            '${v.registrationNumber} (${AppStrings.isUrdu(context) ? v.vehicleType.labelUrdu : v.vehicleType.labelEnglish})',
                             style: const TextStyle(fontSize: 12),
                           ),
                         );

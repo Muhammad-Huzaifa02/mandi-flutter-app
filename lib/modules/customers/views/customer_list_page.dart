@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/excel_export_service.dart';
-import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/modules/customers/providers/customer_provider.dart';
 import 'package:mandi/modules/customers/views/add_customer_page.dart';
 import 'package:mandi/modules/customers/views/customer_detail_page.dart';
 import 'package:mandi/modules/customers/views/payment_recovery_page.dart';
+import 'package:mandi/providers/shop_context_provider.dart';
 
 class CustomerListPage extends StatefulWidget {
   const CustomerListPage({super.key});
@@ -27,16 +28,17 @@ class _CustomerListPageState extends State<CustomerListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final shopCtx = context.watch<ShopContextProvider>();
     final canAdd = shopCtx.hasPermission('manage_customers');
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Customers'),
+        title: Text(isUrdu ? 'گاہک' : 'Customers'),
         actions: [
           IconButton(
             icon: const Icon(Icons.campaign_outlined, color: MColors.gold),
-            tooltip: 'Payment Recovery (تقاضا)',
+            tooltip: isUrdu ? 'ادائیگی کا تقاضا' : 'Payment Recovery',
             onPressed: () {
               Navigator.push(
                 context,
@@ -48,7 +50,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
           ),
           IconButton(
             icon: const Icon(Icons.file_download_outlined),
-            tooltip: 'Export Excel Ledger',
+            tooltip: isUrdu ? 'ایکسل کھاتہ ڈاؤنلوڈ کریں' : 'Export Excel Ledger',
             onPressed: () {
               final customers = context.read<CustomerProvider>().customers;
               if (customers.isNotEmpty) {
@@ -65,7 +67,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
                 MaterialPageRoute(builder: (_) => const AddCustomerPage()),
               ),
               icon: const Icon(Icons.person_add_alt_1_outlined),
-              label: const Text('Add Customer'),
+              label: Text(isUrdu ? 'نیا گاہک' : 'Add Customer'),
             )
           : null,
       body: Consumer<CustomerProvider>(
@@ -84,7 +86,9 @@ class _CustomerListPageState extends State<CustomerListPage> {
                   controller: _searchCtrl,
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
-                    hintText: 'Search by name, phone or city...',
+                    hintText: isUrdu
+                        ? 'نام، فون یا شہر سے تلاش کریں...'
+                        : 'Search by name, phone or city...',
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchCtrl.text.isNotEmpty
                         ? IconButton(
@@ -103,8 +107,12 @@ class _CustomerListPageState extends State<CustomerListPage> {
                     ? Center(
                         child: Text(
                           _searchCtrl.text.isEmpty
-                              ? 'No customers added yet.'
-                              : 'No customers match your search.',
+                              ? (isUrdu
+                                  ? 'ابھی تک کوئی گاہک شامل نہیں ہے۔'
+                                  : 'No customers added yet.')
+                              : (isUrdu
+                                  ? 'کوئی گاہک نہیں ملا۔'
+                                  : 'No customers match your search.'),
                           style: MText.bodyMd
                               .copyWith(color: MColors.textSecondary),
                         ),
@@ -143,7 +151,9 @@ class _CustomerListPageState extends State<CustomerListPage> {
                                     .copyWith(color: MColors.textSecondary),
                               ),
                               trailing: Text(
-                                'Rs. ${c.runningBalance.toStringAsFixed(0)}',
+                                isUrdu
+                                    ? 'روپے ${c.runningBalance.toStringAsFixed(0)}'
+                                    : 'Rs. ${c.runningBalance.toStringAsFixed(0)}',
                                 style: MText.labelMd.copyWith(
                                   color: c.runningBalance > 0
                                       ? MColors.danger

@@ -58,7 +58,7 @@ class DashboardPage extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: MColors.surfaceDark,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -78,12 +78,12 @@ class DashboardPage extends StatelessWidget {
                       children: [
                         Text(
                           AppStrings.tr(sheetCtx, 'switch_mandi_shop'),
-                          style: MText.titleLg.copyWith(color: Colors.white),
+                          style: MText.titleLg.copyWith(color: MColors.textPrimary),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey),
+                      icon: const Icon(Icons.close, color: MColors.textSecondary),
                       onPressed: () => Navigator.pop(sheetCtx),
                     ),
                   ],
@@ -94,7 +94,7 @@ class DashboardPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: MSpacing.md),
                     child: Text(
                       AppStrings.tr(sheetCtx, 'no_other_shops'),
-                      style: MText.bodyMd.copyWith(color: Colors.grey),
+                      style: MText.bodyMd.copyWith(color: MColors.textSecondary),
                     ),
                   )
                 else
@@ -109,7 +109,8 @@ class DashboardPage extends StatelessWidget {
                         final isSelected = s.id == currentShopId;
                         return GlassCard(
                           padding: const EdgeInsets.all(MSpacing.sm),
-                          borderColor: isSelected ? MColors.gold : null,
+                          borderColor: isSelected ? MColors.primary : MColors.borderLight,
+                          backgroundColor: isSelected ? MColors.emeraldPale : Colors.white,
                           onTap: () async {
                             Navigator.pop(sheetCtx);
                             if (!isSelected) {
@@ -128,8 +129,8 @@ class DashboardPage extends StatelessWidget {
                               CircleAvatar(
                                 radius: 20,
                                 backgroundColor: isSelected
-                                    ? MColors.gold.withValues(alpha: 0.2)
-                                    : Colors.white10,
+                                    ? MColors.primary.withValues(alpha: 0.15)
+                                    : MColors.emeraldSubtle,
                                 backgroundImage: (s.logoUrl != null &&
                                         s.logoUrl!.isNotEmpty)
                                     ? NetworkImage(s.logoUrl!)
@@ -142,8 +143,8 @@ class DashboardPage extends StatelessWidget {
                                             : 'S',
                                         style: TextStyle(
                                           color: isSelected
-                                              ? MColors.gold
-                                              : Colors.white,
+                                              ? MColors.primary
+                                              : MColors.textSecondary,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       )
@@ -158,7 +159,7 @@ class DashboardPage extends StatelessWidget {
                                     Text(
                                       s.name,
                                       style: MText.bodyMd.copyWith(
-                                        color: Colors.white,
+                                        color: MColors.textPrimary,
                                         fontWeight: isSelected
                                             ? FontWeight.bold
                                             : FontWeight.w500,
@@ -168,7 +169,7 @@ class DashboardPage extends StatelessWidget {
                                       Text(
                                         'Grain Market, ${s.city}',
                                         style: MText.caption.copyWith(
-                                          color: MColors.textOnDarkSub,
+                                          color: MColors.textSecondary,
                                         ),
                                       ),
                                   ],
@@ -177,7 +178,7 @@ class DashboardPage extends StatelessWidget {
                               if (isSelected)
                                 const Icon(
                                   Icons.check_circle_rounded,
-                                  color: MColors.gold,
+                                  color: MColors.primary,
                                   size: 22,
                                 ),
                             ],
@@ -288,65 +289,64 @@ class DashboardPage extends StatelessWidget {
       (sum, s) => sum + (s.runningBalance > 0 ? s.runningBalance : 0.0),
     );
     final totalInvoicesCount = invoiceProv.invoices.length;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: InkWell(
-          onTap: shopCtx.hasMultipleShops
-              ? () => _showShopSwitcherBottomSheet(context)
-              : null,
-          borderRadius: MRadius.sm,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (shop?.logoUrl != null && shop!.logoUrl!.isNotEmpty) ...[
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundImage: NetworkImage(shop.logoUrl!),
+    return LiquidCrystalBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: InkWell(
+            onTap: shopCtx.hasMultipleShops
+                ? () => _showShopSwitcherBottomSheet(context)
+                : null,
+            borderRadius: MRadius.sm,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (shop?.logoUrl != null && shop!.logoUrl!.isNotEmpty) ...[
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundImage: NetworkImage(shop.logoUrl!),
+                    ),
+                    const SizedBox(width: MSpacing.xs),
+                  ],
+                  Flexible(
+                    child: Text(
+                      shop?.name ?? 'Mandi',
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  const SizedBox(width: MSpacing.xs),
+                  if (shopCtx.hasMultipleShops) ...[
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 20,
+                      color: MColors.gold,
+                    ),
+                  ],
                 ],
-                Flexible(
-                  child: Text(
-                    shop?.name ?? 'Mandi',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (shopCtx.hasMultipleShops) ...[
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 20,
-                    color: MColors.gold,
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
-        ),
-        actions: [
-          if (shopCtx.hasMultipleShops)
+          actions: [
+            if (shopCtx.hasMultipleShops)
+              IconButton(
+                icon: const Icon(Icons.swap_horiz_rounded),
+                tooltip: AppStrings.tr(context, 'switch_shop'),
+                onPressed: () => _showShopSwitcherBottomSheet(context),
+              ),
             IconButton(
-              icon: const Icon(Icons.swap_horiz_rounded),
-              tooltip: AppStrings.tr(context, 'switch_shop'),
-              onPressed: () => _showShopSwitcherBottomSheet(context),
+              icon: const Icon(Icons.logout),
+              tooltip: AppStrings.tr(context, 'logout'),
+              onPressed: () {
+                auth.signOut();
+                shopCtx.clear();
+              },
             ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: AppStrings.tr(context, 'logout'),
-            onPressed: () {
-              auth.signOut();
-              shopCtx.clear();
-            },
-          ),
-        ],
-      ),
-      body: LiquidCrystalBackground(
-        child: SingleChildScrollView(
+          ],
+        ),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(MSpacing.lg),
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,16 +428,23 @@ class DashboardPage extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Receivables',
+                                  AppStrings.tr(context, 'receivables'),
                                   style: MText.caption.copyWith(
-                                    color: isDark ? Colors.white70 : MColors.textSecondary,
+                                    color: MColors.textSecondary,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const Icon(Icons.trending_up, color: Colors.greenAccent, size: 14),
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: MColors.primary.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Icon(Icons.trending_up, color: MColors.primary, size: 14),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -447,15 +454,15 @@ class DashboardPage extends StatelessWidget {
                             child: Text(
                               'Rs. ${totalReceivables.toStringAsFixed(0)}',
                               style: MText.titleMd.copyWith(
-                                color: isDark ? Colors.white : MColors.textPrimary,
+                                color: MColors.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           Text(
-                            '${customerProv.customers.length} Customers',
+                            '${customerProv.customers.length} ${AppStrings.tr(context, 'customers')}',
                             style: MText.caption.copyWith(
-                              color: isDark ? MColors.textOnDarkSub : MColors.textSecondary,
+                              color: MColors.textSecondary,
                               fontSize: 9.5,
                             ),
                             maxLines: 1,
@@ -479,16 +486,23 @@ class DashboardPage extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Payables',
+                                  AppStrings.tr(context, 'payables'),
                                   style: MText.caption.copyWith(
-                                    color: isDark ? Colors.white70 : MColors.textSecondary,
+                                    color: MColors.textSecondary,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const Icon(Icons.trending_down, color: Colors.amberAccent, size: 14),
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: MColors.gold.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Icon(Icons.trending_down, color: MColors.gold, size: 14),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -498,15 +512,15 @@ class DashboardPage extends StatelessWidget {
                             child: Text(
                               'Rs. ${totalPayables.toStringAsFixed(0)}',
                               style: MText.titleMd.copyWith(
-                                color: isDark ? Colors.white : MColors.textPrimary,
+                                color: totalPayables > 0 ? MColors.danger : MColors.textPrimary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           Text(
-                            '${farmerProv.farmers.length} Farmers',
+                            '${farmerProv.farmers.length} ${AppStrings.tr(context, 'farmers')}',
                             style: MText.caption.copyWith(
-                              color: isDark ? MColors.textOnDarkSub : MColors.textSecondary,
+                              color: MColors.textSecondary,
                               fontSize: 9.5,
                             ),
                             maxLines: 1,
@@ -530,16 +544,23 @@ class DashboardPage extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Invoices',
+                                  AppStrings.tr(context, 'invoices'),
                                   style: MText.caption.copyWith(
-                                    color: isDark ? Colors.white70 : MColors.textSecondary,
+                                    color: MColors.textSecondary,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const Icon(Icons.receipt, color: Colors.lightBlueAccent, size: 14),
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E88E5).withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Icon(Icons.receipt_long, color: Color(0xFF1E88E5), size: 14),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -547,17 +568,17 @@ class DashboardPage extends StatelessWidget {
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              '$totalInvoicesCount Bills',
+                              '$totalInvoicesCount ${AppStrings.tr(context, 'bills')}',
                               style: MText.titleMd.copyWith(
-                                color: isDark ? Colors.white : MColors.textPrimary,
+                                color: const Color(0xFF1565C0),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                           Text(
-                            'This Season',
+                            AppStrings.tr(context, 'this_season'),
                             style: MText.caption.copyWith(
-                              color: isDark ? MColors.textOnDarkSub : MColors.textSecondary,
+                              color: MColors.textSecondary,
                               fontSize: 9.5,
                             ),
                             maxLines: 1,
@@ -972,33 +993,42 @@ class _ManageTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: AppDimensions.cardRadius,
       padding: const EdgeInsets.symmetric(
-          vertical: MSpacing.sm, horizontal: MSpacing.xs),
+          vertical: MSpacing.sm, horizontal: 4),
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          minWidth: 80,
-          maxWidth: 96,
-          minHeight: 88,
+          minWidth: 88,
+          maxWidth: 98,
+          minHeight: 96,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? MColors.gold
-                  : MColors.primary,
-              size: 24,
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: MColors.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: MColors.primary.withValues(alpha: 0.15),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: MColors.primary,
+                size: 22,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
               label,
               style: MText.caption.copyWith(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : MColors.textPrimary,
+                color: MColors.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 11,
+                height: 1.2,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,

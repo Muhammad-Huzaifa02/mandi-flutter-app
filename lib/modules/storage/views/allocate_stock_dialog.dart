@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/storage_allocation_model.dart';
 import 'package:mandi/modules/products/providers/product_provider.dart';
@@ -152,17 +153,17 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.move_to_inbox_outlined,
                           color: MColors.primaryLight,
                           size: 26,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
-                          'Store Crop Stock (مال گودام میں رکھیں)',
-                          style: TextStyle(
+                          AppStrings.val(context, en: 'Store Crop Stock', ur: 'مال گودام میں رکھیں'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -180,15 +181,18 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                 // Target Storage Facility
                 DropdownButtonFormField<String>(
                   initialValue: _selectedLocationId,
-                  decoration: const InputDecoration(
-                    labelText: 'Select Godown / Cold Store (گودام یا سٹور) *',
-                    prefixIcon: Icon(Icons.warehouse_outlined),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(context, en: 'Select Godown / Cold Store *', ur: 'گودام یا سٹور منتخب کریں *'),
+                    prefixIcon: const Icon(Icons.warehouse_outlined),
                   ),
                   items: locations.map((loc) {
+                    final typeStr = AppStrings.isUrdu(context) ? loc.typeLabelUrdu : loc.typeLabelEnglish;
+                    final freeStr = AppStrings.val(context, en: 'Free', ur: 'خالی گنجائش');
+                    final bagsStr = AppStrings.val(context, en: 'bags', ur: 'بوریاں');
                     return DropdownMenuItem(
                       value: loc.id,
                       child: Text(
-                        '${loc.name} (${loc.typeLabelEnglish} - Free: ${loc.availableCapacityBags} bags)',
+                        '${loc.name} ($typeStr - $freeStr: ${loc.availableCapacityBags} $bagsStr)',
                       ),
                     );
                   }).toList(),
@@ -212,9 +216,9 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                 if (products.isNotEmpty)
                   DropdownButtonFormField<String>(
                     initialValue: _selectedProductId,
-                    decoration: const InputDecoration(
-                      labelText: 'Select Commodity / Product (فصل) *',
-                      prefixIcon: Icon(Icons.grass_outlined),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(context, en: 'Select Commodity / Product *', ur: 'فصل یا جنس منتخب کریں *'),
+                      prefixIcon: const Icon(Icons.grass_outlined),
                     ),
                     items: products.map((p) {
                       return DropdownMenuItem(
@@ -238,13 +242,13 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                 else
                   TextFormField(
                     controller: _productNameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Commodity Name (فصل کا نام) *',
-                      hintText: 'e.g. Potato (آلو) / Wheat (گندم)',
-                      prefixIcon: Icon(Icons.grass_outlined),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(context, en: 'Commodity Name *', ur: 'فصل کا نام *'),
+                      hintText: AppStrings.val(context, en: 'e.g. Potato / Wheat', ur: 'مثلاً آلو یا گندم'),
+                      prefixIcon: const Icon(Icons.grass_outlined),
                     ),
                     validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Please enter crop name'
+                        ? AppStrings.val(context, en: 'Please enter crop name', ur: 'براہ کرم فصل کا نام درج کریں')
                         : null,
                   ),
                 const SizedBox(height: 14),
@@ -256,10 +260,10 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                       flex: 2,
                       child: TextFormField(
                         controller: _lotNoCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Lot / Dheri # (ڈھیری نمبر)',
-                          hintText: 'e.g. LOT-42',
-                          prefixIcon: Icon(Icons.tag),
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Lot / Dheri #', ur: 'ڈھیری نمبر'),
+                          hintText: 'LOT-42',
+                          prefixIcon: const Icon(Icons.tag),
                         ),
                       ),
                     ),
@@ -268,10 +272,10 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                       flex: 3,
                       child: TextFormField(
                         controller: _partyNameCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Farmer / Owner Name (مالک کا نام)',
-                          hintText: 'e.g. Malik Arshad Zamindar',
-                          prefixIcon: Icon(Icons.person_outline),
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Farmer / Owner Name', ur: 'زمیندار یا مالک کا نام'),
+                          hintText: AppStrings.val(context, en: 'e.g. Malik Arshad', ur: 'مثلاً ملک ارشد'),
+                          prefixIcon: const Icon(Icons.person_outline),
                         ),
                       ),
                     ),
@@ -285,17 +289,17 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                     Expanded(
                       child: TextFormField(
                         controller: _bagCountCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Bag Count (بوریاں) *',
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Bag Count *', ur: 'تعداد بوریاں *'),
                           hintText: '100',
-                          prefixIcon: Icon(Icons.inventory_2_outlined),
+                          prefixIcon: const Icon(Icons.inventory_2_outlined),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (_) => setState(() {}),
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Required';
+                          if (v == null || v.trim().isEmpty) return AppStrings.val(context, en: 'Required', ur: 'لازمی');
                           final n = int.tryParse(v.trim());
-                          if (n == null || n <= 0) return 'Must be > 0';
+                          if (n == null || n <= 0) return AppStrings.val(context, en: 'Must be > 0', ur: 'صفر سے بڑا ہو');
                           return null;
                         },
                       ),
@@ -305,10 +309,10 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                       child: TextFormField(
                         controller: _weightKgCtrl,
                         decoration: InputDecoration(
-                          labelText: 'Weight (KG / کلوگرام)',
+                          labelText: AppStrings.val(context, en: 'Weight (KG)', ur: 'وزن (کلوگرام)'),
                           hintText: '4000',
                           prefixIcon: const Icon(Icons.scale_outlined),
-                          suffixText: '${_maunds.toStringAsFixed(1)} Maunds',
+                          suffixText: '${_maunds.toStringAsFixed(1)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                           suffixStyle: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -340,9 +344,9 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                           }
                         },
                         child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: 'Inward Date (تاریخ آمد)',
-                            prefixIcon: Icon(Icons.calendar_today, size: 18),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.val(context, en: 'Inward Date', ur: 'تاریخ آمد'),
+                            prefixIcon: const Icon(Icons.calendar_today, size: 18),
                           ),
                           child: Text(_dateFmt.format(_inwardDate)),
                         ),
@@ -352,11 +356,11 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                     Expanded(
                       child: TextFormField(
                         controller: _rentRateCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Monthly Rent / Bag (PKR)',
-                          hintText: 'e.g. 80',
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Monthly Rent / Bag (PKR)', ur: 'ماہانہ کرایہ فی بوری (روپیہ)'),
+                          hintText: '80',
                           prefixIcon:
-                              Icon(Icons.account_balance_wallet_outlined),
+                              const Icon(Icons.account_balance_wallet_outlined),
                         ),
                         keyboardType: TextInputType.number,
                       ),
@@ -368,10 +372,10 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                 // Notes
                 TextFormField(
                   controller: _notesCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes / Storage Instructions',
-                    hintText: 'e.g. Stacked in Chamber B, Rack 4',
-                    prefixIcon: Icon(Icons.note_alt_outlined),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(context, en: 'Notes / Storage Instructions', ur: 'تفصیل یا سٹوریج ہدایات'),
+                    hintText: AppStrings.val(context, en: 'e.g. Stacked in Chamber B, Rack 4', ur: 'مثلاً چیمبر بی، ریک ۴'),
+                    prefixIcon: const Icon(Icons.note_alt_outlined),
                   ),
                 ),
 
@@ -384,7 +388,7 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                     TextButton(
                       onPressed:
                           _isSaving ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -399,7 +403,7 @@ class _AllocateStockDialogState extends State<AllocateStockDialog> {
                               ),
                             )
                           : const Icon(Icons.check),
-                      label: const Text('Store Batch'),
+                      label: Text(AppStrings.val(context, en: 'Store Batch', ur: 'مال محفوظ کریں')),
                     ),
                   ],
                 ),

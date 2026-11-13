@@ -57,14 +57,14 @@ class GlassCard extends StatelessWidget {
         ? (isDark ? const Color(0xE6081A12) : const Color(0xF5FFFFFF))
         : (isDark
             ? Colors.white.withValues(alpha: 0.08)
-            : Colors.white.withValues(alpha: 0.85));
+            : Colors.white.withValues(alpha: 0.92));
 
     final resolvedBorderColor = borderColor ??
         (effectiveSunlight
             ? (isDark ? const Color(0xFF34D399) : const Color(0xFF0F6B3C))
             : (isDark
                 ? Colors.white.withValues(alpha: 0.18)
-                : Colors.white.withValues(alpha: 0.7)));
+                : const Color(0xFFD8E6DE)));
 
     final borderWidth = effectiveSunlight ? 1.8 : 1.2;
 

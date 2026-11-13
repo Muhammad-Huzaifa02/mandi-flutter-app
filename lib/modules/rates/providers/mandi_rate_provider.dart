@@ -162,38 +162,70 @@ class MandiRateProvider extends ChangeNotifier {
     required String shopName,
     required String city,
     required DateTime date,
+    bool isUrdu = false,
   }) {
     final dateStr = DateFormat('dd MMMM yyyy').format(date);
     final buffer = StringBuffer();
 
-    buffer.writeln('🌾 *${shopName.toUpperCase()} — روزانہ منڈی ریٹ بورڈ*');
-    if (city.isNotEmpty) buffer.writeln('📍 غلہ و سبزی منڈی: $city');
-    buffer.writeln('📅 تاریخ: $dateStr');
-    buffer.writeln('────────────────────────');
+    if (isUrdu) {
+      buffer.writeln('🌾 *${shopName.toUpperCase()} — روزانہ منڈی ریٹ بورڈ*');
+      if (city.isNotEmpty) buffer.writeln('📍 غلہ و سبزی منڈی: $city');
+      buffer.writeln('📅 تاریخ: $dateStr');
+      buffer.writeln('────────────────────────');
 
-    final dayRates = filteredRates;
-    if (dayRates.isEmpty) {
-      buffer.writeln('آج کے ریٹس ابھی ریکارڈ نہیں کیے گئے۔');
-    } else {
-      for (final r in dayRates) {
-        final symbol = r.marketTrend == MarketTrend.bullish
-            ? '▲ تیزی'
-            : r.marketTrend == MarketTrend.bearish
-                ? '▼ مندی'
-                : '▬ مستحکم';
-        buffer.writeln('• *${r.commodityName}* ${r.variety.isNotEmpty ? "(${r.variety})" : ""}');
-        buffer.writeln('  ریٹ فی من (40 کلو): Rs. ${r.modalRatePerMaund.toStringAsFixed(0)} ($symbol)');
-        buffer.writeln('  رینج: ${r.minRatePerMaund.toStringAsFixed(0)} - ${r.maxRatePerMaund.toStringAsFixed(0)}');
-        if (r.arrivalsMaunds > 0) {
-          buffer.writeln('  آمد: ${r.arrivalsMaunds.toStringAsFixed(0)} من');
+      final dayRates = filteredRates;
+      if (dayRates.isEmpty) {
+        buffer.writeln('آج کے ریٹس ابھی ریکارڈ نہیں کیے گئے۔');
+      } else {
+        for (final r in dayRates) {
+          final symbol = r.marketTrend == MarketTrend.bullish
+              ? '▲ تیزی'
+              : r.marketTrend == MarketTrend.bearish
+                  ? '▼ مندی'
+                  : '▬ مستحکم';
+          buffer.writeln('• *${r.commodityName}* ${r.variety.isNotEmpty ? "(${r.variety})" : ""}');
+          buffer.writeln('  ریٹ فی من (40 کلو): Rs. ${r.modalRatePerMaund.toStringAsFixed(0)} ($symbol)');
+          buffer.writeln('  رینج: ${r.minRatePerMaund.toStringAsFixed(0)} - ${r.maxRatePerMaund.toStringAsFixed(0)}');
+          if (r.arrivalsMaunds > 0) {
+            buffer.writeln('  آمد: ${r.arrivalsMaunds.toStringAsFixed(0)} من');
+          }
+          buffer.writeln('');
         }
-        buffer.writeln('');
       }
-    }
 
-    buffer.writeln('────────────────────────');
-    buffer.writeln('📞 برائے رابطہ و مال ترسیل: منڈی دفتر');
-    buffer.writeln('منڈی کمیشن شاپ سافٹ ویئر کے ذریعے جاری کردہ');
+      buffer.writeln('────────────────────────');
+      buffer.writeln('📞 برائے رابطہ و مال ترسیل: منڈی دفتر');
+      buffer.writeln('منڈی کمیشن شاپ سافٹ ویئر کے ذریعے جاری کردہ');
+    } else {
+      buffer.writeln('🌾 *${shopName.toUpperCase()} — Daily Mandi Rate Board*');
+      if (city.isNotEmpty) buffer.writeln('📍 Grain Market: $city');
+      buffer.writeln('📅 Date: $dateStr');
+      buffer.writeln('────────────────────────');
+
+      final dayRates = filteredRates;
+      if (dayRates.isEmpty) {
+        buffer.writeln('Rates have not been recorded yet for today.');
+      } else {
+        for (final r in dayRates) {
+          final symbol = r.marketTrend == MarketTrend.bullish
+              ? '▲ Bullish'
+              : r.marketTrend == MarketTrend.bearish
+                  ? '▼ Bearish'
+                  : '▬ Stable';
+          buffer.writeln('• *${r.commodityName}* ${r.variety.isNotEmpty ? "(${r.variety})" : ""}');
+          buffer.writeln('  Rate per Maund (40 KG): Rs. ${r.modalRatePerMaund.toStringAsFixed(0)} ($symbol)');
+          buffer.writeln('  Range: ${r.minRatePerMaund.toStringAsFixed(0)} - ${r.maxRatePerMaund.toStringAsFixed(0)}');
+          if (r.arrivalsMaunds > 0) {
+            buffer.writeln('  Arrivals: ${r.arrivalsMaunds.toStringAsFixed(0)} Maunds');
+          }
+          buffer.writeln('');
+        }
+      }
+
+      buffer.writeln('────────────────────────');
+      buffer.writeln('📞 Contact & Consignments: Mandi Office');
+      buffer.writeln('Issued via Mandi Commission Shop Software');
+    }
 
     return buffer.toString();
   }

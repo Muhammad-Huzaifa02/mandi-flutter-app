@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/quality_inspection_model.dart';
 import 'package:mandi/modules/quality/providers/quality_provider.dart';
@@ -35,7 +36,7 @@ class _NewQualityInspectionDialogState
 
   final DateTime _inspectionDate = DateTime.now();
 
-  final _commodityCtrl = TextEditingController(text: 'Corn / مکئی');
+  final _commodityCtrl = TextEditingController();
   final _varietyCtrl = TextEditingController(text: 'Pioneer 30Y87');
   final _vehicleCtrl = TextEditingController();
   final _partyCtrl = TextEditingController();
@@ -56,17 +57,42 @@ class _NewQualityInspectionDialogState
 
   QualityGrade? _selectedGrade;
   bool _isSaving = false;
+  bool _initialized = false;
 
-  final List<String> _popularCommodities = [
-    'Corn / مکئی (Maize)',
-    'Wheat / گندم',
-    'Paddy / دھان (Basmati Rice)',
-    'Cotton / پھٹی (Phutti)',
-    'Canola / کینولا (Rape Mustard)',
-    'Potato / آلو',
-    'Onion / پیاز',
-    'Chana / چنا (Gram Pulses)',
-  ];
+  List<String> _popularCommodities(bool isUrdu) => isUrdu
+      ? [
+          'مکئی',
+          'گندم',
+          'دھان (باسمتی چاول)',
+          'پھٹی (کپاس)',
+          'کینولا (سرسوں)',
+          'آلو',
+          'پیاز',
+          'چنا',
+        ]
+      : [
+          'Corn (Maize)',
+          'Wheat',
+          'Paddy (Basmati Rice)',
+          'Cotton (Phutti)',
+          'Canola (Mustard)',
+          'Potato',
+          'Onion',
+          'Gram (Pulses)',
+        ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      if (widget.preselectedCommodity != null) {
+        _commodityCtrl.text = widget.preselectedCommodity!;
+      } else {
+        _commodityCtrl.text = AppStrings.val(context, en: 'Corn', ur: 'مکئی');
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -121,6 +147,7 @@ class _NewQualityInspectionDialogState
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final grossKg = double.tryParse(_grossWeightCtrl.text.trim()) ?? 0.0;
     final moisture = double.tryParse(_moistureCtrl.text.trim()) ?? 0.0;
     final baseMoisture = double.tryParse(_baseMoistureCtrl.text.trim()) ?? 14.0;
@@ -172,16 +199,24 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Quality Lab & Moisture Test (کوالٹی معائنہ و کٹوتی)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Quality Lab & Moisture Test',
+                              ur: 'کوالٹی معائنہ و کٹوتی لیب',
+                            ),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Moisture content %, refraction test & certified weight deduction',
+                            AppStrings.val(
+                              context,
+                              en: 'Moisture content %, refraction test & certified weight deduction',
+                              ur: 'نمی کا تناسب، ریفریکشن ٹیسٹ اور تصدیق شدہ وزنی کٹوتی',
+                            ),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -208,9 +243,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Commodity / جنس *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Commodity *', ur: 'جنس *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -218,21 +253,22 @@ class _NewQualityInspectionDialogState
                             initialValue:
                                 TextEditingValue(text: _commodityCtrl.text),
                             optionsBuilder: (textEditingValue) {
+                              final list = _popularCommodities(isUrdu);
                               if (textEditingValue.text.isEmpty) {
-                                return _popularCommodities;
+                                return list;
                               }
-                              return _popularCommodities.where((c) => c
+                              return list.where((c) => c
                                   .toLowerCase()
                                   .contains(
                                       textEditingValue.text.toLowerCase()));
                             },
                             onSelected: (val) {
                               _commodityCtrl.text = val;
-                              if (val.contains('Wheat')) {
+                              if (val.contains('Wheat') || val.contains('گندم')) {
                                 _baseMoistureCtrl.text = '12.0';
-                              } else if (val.contains('Paddy')) {
+                              } else if (val.contains('Paddy') || val.contains('دھان')) {
                                 _baseMoistureCtrl.text = '14.0';
-                              } else if (val.contains('Corn')) {
+                              } else if (val.contains('Corn') || val.contains('مکئی')) {
                                 _baseMoistureCtrl.text = '14.0';
                               }
                               setState(() {});
@@ -248,7 +284,11 @@ class _NewQualityInspectionDialogState
                                 controller: controller,
                                 focusNode: focusNode,
                                 decoration: InputDecoration(
-                                  hintText: 'e.g. Corn / مکئی or Wheat / گندم',
+                                  hintText: AppStrings.val(
+                                    context,
+                                    en: 'e.g. Corn or Wheat',
+                                    ur: 'مثلاً مکئی یا گندم',
+                                  ),
                                   prefixIcon: const Icon(Icons.grass, size: 18),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -258,7 +298,7 @@ class _NewQualityInspectionDialogState
                                 ),
                                 onChanged: (v) => _commodityCtrl.text = v,
                                 validator: (v) => v == null || v.trim().isEmpty
-                                    ? 'Required'
+                                    ? AppStrings.val(context, en: 'Required', ur: 'لازمی ہے')
                                     : null,
                               );
                             },
@@ -272,9 +312,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Variety / قسم',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Variety', ur: 'قسم / ورائٹی'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -303,9 +343,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Vehicle # / گاڑی نمبر',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Vehicle #', ur: 'گاڑی نمبر'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -331,9 +371,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Grower / Party / زمیندار نام',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Farmer / Party', ur: 'زمیندار / پارٹی'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -358,9 +398,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Gross Weight / بھرا وزن *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Gross Weight *', ur: 'بھرا وزن *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -378,7 +418,9 @@ class _NewQualityInspectionDialogState
                             ),
                             validator: (v) {
                               final d = double.tryParse(v ?? '') ?? -1;
-                              return d <= 0 ? 'Enter gross weight' : null;
+                              return d <= 0
+                                  ? AppStrings.val(context, en: 'Enter gross weight', ur: 'بھرا وزن درج کریں')
+                                  : null;
                             },
                           ),
                         ],
@@ -391,9 +433,13 @@ class _NewQualityInspectionDialogState
                 const SizedBox(height: 8),
 
                 // Laboratory Parameters Section
-                const Text(
-                  'Lab Parameters & Refraction Test / نمی و کچرا کٹوتی ٹیسٹ',
-                  style: TextStyle(
+                Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Lab Parameters & Refraction Test',
+                    ur: 'لیب معائنہ اور کٹوتی ٹیسٹ',
+                  ),
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: MColors.textPrimary,
@@ -408,9 +454,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Moisture % (نمی کا تناسب) *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Moisture % *', ur: 'نمی کا تناسب % *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 12,
                                 color: Colors.blue),
@@ -430,7 +476,9 @@ class _NewQualityInspectionDialogState
                             ),
                             validator: (v) {
                               final d = double.tryParse(v ?? '') ?? -1;
-                              return d < 0 ? 'Enter moisture' : null;
+                              return d < 0
+                                  ? AppStrings.val(context, en: 'Enter moisture', ur: 'نمی درج کریں')
+                                  : null;
                             },
                           ),
                         ],
@@ -441,9 +489,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Base Moisture / معیاری حد',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Base Moisture %', ur: 'معیاری حد %'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -468,9 +516,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Foreign Matter / کچرا %',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Foreign Matter %', ur: 'کچرا فیصد %'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -501,9 +549,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Broken Grain / ٹوٹا دانہ %',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Broken Grain %', ur: 'ٹوٹا دانہ %'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -528,9 +576,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Damaged / داغی دانہ %',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Damaged Grain %', ur: 'داغی دانہ %'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -555,9 +603,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Quality Grade / گریڈ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Quality Grade', ur: 'کوالٹی گریڈ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -573,8 +621,10 @@ class _NewQualityInspectionDialogState
                             items: QualityGrade.values.map((g) {
                               return DropdownMenuItem(
                                 value: g,
-                                child: Text(g.labelEnglish,
-                                    style: const TextStyle(fontSize: 11)),
+                                child: Text(
+                                  isUrdu ? g.labelUrdu : g.labelEnglish,
+                                  style: const TextStyle(fontSize: 11),
+                                ),
                               );
                             }).toList(),
                             onChanged: (val) {
@@ -603,9 +653,11 @@ class _NewQualityInspectionDialogState
                     children: [
                       Column(
                         children: [
-                          Text('Excess Moisture',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade700)),
+                          Text(
+                            AppStrings.val(context, en: 'Excess Moisture', ur: 'اضافی نمی'),
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.grey.shade700),
+                          ),
                           const SizedBox(height: 3),
                           Text(
                             '+ ${(ded['excessMoisture'] as double).toStringAsFixed(1)} %',
@@ -620,9 +672,11 @@ class _NewQualityInspectionDialogState
                           height: 30, width: 1, color: Colors.teal.shade200),
                       Column(
                         children: [
-                          Text('Total Deduction %',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade700)),
+                          Text(
+                            AppStrings.val(context, en: 'Total Deduction %', ur: 'کل کٹوتی %'),
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.grey.shade700),
+                          ),
                           const SizedBox(height: 3),
                           Text(
                             '${(ded['totalDeductionPct'] as double).toStringAsFixed(2)} %',
@@ -637,9 +691,11 @@ class _NewQualityInspectionDialogState
                           height: 30, width: 1, color: Colors.teal.shade200),
                       Column(
                         children: [
-                          Text('Katoti Weight (کٹوتی)',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade700)),
+                          Text(
+                            AppStrings.val(context, en: 'Katoti Weight', ur: 'کٹوتی وزن'),
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.grey.shade700),
+                          ),
                           const SizedBox(height: 3),
                           Text(
                             '- ${currencyFmt.format(ded['deductionKg'])} KG',
@@ -654,9 +710,11 @@ class _NewQualityInspectionDialogState
                           height: 30, width: 1, color: Colors.teal.shade200),
                       Column(
                         children: [
-                          Text('Certified Net (صاف وزن)',
-                              style: TextStyle(
-                                  fontSize: 11, color: Colors.grey.shade700)),
+                          Text(
+                            AppStrings.val(context, en: 'Certified Net', ur: 'صاف وزن'),
+                            style: TextStyle(
+                                fontSize: 11, color: Colors.grey.shade700),
+                          ),
                           const SizedBox(height: 3),
                           Text(
                             '${currencyFmt.format(ded['netWeightKg'])} KG',
@@ -666,7 +724,7 @@ class _NewQualityInspectionDialogState
                                 color: Colors.teal),
                           ),
                           Text(
-                            '${(ded['netWeightMaunds'] as double).toStringAsFixed(2)} من',
+                            '${(ded['netWeightMaunds'] as double).toStringAsFixed(2)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                             style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -686,9 +744,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Core Temp (°C) / درجہ حرارت',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Core Temp (°C)', ur: 'درجہ حرارت (°C)'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -714,9 +772,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Humidity % / نمی (RH)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Humidity % (RH)', ur: 'ہوا میں نمی % (RH)'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -742,9 +800,9 @@ class _NewQualityInspectionDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Chamber / کولڈ روم #',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Chamber #', ur: 'کولڈ روم نمبر'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -767,16 +825,19 @@ class _NewQualityInspectionDialogState
                 const SizedBox(height: 12),
 
                 // Remarks
-                const Text(
-                  'Inspector Remarks / ہدایات و تبصرہ',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(context, en: 'Inspector Remarks', ur: 'انسپکٹر ہدایات و تبصرہ'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _notesCtrl,
                   decoration: InputDecoration(
-                    hintText:
-                        'e.g. Moisture detected via digital probe, certified for immediate milling',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'e.g. Moisture detected via digital probe, certified for immediate milling',
+                      ur: 'مثلاً ڈیجیٹل پروب سے نمی چیک کی گئی، ملنگ کے لیے منظور شدہ',
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -792,7 +853,7 @@ class _NewQualityInspectionDialogState
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -813,7 +874,13 @@ class _NewQualityInspectionDialogState
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.check),
-                      label: const Text('Certify & Save (سرٹیفکیٹ محفوظ کریں)'),
+                      label: Text(
+                        AppStrings.val(
+                          context,
+                          en: 'Certify & Save',
+                          ur: 'سرٹیفکیٹ تصدیق و محفوظ',
+                        ),
+                      ),
                     ),
                   ],
                 ),

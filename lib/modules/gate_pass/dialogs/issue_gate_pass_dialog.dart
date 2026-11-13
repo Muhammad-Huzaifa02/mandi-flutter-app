@@ -3,6 +3,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/modules/gate_pass/providers/gate_pass_provider.dart';
 
@@ -16,17 +18,26 @@ class IssueGatePassDialog extends StatefulWidget {
 class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
   final _formKey = GlobalKey<FormState>();
 
-  final _vehicleCtrl = TextEditingController(text: 'Tractor Trolley #');
+  late final TextEditingController _vehicleCtrl;
   final _driverCtrl = TextEditingController();
   final _driverPhoneCtrl = TextEditingController();
   final _farmerCtrl = TextEditingController();
-  final _commodityCtrl = TextEditingController(text: 'Wheat (گندم)');
+  late final TextEditingController _commodityCtrl;
   final _bagsCtrl = TextEditingController(text: '80');
   final _grossWeightCtrl = TextEditingController();
-  final _platformCtrl = TextEditingController(text: 'پھڑ نمبر 1');
+  late final TextEditingController _platformCtrl;
   final _notesCtrl = TextEditingController();
 
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final isUrdu = context.read<LocaleProvider>().isUrdu;
+    _vehicleCtrl = TextEditingController(text: isUrdu ? 'ٹریکٹر ٹرالی نمبر' : 'Tractor Trolley #');
+    _commodityCtrl = TextEditingController(text: isUrdu ? 'گندم' : 'Wheat');
+    _platformCtrl = TextEditingController(text: isUrdu ? 'پھڑ نمبر 1' : 'Platform 1');
+  }
 
   @override
   void dispose() {
@@ -69,8 +80,8 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
       if (passId != null) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Gate Token Issued Successfully! (ٹوکن جاری ہو گیا)'),
+          SnackBar(
+            content: Text(AppStrings.val(context, en: 'Gate Token Issued Successfully!', ur: 'ٹوکن کامیابی سے جاری ہو گیا!')),
             backgroundColor: Colors.teal,
           ),
         );
@@ -89,13 +100,15 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
   Widget build(BuildContext context) {
     return GlassDialog(
       maxWidth: 520,
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.confirmation_num, color: Colors.teal),
-          SizedBox(width: 8),
-          Text(
-            'Issue Gate Inward Token\n(گیٹ پاس و ٹوکن اجراء)',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          const Icon(Icons.confirmation_num, color: Colors.teal),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              AppStrings.tr(context, 'issue_token_title'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -107,13 +120,13 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
             children: [
               TextFormField(
                 controller: _vehicleCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Vehicle / گاڑی نمبر *',
+                decoration: InputDecoration(
+                  labelText: '${AppStrings.tr(context, 'vehicle_number')} *',
                   hintText: 'e.g. LHR-8821 / Tractor #5',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.agriculture),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.agriculture),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.tr(context, 'required') : null,
               ),
               const SizedBox(height: 12),
               Row(
@@ -121,12 +134,12 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _driverCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Driver / ڈرائیور *',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person),
+                      decoration: InputDecoration(
+                        labelText: '${AppStrings.tr(context, 'driver_name')} *',
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.person),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.tr(context, 'required') : null,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -134,10 +147,10 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
                     child: TextFormField(
                       controller: _driverPhoneCtrl,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: 'Driver Phone / فون',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.phone),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.tr(context, 'driver_phone'),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.phone),
                       ),
                     ),
                   ),
@@ -146,12 +159,12 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _farmerCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Farmer / زمیندار کا نام *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.badge),
+                decoration: InputDecoration(
+                  labelText: '${AppStrings.tr(context, 'farmer_name')} *',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.badge),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.tr(context, 'required') : null,
               ),
               const SizedBox(height: 12),
               Row(
@@ -159,11 +172,11 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _commodityCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Crop / جنس *',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: '${AppStrings.tr(context, 'commodity')} *',
+                        border: const OutlineInputBorder(),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.tr(context, 'required') : null,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -171,11 +184,11 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
                     child: TextFormField(
                       controller: _bagsCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Est. Bags (بوریاں) *',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: '${AppStrings.tr(context, 'estimated_bags')} *',
+                        border: const OutlineInputBorder(),
                       ),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.tr(context, 'required') : null,
                     ),
                   ),
                 ],
@@ -199,9 +212,9 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
                   Expanded(
                     child: TextFormField(
                       controller: _platformCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Platform / پھڑ نمبر',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.tr(context, 'platform_number'),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ),
@@ -210,9 +223,9 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _notesCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Notes / ریمارکس',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppStrings.tr(context, 'notes'),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -222,7 +235,7 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
       actions: [
         TextButton(
           onPressed: _isSubmitting ? null : () => Navigator.pop(context),
-          child: const Text('منسوخ (Cancel)'),
+          child: Text(AppStrings.tr(context, 'cancel')),
         ),
         ElevatedButton.icon(
           onPressed: _isSubmitting ? null : _submit,
@@ -233,7 +246,7 @@ class _IssueGatePassDialogState extends State<IssueGatePassDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
               : const Icon(Icons.print, color: Colors.white),
-          label: const Text('ٹوکن جاری کریں (Issue Token)', style: TextStyle(color: Colors.white)),
+          label: Text(AppStrings.tr(context, 'issue_token_btn'), style: const TextStyle(color: Colors.white)),
           style: ElevatedButton.styleFrom(backgroundColor: Colors.teal[800]),
         ),
       ],

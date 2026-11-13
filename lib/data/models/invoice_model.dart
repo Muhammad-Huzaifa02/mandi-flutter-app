@@ -101,6 +101,22 @@ extension PaymentMethodX on PaymentMethod {
         return 'Cash';
     }
   }
+
+  String label(bool isUrdu) {
+    if (!isUrdu) return displayName;
+    switch (this) {
+      case PaymentMethod.bankTransfer:
+        return 'بینک ٹرانسفر';
+      case PaymentMethod.jazzCash:
+        return 'جاز کیش';
+      case PaymentMethod.easypaisa:
+        return 'ایزی پیسہ';
+      case PaymentMethod.other:
+        return 'دیگر';
+      case PaymentMethod.cash:
+        return 'نقد';
+    }
+  }
 }
 
 /// A sales invoice belonging to exactly one shop.

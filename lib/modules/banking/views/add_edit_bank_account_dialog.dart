@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/bank_account_model.dart';
 import 'package:mandi/modules/banking/providers/bank_provider.dart';
@@ -102,7 +103,11 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
     try {
       final shopId = context.read<ShopContextProvider>().currentShopId;
       if (shopId == null) {
-        throw Exception('No active shop context selected.');
+        throw Exception(AppStrings.val(
+          context,
+          en: 'No active shop context selected.',
+          ur: 'کوئی فعال دکان منتخب نہیں ہے۔',
+        ));
       }
 
       final bankName = _selectedBank == 'Other Bank...'
@@ -136,14 +141,21 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
       }
 
       if (mounted) {
+        final successMsg = widget.existingAccount == null
+            ? AppStrings.val(
+                context,
+                en: 'Bank account added successfully.',
+                ur: 'بینک اکاؤنٹ کامیابی سے شامل ہو گیا۔',
+              )
+            : AppStrings.val(
+                context,
+                en: 'Bank account updated.',
+                ur: 'بینک اکاؤنٹ اپ ڈیٹ ہو گیا۔',
+              );
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              widget.existingAccount == null
-                  ? 'Bank account added successfully.'
-                  : 'Bank account updated.',
-            ),
+            content: Text(successMsg),
             backgroundColor: MColors.primary,
           ),
         );
@@ -153,7 +165,11 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving bank account: $e'),
+            content: Text(AppStrings.val(
+              context,
+              en: 'Error saving bank account: $e',
+              ur: 'بینک اکاؤنٹ محفوظ کرنے میں خرابی: $e',
+            )),
             backgroundColor: MColors.danger,
           ),
         );
@@ -190,8 +206,16 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                         const SizedBox(width: 8),
                         Text(
                           isEdit
-                              ? 'Edit Bank Account'
-                              : 'Add Bank Account (بینک اکاؤنٹ)',
+                              ? AppStrings.val(
+                                  context,
+                                  en: 'Edit Bank Account',
+                                  ur: 'بینک اکاؤنٹ میں ترمیم',
+                                )
+                              : AppStrings.val(
+                                  context,
+                                  en: 'Add Bank Account',
+                                  ur: 'بینک اکاؤنٹ شامل کریں',
+                                ),
                           style:
                               Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -209,7 +233,11 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
 
                 // Bank Selection
                 Text(
-                  'Bank / Wallet Name (بینک کا نام)',
+                  AppStrings.val(
+                    context,
+                    en: 'Bank / Wallet Name',
+                    ur: 'بینک کا نام',
+                  ),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -231,12 +259,20 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _customBankCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Enter Bank Name *',
-                      prefixIcon: Icon(Icons.edit),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(
+                        context,
+                        en: 'Enter Bank Name *',
+                        ur: 'بینک کا نام درج کریں *',
+                      ),
+                      prefixIcon: const Icon(Icons.edit),
                     ),
                     validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Please enter bank name'
+                        ? AppStrings.val(
+                            context,
+                            en: 'Please enter bank name',
+                            ur: 'براہ کرم بینک کا نام درج کریں',
+                          )
                         : null,
                   ),
                 ],
@@ -245,13 +281,25 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                 // Account Title
                 TextFormField(
                   controller: _titleCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Account Title (کھاتہ دار کا نام) *',
-                    hintText: 'e.g. Haji Commission Shop',
-                    prefixIcon: Icon(Icons.person_outline),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'Account Title *',
+                      ur: 'کھاتہ دار کا نام *',
+                    ),
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'e.g. Haji Commission Shop',
+                      ur: 'مثلاً حاجی کمیشن شاپ',
+                    ),
+                    prefixIcon: const Icon(Icons.person_outline),
                   ),
                   validator: (v) => v == null || v.trim().isEmpty
-                      ? 'Please enter account title'
+                      ? AppStrings.val(
+                          context,
+                          en: 'Please enter account title',
+                          ur: 'براہ کرم کھاتہ دار کا نام درج کریں',
+                        )
                       : null,
                 ),
                 const SizedBox(height: 14),
@@ -259,14 +307,22 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                 // Account Number
                 TextFormField(
                   controller: _accountNoCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Account Number (اکاؤنٹ نمبر) *',
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'Account Number *',
+                      ur: 'اکاؤنٹ نمبر *',
+                    ),
                     hintText: 'e.g. 010203040506',
-                    prefixIcon: Icon(Icons.credit_card),
+                    prefixIcon: const Icon(Icons.credit_card),
                   ),
                   keyboardType: TextInputType.number,
                   validator: (v) => v == null || v.trim().isEmpty
-                      ? 'Please enter account number'
+                      ? AppStrings.val(
+                          context,
+                          en: 'Please enter account number',
+                          ur: 'براہ کرم اکاؤنٹ نمبر درج کریں',
+                        )
                       : null,
                 ),
                 const SizedBox(height: 14),
@@ -274,10 +330,14 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                 // IBAN
                 TextFormField(
                   controller: _ibanCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'IBAN (24 digits)',
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'IBAN (24 digits)',
+                      ur: 'آئی بین (24 ہندسے)',
+                    ),
                     hintText: 'PK36MEZN0001020304050601',
-                    prefixIcon: Icon(Icons.numbers),
+                    prefixIcon: const Icon(Icons.numbers),
                   ),
                   textCapitalization: TextCapitalization.characters,
                 ),
@@ -290,9 +350,17 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                       flex: 2,
                       child: TextFormField(
                         controller: _branchNameCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Branch Name',
-                          hintText: 'e.g. Grain Market',
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(
+                            context,
+                            en: 'Branch Name',
+                            ur: 'برانچ کا نام',
+                          ),
+                          hintText: AppStrings.val(
+                            context,
+                            en: 'e.g. Grain Market',
+                            ur: 'مثلاً غلہ منڈی',
+                          ),
                         ),
                       ),
                     ),
@@ -301,8 +369,12 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                       flex: 1,
                       child: TextFormField(
                         controller: _branchCodeCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Code',
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(
+                            context,
+                            en: 'Branch Code',
+                            ur: 'برانچ کوڈ',
+                          ),
                           hintText: 'e.g. 0123',
                         ),
                         keyboardType: TextInputType.number,
@@ -316,9 +388,14 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                   // Opening Balance
                   TextFormField(
                     controller: _openingBalCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Opening Balance (PKR / ابتدائی رقم)',
-                      prefixIcon: Icon(Icons.account_balance_wallet_outlined),
+                    decoration: InputDecoration(
+                      labelText: AppStrings.val(
+                        context,
+                        en: 'Opening Balance (PKR)',
+                        ur: 'ابتدائی رقم (روپے)',
+                      ),
+                      prefixIcon:
+                          const Icon(Icons.account_balance_wallet_outlined),
                     ),
                     keyboardType: TextInputType.number,
                   ),
@@ -328,10 +405,18 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                 // Default Switch
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Set as Default Shop Account'),
-                  subtitle: const Text(
-                    'Used for quick online transfers & payment reminders',
-                    style: TextStyle(fontSize: 12),
+                  title: Text(AppStrings.val(
+                    context,
+                    en: 'Set as Default Shop Account',
+                    ur: 'دکان کا بنیادی اکاؤنٹ بنائیں',
+                  )),
+                  subtitle: Text(
+                    AppStrings.val(
+                      context,
+                      en: 'Used for quick online transfers & payment reminders',
+                      ur: 'آن لائن ٹرانسفر اور یاد دہانیوں کے لیے استعمال ہوگا',
+                    ),
+                    style: const TextStyle(fontSize: 12),
                   ),
                   value: _isDefault,
                   activeThumbColor: MColors.primary,
@@ -346,7 +431,11 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                   children: [
                     TextButton(
                       onPressed: _isSaving ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(
+                        context,
+                        en: 'Cancel',
+                        ur: 'منسوخ',
+                      )),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -362,7 +451,11 @@ class _AddEditBankAccountDialogState extends State<AddEditBankAccountDialog> {
                             )
                           : const Icon(Icons.check),
                       label: Text(
-                        isEdit ? 'Update Account' : 'Save Account',
+                        AppStrings.val(
+                          context,
+                          en: isEdit ? 'Update Account' : 'Save Account',
+                          ur: isEdit ? 'اکاؤنٹ اپ ڈیٹ کریں' : 'اکاؤنٹ محفوظ کریں',
+                        ),
                       ),
                     ),
                   ],

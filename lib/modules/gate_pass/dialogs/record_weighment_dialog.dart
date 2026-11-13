@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/gate_pass_model.dart';
 import 'package:mandi/modules/gate_pass/providers/gate_pass_provider.dart';
@@ -75,8 +76,8 @@ class _RecordWeighmentDialogState extends State<RecordWeighmentDialog> {
       if (success) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Weighment Recorded Successfully! (وزن درج ہو گیا)'),
+          SnackBar(
+            content: Text(AppStrings.val(context, en: 'Weighment Recorded Successfully!', ur: 'وزن کامیابی سے درج ہو گیا!')),
             backgroundColor: Colors.teal,
           ),
         );
@@ -101,7 +102,7 @@ class _RecordWeighmentDialogState extends State<RecordWeighmentDialog> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Tare Weighment (${widget.gatePass.tokenNumber})\nخالی گاڑی وزن و کنڈا اندراج',
+              '${AppStrings.tr(context, 'tare_weighment_title')} (${widget.gatePass.tokenNumber})',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
@@ -121,25 +122,25 @@ class _RecordWeighmentDialogState extends State<RecordWeighmentDialog> {
               TextFormField(
                 controller: _grossCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Gross Weight / بھرا ہوا وزن (KG) *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.fitness_center),
+                decoration: InputDecoration(
+                  labelText: '${AppStrings.tr(context, 'gross_weight')} *',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.fitness_center),
                 ),
                 onChanged: (_) => _computeNet(),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.tr(context, 'required') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _tareCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Empty Tare Weight / خالی گاڑی وزن (KG) *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.line_weight),
+                decoration: InputDecoration(
+                  labelText: '${AppStrings.tr(context, 'empty_tare_weight')} *',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.line_weight),
                 ),
                 onChanged: (_) => _computeNet(),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? AppStrings.tr(context, 'required') : null,
               ),
               const SizedBox(height: 16),
               // Net Calculation Box
@@ -153,8 +154,8 @@ class _RecordWeighmentDialogState extends State<RecordWeighmentDialog> {
                 ),
                 child: Column(
                   children: [
-                    const Text('خالص فصل کا وزن (Net Crop Weight)',
-                        style: TextStyle(fontSize: 12, color: Colors.teal)),
+                    Text(AppStrings.tr(context, 'net_crop_weight'),
+                        style: const TextStyle(fontSize: 12, color: Colors.teal)),
                     const SizedBox(height: 4),
                     Text(
                       '${_numberFmt.format(_calculatedNetKg)} KG',
@@ -166,7 +167,7 @@ class _RecordWeighmentDialogState extends State<RecordWeighmentDialog> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '= ${_numberFmt.format(_calculatedNetMaunds)} Maunds (من)',
+                      '= ${_numberFmt.format(_calculatedNetMaunds)} ${AppStrings.tr(context, 'maunds')}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -183,7 +184,7 @@ class _RecordWeighmentDialogState extends State<RecordWeighmentDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('منسوخ (Cancel)'),
+          child: Text(AppStrings.tr(context, 'cancel')),
         ),
         ElevatedButton(
           onPressed: _isSaving ? null : _submit,
@@ -194,7 +195,7 @@ class _RecordWeighmentDialogState extends State<RecordWeighmentDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : const Text('محفوظ کریں (Save Weighment)', style: TextStyle(color: Colors.white)),
+              : Text(AppStrings.tr(context, 'save_weighment'), style: const TextStyle(color: Colors.white)),
         ),
       ],
     );

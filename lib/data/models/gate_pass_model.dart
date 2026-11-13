@@ -45,15 +45,15 @@ enum GatePassStatus {
   String get labelUrdu {
     switch (this) {
       case GatePassStatus.queued:
-        return 'قطار میں موجود (In Queue)';
+        return 'قطار میں موجود';
       case GatePassStatus.unloading:
-        return 'پھڑ پر ان لوڈنگ (Unloading)';
+        return 'پھڑ پر ان لوڈنگ';
       case GatePassStatus.weighed:
-        return 'وزن مکمل (Weighed)';
+        return 'وزن مکمل';
       case GatePassStatus.clearedGateOut:
-        return 'گیٹ آؤٹ کلیئر (Gate-Out Cleared)';
+        return 'گیٹ آؤٹ کلیئر';
       case GatePassStatus.cancelled:
-        return 'منسوخ (Cancelled)';
+        return 'منسوخ';
     }
   }
 

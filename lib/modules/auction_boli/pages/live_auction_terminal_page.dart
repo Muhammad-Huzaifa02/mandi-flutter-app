@@ -9,6 +9,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/modules/auction_boli/providers/auction_boli_provider.dart';
@@ -25,13 +27,13 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
   final _currencyFmt = NumberFormat('#,##0', 'en_US');
   final _customBidCtrl = TextEditingController();
 
-  final List<Map<String, dynamic>> _quickBuyers = [
-    {'paddle': 12, 'name': 'Haji Mukhtar Traders (پڈل 12)'},
-    {'paddle': 15, 'name': 'Al-Madina Rice Mills (پڈل 15)'},
-    {'paddle': 24, 'name': 'Chaudhry Akram Commission (پڈل 24)'},
-    {'paddle': 37, 'name': 'Bismillah Grain Traders (پڈل 37)'},
-    {'paddle': 48, 'name': 'Malik & Sons Brokerage (پڈل 48)'},
-    {'paddle': 55, 'name': 'Kashmir Flour Mills (پڈل 55)'},
+  List<Map<String, dynamic>> _quickBuyers(bool isUrdu) => [
+    {'paddle': 12, 'name': isUrdu ? 'حاجی مختار ٹریڈرز (پیڈل 12)' : 'Haji Mukhtar Traders (Paddle 12)'},
+    {'paddle': 15, 'name': isUrdu ? 'المدینہ رائس ملز (پیڈل 15)' : 'Al-Madina Rice Mills (Paddle 15)'},
+    {'paddle': 24, 'name': isUrdu ? 'چوہدری اکرم کمیشن (پیڈل 24)' : 'Chaudhry Akram Commission (Paddle 24)'},
+    {'paddle': 37, 'name': isUrdu ? 'بسم اللہ گرین ٹریڈرز (پیڈل 37)' : 'Bismillah Grain Traders (Paddle 37)'},
+    {'paddle': 48, 'name': isUrdu ? 'ملک اینڈ سنز بروکرز (پیڈل 48)' : 'Malik & Sons Brokerage (Paddle 48)'},
+    {'paddle': 55, 'name': isUrdu ? 'کشمیر فلور ملز (پیڈل 55)' : 'Kashmir Flour Mills (Paddle 55)'},
   ];
 
   @override
@@ -41,9 +43,10 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
   }
 
   void _showNewLotDialog(BuildContext context, AuctionBoliProvider provider) {
+    final isUrdu = context.read<LocaleProvider>().isUrdu;
     final lotCodeCtrl = TextEditingController(text: 'HEAP-${DateTime.now().minute}');
-    final cropCtrl = TextEditingController(text: 'Wheat Super (گندم)');
-    final farmerCtrl = TextEditingController(text: 'Chaudhry Riaz (چوہدری ریاض)');
+    final cropCtrl = TextEditingController(text: isUrdu ? 'گندم' : 'Wheat Super');
+    final farmerCtrl = TextEditingController(text: isUrdu ? 'چوہدری ریاض' : 'Chaudhry Riaz');
     final maundsCtrl = TextEditingController(text: '50.0');
     final bagsCtrl = TextEditingController(text: '50');
     final basePriceCtrl = TextEditingController(text: '3800');
@@ -52,12 +55,12 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
       context: context,
       builder: (ctx) {
         return GlassDialog(
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.gavel_rounded, color: Color(0xFFD4A62A)),
-              SizedBox(width: 8),
+              const Icon(Icons.gavel_rounded, color: Color(0xFFD4A62A)),
+              const SizedBox(width: 8),
               Expanded(
-                child: Text('پھڑ ڈھیری تفصیل درج کریں (New Auction Heap)'),
+                child: Text(AppStrings.tr(ctx, 'new_auction_heap_title')),
               ),
             ],
           ),
@@ -67,30 +70,30 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
               children: [
                 TextField(
                   controller: lotCodeCtrl,
-                  decoration: const InputDecoration(labelText: 'Heap / Lot Code'),
+                  decoration: InputDecoration(labelText: AppStrings.tr(ctx, 'heap_lot_code')),
                 ),
                 TextField(
                   controller: cropCtrl,
-                  decoration: const InputDecoration(labelText: 'Commodity / جنس'),
+                  decoration: InputDecoration(labelText: AppStrings.tr(ctx, 'commodity')),
                 ),
                 TextField(
                   controller: farmerCtrl,
-                  decoration: const InputDecoration(labelText: 'Farmer / زمیندار کا نام'),
+                  decoration: InputDecoration(labelText: AppStrings.tr(ctx, 'farmer_name')),
                 ),
                 TextField(
                   controller: maundsCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Weight in Maunds (من)'),
+                  decoration: InputDecoration(labelText: AppStrings.tr(ctx, 'weight_in_maunds')),
                 ),
                 TextField(
                   controller: bagsCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Estimated Bags (بوریاں)'),
+                  decoration: InputDecoration(labelText: AppStrings.tr(ctx, 'estimated_bags')),
                 ),
                 TextField(
                   controller: basePriceCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Base Price per Maund (ابتدائی بولی)'),
+                  decoration: InputDecoration(labelText: AppStrings.tr(ctx, 'base_price_per_maund')),
                 ),
               ],
             ),
@@ -98,7 +101,7 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('منسوخ (Cancel)'),
+              child: Text(AppStrings.tr(ctx, 'cancel')),
             ),
             ElevatedButton(
               onPressed: () {
@@ -120,7 +123,7 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                 backgroundColor: const Color(0xFF0F6B3C),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('شروع کریں (Start Boli)'),
+              child: Text(AppStrings.tr(ctx, 'start_boli')),
             ),
           ],
         );
@@ -128,7 +131,7 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
     );
   }
 
-  Future<void> _printThermalBoliSlip(AuctionBoliProvider provider, String shopName) async {
+  Future<void> _printThermalBoliSlip(AuctionBoliProvider provider, String shopName, bool isUrdu) async {
     final pdf = pw.Document();
     pdf.addPage(
       pw.Page(
@@ -145,38 +148,44 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                 shopName.toUpperCase(),
                 style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
               ),
-              pw.Text('LIVE AUCTION BOLI SLIP / نیلامی بولی پرچی',
-                  style: const pw.TextStyle(fontSize: 8, color: PdfColors.teal900)),
+              pw.Text(
+                isUrdu ? 'نیلامی بولی پرچی' : 'LIVE AUCTION BOLI SLIP',
+                style: const pw.TextStyle(fontSize: 8, color: PdfColors.teal900),
+              ),
               pw.SizedBox(height: 4),
               pw.Divider(thickness: 1),
               pw.SizedBox(height: 4),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Lot / ڈھیری:', style: const pw.TextStyle(fontSize: 8)),
+                  pw.Text(isUrdu ? 'ڈھیری:' : 'Lot:', style: const pw.TextStyle(fontSize: 8)),
                   pw.Text(provider.lotCode, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                 ],
               ),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Crop / جنس:', style: const pw.TextStyle(fontSize: 8)),
+                  pw.Text(isUrdu ? 'جنس:' : 'Crop:', style: const pw.TextStyle(fontSize: 8)),
                   pw.Text(provider.cropCommodity, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                 ],
               ),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Farmer / زمیندار:', style: const pw.TextStyle(fontSize: 8)),
+                  pw.Text(isUrdu ? 'زمیندار:' : 'Farmer:', style: const pw.TextStyle(fontSize: 8)),
                   pw.Text(provider.farmerName, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                 ],
               ),
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Weight / وزن:', style: const pw.TextStyle(fontSize: 8)),
-                  pw.Text('${provider.heapMaunds.toStringAsFixed(1)} Maunds (${provider.estimatedBags} Bags)',
-                      style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                  pw.Text(isUrdu ? 'وزن:' : 'Weight:', style: const pw.TextStyle(fontSize: 8)),
+                  pw.Text(
+                    isUrdu
+                        ? '${provider.heapMaunds.toStringAsFixed(1)} من (${provider.estimatedBags} بوریاں)'
+                        : '${provider.heapMaunds.toStringAsFixed(1)} Maunds (${provider.estimatedBags} Bags)',
+                    style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                  ),
                 ],
               ),
               pw.SizedBox(height: 6),
@@ -189,8 +198,10 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
-                    pw.Text('WINNING BUYER / خریدار',
-                        style: const pw.TextStyle(fontSize: 7.5, color: PdfColors.grey700)),
+                    pw.Text(
+                      isUrdu ? 'کامیاب خریدار' : 'WINNING BUYER',
+                      style: const pw.TextStyle(fontSize: 7.5, color: PdfColors.grey700),
+                    ),
                     pw.Text(
                       'Paddle #${provider.selectedPaddleNumber} - ${provider.selectedBuyerName}',
                       style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900),
@@ -198,11 +209,15 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                     ),
                     pw.SizedBox(height: 4),
                     pw.Text(
-                      'Final Rate: Rs. ${_currencyFmt.format(provider.currentBidPerMaund)} / Maund',
+                      isUrdu
+                          ? 'حتمی ریٹ: روپے ${_currencyFmt.format(provider.currentBidPerMaund)} / من'
+                          : 'Final Rate: Rs. ${_currencyFmt.format(provider.currentBidPerMaund)} / Maund',
                       style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.black),
                     ),
                     pw.Text(
-                      'Total Value: Rs. ${_currencyFmt.format(provider.currentTotalGrossValue)}',
+                      isUrdu
+                          ? 'کل رقم: روپے ${_currencyFmt.format(provider.currentTotalGrossValue)}'
+                          : 'Total Value: Rs. ${_currencyFmt.format(provider.currentTotalGrossValue)}',
                       style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.green900),
                     ),
                   ],
@@ -217,8 +232,10 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                 drawText: false,
               ),
               pw.SizedBox(height: 4),
-              pw.Text('ایک، دو، تین — ہو گیا! (Auction Closed)',
-                  style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700)),
+              pw.Text(
+                isUrdu ? 'ایک، دو، تین — سودا مکمل!' : 'Auction Closed',
+                style: const pw.TextStyle(fontSize: 7, color: PdfColors.grey700),
+              ),
             ],
           );
         },
@@ -237,30 +254,30 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
     final shopName = shopCtx.currentShop?.name ?? 'Mandi Commission Shop';
     final boliProvider = context.watch<AuctionBoliProvider>();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.tr(context, 'auction_terminal_title'),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
+    return LiquidCrystalBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_box_outlined, color: Colors.amberAccent),
-            tooltip: AppStrings.tr(context, 'new_heap'),
-            onPressed: () => _showNewLotDialog(context, boliProvider),
+        appBar: AppBar(
+          title: Text(
+            AppStrings.tr(context, 'auction_terminal_title'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white70),
-            tooltip: AppStrings.tr(context, 'reset'),
-            onPressed: () => boliProvider.resetAuction(),
-          ),
-        ],
-      ),
-      body: LiquidCrystalBackground(
-        child: LayoutBuilder(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add_box_outlined, color: MColors.gold),
+              tooltip: AppStrings.tr(context, 'new_heap'),
+              onPressed: () => _showNewLotDialog(context, boliProvider),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh, color: MColors.primary),
+              tooltip: AppStrings.tr(context, 'reset'),
+              onPressed: () => boliProvider.resetAuction(),
+            ),
+          ],
+        ),
+        body: LayoutBuilder(
           builder: (context, constraints) {
           final isWide = constraints.maxWidth > 850;
 
@@ -302,6 +319,7 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
   Widget _buildMainBiddingFloor(
       BuildContext context, AuctionBoliProvider provider, String shopName) {
     final isLocked = provider.isAuctionLocked;
+    final isUrdu = AppStrings.isUrdu(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -359,7 +377,7 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '${provider.heapMaunds.toStringAsFixed(1)} Maunds (من)',
+                    '${provider.heapMaunds.toStringAsFixed(1)} ${AppStrings.tr(context, 'maunds')}',
                     style: const TextStyle(
                       color: Colors.amberAccent,
                       fontSize: 16,
@@ -367,7 +385,7 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                     ),
                   ),
                   Text(
-                    '${provider.estimatedBags} Bags (بوریاں)',
+                    '${provider.estimatedBags} ${AppStrings.tr(context, 'bags')}',
                     style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
                   ),
                 ],
@@ -519,10 +537,10 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
                 icon: const Icon(Icons.gavel, color: Colors.white, size: 28),
                 label: Text(
                   provider.gavelCount == 0
-                      ? 'ایک! First Call (Strike 1)'
+                      ? (isUrdu ? 'ایک! پہلی آواز' : 'One! First Call (Strike 1)')
                       : provider.gavelCount == 1
-                          ? 'دو! Second Call (Strike 2)'
-                          : 'تین — ہو گیا! Final Sold (Strike 3)',
+                          ? (isUrdu ? 'دو! دوسری آواز' : 'Two! Second Call (Strike 2)')
+                          : (isUrdu ? 'تین — سودا مکمل!' : 'Three — Sold! (Strike 3)'),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -543,9 +561,9 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
               Expanded(
                 flex: 2,
                 child: ElevatedButton.icon(
-                  onPressed: () => _printThermalBoliSlip(provider, shopName),
+                  onPressed: () => _printThermalBoliSlip(provider, shopName, isUrdu),
                   icon: const Icon(Icons.print, color: Colors.white),
-                  label: const Text('پرچی پرنٹ (Boli Slip)', style: TextStyle(color: Colors.white)),
+                  label: Text(AppStrings.tr(context, 'print_thermal_slip'), style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal.shade700,
                     padding: const EdgeInsets.symmetric(vertical: 18),
@@ -584,6 +602,7 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
   }
 
   Widget _buildBuyerPaddleGrid(BuildContext context, AuctionBoliProvider provider) {
+    final isUrdu = AppStrings.isUrdu(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -594,9 +613,9 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'BUYER PADDLES / خریدار پڈل نمبر',
-            style: TextStyle(
+          Text(
+            isUrdu ? 'خریدار پیڈل نمبر' : 'BUYER PADDLES',
+            style: const TextStyle(
               color: Colors.white70,
               fontWeight: FontWeight.bold,
               fontSize: 13,
@@ -607,7 +626,7 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _quickBuyers.map((b) {
+            children: _quickBuyers(isUrdu).map((b) {
               final isSelected = provider.selectedPaddleNumber == b['paddle'];
               return ChoiceChip(
                 label: Text(
@@ -639,9 +658,9 @@ class _LiveAuctionTerminalPageState extends State<LiveAuctionTerminalPage> {
           const SizedBox(height: 8),
 
           // Bid History
-          const Text(
-            'BID LOG / بولی کی تاریخ',
-            style: TextStyle(
+          Text(
+            isUrdu ? 'بولی کی تاریخ' : 'BID LOG',
+            style: const TextStyle(
               color: Colors.white70,
               fontWeight: FontWeight.bold,
               fontSize: 13,

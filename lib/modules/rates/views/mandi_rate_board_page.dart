@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/theme/locale_provider.dart';
 import 'package:mandi/core/utils/mandi_rate_board_pdf_generator.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/widgets/liquid_crystal_background.dart';
@@ -71,23 +73,25 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
   void _showBroadcastModal(
       String shopName, String city, String shopId, DateTime date) {
     final provider = context.read<MandiRateProvider>();
+    final isUrdu = context.read<LocaleProvider>().isUrdu;
     final broadcastMsg = provider.generateBroadcastMessage(
       shopName: shopName,
       city: city,
       date: date,
+      isUrdu: isUrdu,
     );
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.campaign, color: MColors.primary),
-            SizedBox(width: 8),
+            const Icon(Icons.campaign, color: MColors.primary),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Broadcast Rate Board (براڈکاسٹ ریٹ لسٹ)',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                AppStrings.tr(ctx, 'broadcast_rate_board'),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -187,44 +191,44 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
     final totalArrivals =
         rates.fold(0.0, (sum, r) => sum + r.arrivalsMaunds);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: const Text('Mandi Rate Board (منڈی ریٹ لسٹ و براڈکاسٹ)'),
+    return LiquidCrystalBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.print_outlined),
-            tooltip: 'Print Rate Board A4',
-            onPressed: () => _printRateBoard(
-              rates,
-              shopName,
-              shopAddress,
-              shopPhone,
-              rateProv.selectedDate,
+        appBar: AppBar(
+          title: Text(AppStrings.tr(context, 'rate_board')),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: MColors.textPrimary,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.print_outlined),
+              tooltip: 'Print Rate Board A4',
+              onPressed: () => _printRateBoard(
+                rates,
+                shopName,
+                shopAddress,
+                shopPhone,
+                rateProv.selectedDate,
+              ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.campaign),
-            tooltip: 'Broadcast via WhatsApp/SMS',
-            onPressed: () => _showBroadcastModal(
-              shopName,
-              shopCity,
-              shopId,
-              rateProv.selectedDate,
+            IconButton(
+              icon: const Icon(Icons.campaign),
+              tooltip: 'Broadcast via WhatsApp/SMS',
+              onPressed: () => _showBroadcastModal(
+                shopName,
+                shopCity,
+                shopId,
+                rateProv.selectedDate,
+              ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-            onPressed: () => rateProv.loadRates(),
-          ),
-        ],
-      ),
-      body: LiquidCrystalBackground(
-        child: Column(
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh',
+              onPressed: () => rateProv.loadRates(),
+            ),
+          ],
+        ),
+        body: Column(
           children: [
             // Top Controls Bar (Date Picker, Search, Trend Filter)
             Padding(
@@ -311,13 +315,13 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ChoiceChip(
-                            label: const Text('All (تمام)'),
+                            label: Text(AppStrings.tr(context, 'all')),
                             selected: rateProv.trendFilter == null,
                             onSelected: (_) => rateProv.setTrendFilter(null),
                           ),
                           const SizedBox(width: 6),
                           ChoiceChip(
-                            label: const Text('▲ Bullish (تیزی)'),
+                            label: Text('▲ ${AppStrings.tr(context, 'bullish')}'),
                             selected:
                                 rateProv.trendFilter == MarketTrend.bullish,
                             selectedColor: Colors.green.shade100,
@@ -326,7 +330,7 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                           ),
                           const SizedBox(width: 6),
                           ChoiceChip(
-                            label: const Text('▼ Bearish (مندی)'),
+                            label: Text('▼ ${AppStrings.tr(context, 'bearish')}'),
                             selected:
                                 rateProv.trendFilter == MarketTrend.bearish,
                             selectedColor: Colors.red.shade100,
@@ -348,7 +352,7 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                         ),
                         onPressed: _openRecordRateDialog,
                         icon: const Icon(Icons.add, size: 18),
-                        label: const Text('Record Rate (اندراج ریٹ)'),
+                        label: Text(AppStrings.tr(context, 'record_rate_btn')),
                       ),
                     ],
                   ),
@@ -363,7 +367,7 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                 children: [
                   Expanded(
                     child: _buildMetricTile(
-                      label: 'Commodities (اجناس)',
+                      label: AppStrings.tr(context, 'commodities'),
                       value: '$totalCommodities',
                       icon: Icons.list_alt,
                       color: Colors.blue,
@@ -372,7 +376,7 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildMetricTile(
-                      label: 'Bullish (تیزی)',
+                      label: AppStrings.tr(context, 'bullish'),
                       value: '$bullishCount',
                       icon: Icons.trending_up,
                       color: Colors.green,
@@ -381,7 +385,7 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildMetricTile(
-                      label: 'Bearish (مندی)',
+                      label: AppStrings.tr(context, 'bearish'),
                       value: '$bearishCount',
                       icon: Icons.trending_down,
                       color: Colors.red,
@@ -390,8 +394,8 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildMetricTile(
-                      label: 'Total Arrivals (آمد)',
-                      value: '${_currencyFmt.format(totalArrivals)} من',
+                      label: AppStrings.tr(context, 'total_arrivals'),
+                      value: '${_currencyFmt.format(totalArrivals)} ${AppStrings.tr(context, 'maunds')}',
                       icon: Icons.local_shipping_outlined,
                       color: Colors.amber.shade800,
                     ),
@@ -419,13 +423,13 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openRecordRateDialog,
-        backgroundColor: MColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Daily Rate'),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _openRecordRateDialog,
+          backgroundColor: MColors.primary,
+          foregroundColor: Colors.white,
+          icon: const Icon(Icons.add),
+          label: const Text('Add Daily Rate'),
+        ),
       ),
     );
   }
@@ -558,7 +562,11 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                       if (rate.arrivalsMaunds > 0) ...[
                         const SizedBox(width: 12),
                         Text(
-                          'Arrivals: ${_currencyFmt.format(rate.arrivalsMaunds)} من',
+                          AppStrings.val(
+                            context,
+                            en: 'Arrivals: ${_currencyFmt.format(rate.arrivalsMaunds)} Maunds',
+                            ur: 'آمد: ${_currencyFmt.format(rate.arrivalsMaunds)} من',
+                          ),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -589,7 +597,7 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'Rs. ${_currencyFmt.format(rate.modalRatePerMaund)} / من',
+                    'Rs. ${_currencyFmt.format(rate.modalRatePerMaund)} / ${AppStrings.tr(context, 'maunds')}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -597,7 +605,7 @@ class _MandiRateBoardPageState extends State<MandiRateBoardPage> {
                     ),
                   ),
                   Text(
-                    'Rs. ${rate.pricePerKgPkr.toStringAsFixed(1)} / کلو',
+                    'Rs. ${rate.pricePerKgPkr.toStringAsFixed(1)} / ${AppStrings.val(context, en: 'KG', ur: 'کلو')}',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey.shade600,

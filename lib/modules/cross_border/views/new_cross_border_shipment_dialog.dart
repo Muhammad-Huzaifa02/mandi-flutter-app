@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/cross_border_shipment_model.dart';
@@ -37,7 +38,7 @@ class _NewCrossBorderShipmentDialogState
   final _driverPhoneCtrl = TextEditingController();
   final _customsGdCtrl = TextEditingController();
   final _clearingAgentCtrl = TextEditingController();
-  final _commodityCtrl = TextEditingController(text: 'Pomegranate (قندھاری انار)');
+  late final TextEditingController _commodityCtrl;
   final _packageTypeCtrl = TextEditingController(text: 'Wooden Crate');
   final _packageCountCtrl = TextEditingController(text: '650');
   final _weightKgCtrl = TextEditingController(text: '13000'); // ~325 Maunds
@@ -61,6 +62,7 @@ class _NewCrossBorderShipmentDialogState
         .padLeft(4, '0');
     _shipmentNumberCtrl =
         TextEditingController(text: 'CBS-${DateTime.now().year}-$randomSuffix');
+    _commodityCtrl = TextEditingController(text: 'Pomegranate');
     _exchangeRateCtrl =
         TextEditingController(text: _currency.standardMarketRate.toString());
   }
@@ -127,6 +129,7 @@ class _NewCrossBorderShipmentDialogState
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final isUrdu = AppStrings.isUrdu(context);
     setState(() => _isSaving = true);
     final shopId = context.read<ShopContextProvider>().currentShopId ?? '';
 
@@ -145,7 +148,8 @@ class _NewCrossBorderShipmentDialogState
         customsClearanceDate: DateTime.now(),
         clearingAgentName: _clearingAgentCtrl.text.trim(),
         supplierId: _selectedSupplier?.id,
-        supplierName: _selectedSupplier?.name ?? 'Direct Border Exporter',
+        supplierName: _selectedSupplier?.name ??
+            (isUrdu ? 'براہ راست بارڈر زمیندار' : 'Direct Border Farmer'),
         commodity: _commodityCtrl.text.trim(),
         packageType: _packageTypeCtrl.text.trim(),
         packageCount: int.tryParse(_packageCountCtrl.text) ?? 0,
@@ -173,10 +177,11 @@ class _NewCrossBorderShipmentDialogState
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Cross-border shipment recorded successfully! / مال کامیابی سے درج ہوگیا'),
-            backgroundColor: Color(0xFF2E7D32),
+          SnackBar(
+            content: Text(isUrdu
+                ? 'سرحدی مال کامیابی سے درج کر لیا گیا!'
+                : 'Cross-border shipment recorded successfully!'),
+            backgroundColor: const Color(0xFF2E7D32),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -185,7 +190,9 @@ class _NewCrossBorderShipmentDialogState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save shipment: $e'),
+            content: Text(isUrdu
+                ? 'مال محفوظ کرنے میں ناکامی: $e'
+                : 'Failed to save shipment: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -200,6 +207,7 @@ class _NewCrossBorderShipmentDialogState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final suppliers = context.watch<SupplierProvider>().suppliers;
+    final isUrdu = AppStrings.isUrdu(context);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -230,12 +238,20 @@ class _NewCrossBorderShipmentDialogState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'New Cross-Border Cargo (سرحدی مال)',
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'New Cross-Border Cargo',
+                              ur: 'سرحدی مال',
+                            ),
                             style: MText.titleMd,
                           ),
                           Text(
-                            'Import Transit Manifest & Multi-Currency Ledger',
+                            AppStrings.val(
+                              context,
+                              en: 'Import Transit Manifest & Multi-Currency Ledger',
+                              ur: 'درآمدی ٹرانزٹ مینی فیسٹ اور کثیر کرنسی کھاتہ',
+                            ),
                             style: MText.caption.copyWith(
                                 color: theme.colorScheme.onSurface
                                     .withValues(alpha: 0.6)),
@@ -264,14 +280,18 @@ class _NewCrossBorderShipmentDialogState
                             Expanded(
                               child: DropdownButtonFormField<OriginCountry>(
                                 initialValue: _originCountry,
-                                decoration: const InputDecoration(
-                                  labelText: 'Origin Country / ملک',
-                                  prefixIcon: Icon(Icons.flag_outlined, size: 18),
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Origin Country',
+                                    ur: 'ملک',
+                                  ),
+                                  prefixIcon: const Icon(Icons.flag_outlined, size: 18),
                                 ),
                                 items: OriginCountry.values.map((c) {
                                   return DropdownMenuItem(
                                     value: c,
-                                    child: Text('${c.flagEmoji} ${c.labelEnglish}'),
+                                    child: Text('${c.flagEmoji} ${isUrdu ? c.labelUrdu : c.labelEnglish}'),
                                   );
                                 }).toList(),
                                 onChanged: (c) {
@@ -283,15 +303,19 @@ class _NewCrossBorderShipmentDialogState
                             Expanded(
                               child: DropdownButtonFormField<BorderCrossing>(
                                 initialValue: _borderCrossing,
-                                decoration: const InputDecoration(
-                                  labelText: 'Border Checkpoint / بارڈر',
-                                  prefixIcon: Icon(Icons.alt_route, size: 18),
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Border Checkpoint',
+                                    ur: 'بارڈر چیک پوائنٹ',
+                                  ),
+                                  prefixIcon: const Icon(Icons.alt_route, size: 18),
                                 ),
                                 items: BorderCrossing.values.map((b) {
                                   return DropdownMenuItem(
                                     value: b,
                                     child: Text(
-                                      b.labelEnglish,
+                                      isUrdu ? b.labelUrdu : b.labelEnglish,
                                       style: const TextStyle(fontSize: 12),
                                     ),
                                   );
@@ -314,12 +338,20 @@ class _NewCrossBorderShipmentDialogState
                             Expanded(
                               child: TextFormField(
                                 controller: _shipmentNumberCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Manifest / Shipment #',
-                                  prefixIcon: Icon(Icons.tag, size: 18),
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Manifest / Shipment #',
+                                    ur: 'مینی فیسٹ / مال نمبر',
+                                  ),
+                                  prefixIcon: const Icon(Icons.tag, size: 18),
                                 ),
                                 validator: (v) => v?.trim().isEmpty == true
-                                    ? 'Required'
+                                    ? AppStrings.val(
+                                        context,
+                                        en: 'Required',
+                                        ur: 'ضروری ہے',
+                                      )
                                     : null,
                               ),
                             ),
@@ -327,9 +359,13 @@ class _NewCrossBorderShipmentDialogState
                             Expanded(
                               child: TextFormField(
                                 controller: _originCityCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Origin City (شہر)',
-                                  prefixIcon: Icon(Icons.location_city, size: 18),
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Origin City',
+                                    ur: 'روانگی کا شہر',
+                                  ),
+                                  prefixIcon: const Icon(Icons.location_city, size: 18),
                                 ),
                               ),
                             ),
@@ -344,14 +380,22 @@ class _NewCrossBorderShipmentDialogState
                             Expanded(
                               child: TextFormField(
                                 controller: _vehicleNumberCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Vehicle / Truck # (گاڑی نمبر)',
-                                  hintText: 'e.g. KBL-4589 / TLR-786',
-                                  prefixIcon: Icon(Icons.local_shipping_outlined,
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Vehicle / Truck #',
+                                    ur: 'گاڑی نمبر',
+                                  ),
+                                  hintText: 'e.g. KBL-4589',
+                                  prefixIcon: const Icon(Icons.local_shipping_outlined,
                                       size: 18),
                                 ),
                                 validator: (v) => v?.trim().isEmpty == true
-                                    ? 'Enter vehicle plate'
+                                    ? AppStrings.val(
+                                        context,
+                                        en: 'Enter vehicle plate',
+                                        ur: 'گاڑی کا نمبر درج کریں',
+                                      )
                                     : null,
                               ),
                             ),
@@ -359,9 +403,13 @@ class _NewCrossBorderShipmentDialogState
                             Expanded(
                               child: TextFormField(
                                 controller: _driverNameCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Driver Name & Phone',
-                                  prefixIcon: Icon(Icons.person_outline, size: 18),
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Driver Name & Phone',
+                                    ur: 'ڈرائیور کا نام اور فون',
+                                  ),
+                                  prefixIcon: const Icon(Icons.person_outline, size: 18),
                                 ),
                               ),
                             ),
@@ -376,10 +424,14 @@ class _NewCrossBorderShipmentDialogState
                             Expanded(
                               child: TextFormField(
                                 controller: _customsGdCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Customs GD # (سامان پروانہ)',
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Customs GD #',
+                                    ur: 'کسٹم جی ڈی نمبر',
+                                  ),
                                   hintText: 'e.g. TK-2026-GD-1102',
-                                  prefixIcon: Icon(Icons.verified_outlined, size: 18),
+                                  prefixIcon: const Icon(Icons.verified_outlined, size: 18),
                                 ),
                               ),
                             ),
@@ -387,9 +439,13 @@ class _NewCrossBorderShipmentDialogState
                             Expanded(
                               child: TextFormField(
                                 controller: _clearingAgentCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Clearing Agent / ایجنٹ',
-                                  prefixIcon: Icon(Icons.support_agent, size: 18),
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Clearing Agent',
+                                    ur: 'کسٹم کلیئرنگ ایجنٹ',
+                                  ),
+                                  prefixIcon: const Icon(Icons.support_agent, size: 18),
                                 ),
                               ),
                             ),
@@ -398,14 +454,22 @@ class _NewCrossBorderShipmentDialogState
 
                         const SizedBox(height: MSpacing.md),
 
-                        // Foreign Supplier Picker
+                        // Foreign Farmer Picker
                         DropdownButtonFormField<Supplier>(
                           initialValue: _selectedSupplier,
-                          decoration: const InputDecoration(
-                            labelText: 'Foreign Supplier / Exporter (مالک مال)',
-                            prefixIcon: Icon(Icons.business_outlined, size: 18),
+                          decoration: InputDecoration(
+                            labelText: AppStrings.val(
+                              context,
+                              en: 'Foreign Farmer / Exporter',
+                              ur: 'غیر ملکی زمیندار / برآمد کنندہ',
+                            ),
+                            prefixIcon: const Icon(Icons.business_outlined, size: 18),
                           ),
-                          hint: const Text('Select or Walk-in Border Grower'),
+                          hint: Text(AppStrings.val(
+                            context,
+                            en: 'Select or Walk-in Border Grower',
+                            ur: 'زمیندار منتخب کریں',
+                          )),
                           items: suppliers.map((s) {
                             return DropdownMenuItem(
                               value: s,
@@ -424,12 +488,20 @@ class _NewCrossBorderShipmentDialogState
                               flex: 3,
                               child: TextFormField(
                                 controller: _commodityCtrl,
-                                decoration: const InputDecoration(
-                                  labelText: 'Commodity (جنس)',
-                                  prefixIcon: Icon(Icons.apple_outlined, size: 18),
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Commodity',
+                                    ur: 'جنس',
+                                  ),
+                                  prefixIcon: const Icon(Icons.apple_outlined, size: 18),
                                 ),
                                 validator: (v) => v?.trim().isEmpty == true
-                                    ? 'Required'
+                                    ? AppStrings.val(
+                                        context,
+                                        en: 'Required',
+                                        ur: 'ضروری ہے',
+                                      )
                                     : null,
                               ),
                             ),
@@ -439,8 +511,12 @@ class _NewCrossBorderShipmentDialogState
                               child: TextFormField(
                                 controller: _packageCountCtrl,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Crates / Bags',
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Crates / Bags',
+                                    ur: 'پیٹیاں / بوریاں',
+                                  ),
                                 ),
                                 onChanged: (_) => setState(() {}),
                               ),
@@ -451,8 +527,12 @@ class _NewCrossBorderShipmentDialogState
                               child: TextFormField(
                                 controller: _weightKgCtrl,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Gross KG',
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Gross KG',
+                                    ur: 'کل وزن (کلو)',
+                                  ),
                                 ),
                                 onChanged: (_) => setState(() {}),
                               ),
@@ -479,7 +559,11 @@ class _NewCrossBorderShipmentDialogState
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Dual-Currency Valuation (کرنسی کھاتہ)',
+                                    AppStrings.val(
+                                      context,
+                                      en: 'Dual-Currency Valuation',
+                                      ur: 'کرنسی حساب کتاب',
+                                    ),
                                     style: MText.bodyMd.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: theme.colorScheme.primary,
@@ -510,7 +594,7 @@ class _NewCrossBorderShipmentDialogState
                                       keyboardType: TextInputType.number,
                                       decoration: InputDecoration(
                                         labelText:
-                                            'Contract Price (${_currency.symbol})',
+                                            '${AppStrings.val(context, en: "Contract Price", ur: "معاہدہ قیمت")} (${_currency.symbol})',
                                         prefixIcon: const Icon(
                                             Icons.currency_exchange,
                                             size: 18),
@@ -523,9 +607,13 @@ class _NewCrossBorderShipmentDialogState
                                     child: TextFormField(
                                       controller: _exchangeRateCtrl,
                                       keyboardType: TextInputType.number,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Rate to PKR (ریٹ)',
-                                        prefixIcon: Icon(Icons.trending_up,
+                                      decoration: InputDecoration(
+                                        labelText: AppStrings.val(
+                                          context,
+                                          en: 'Rate to PKR',
+                                          ur: 'روپیہ میں ایکسچینج ریٹ',
+                                        ),
+                                        prefixIcon: const Icon(Icons.trending_up,
                                             size: 18),
                                       ),
                                       onChanged: (_) => setState(() {}),
@@ -535,7 +623,7 @@ class _NewCrossBorderShipmentDialogState
                               ),
                               const SizedBox(height: MSpacing.sm),
                               Text(
-                                'Base Cargo Value in PKR: Rs. ${_currencyFmt.format(_basePkr)}',
+                                '${AppStrings.val(context, en: "Base Cargo Value in PKR: Rs.", ur: "پاکستانی روپے میں مال کی بنیادی قیمت: روپے")} ${_currencyFmt.format(_basePkr)}',
                                 style: MText.bodySm.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: theme.colorScheme.onSurface,
@@ -548,8 +636,14 @@ class _NewCrossBorderShipmentDialogState
                         const SizedBox(height: MSpacing.md),
 
                         // BORDER CHARGES SECTION
-                        const Text('Border Tariffs, Freight & Clearance (سرحدی اخراجات)',
-                            style: MText.caption),
+                        Text(
+                          AppStrings.val(
+                            context,
+                            en: 'Border Tariffs, Freight & Clearance',
+                            ur: 'سرحدی اخراجات، ڈیوٹی اور کرایہ',
+                          ),
+                          style: MText.caption,
+                        ),
                         const SizedBox(height: MSpacing.xs),
                         Row(
                           children: [
@@ -557,8 +651,12 @@ class _NewCrossBorderShipmentDialogState
                               child: TextFormField(
                                 controller: _customsDutyCtrl,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Customs Duty (PKR)',
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Customs Duty (PKR)',
+                                    ur: 'کسٹم ڈیوٹی (روپے)',
+                                  ),
                                 ),
                                 onChanged: (_) => setState(() {}),
                               ),
@@ -568,8 +666,12 @@ class _NewCrossBorderShipmentDialogState
                               child: TextFormField(
                                 controller: _borderFreightCtrl,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Border Freight (کرایہ)',
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Border Freight (PKR)',
+                                    ur: 'بارڈر کرایہ (روپے)',
+                                  ),
                                 ),
                                 onChanged: (_) => setState(() {}),
                               ),
@@ -583,8 +685,12 @@ class _NewCrossBorderShipmentDialogState
                               child: TextFormField(
                                 controller: _clearingChargesCtrl,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Clearing Fees (ایجنٹ)',
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Clearing Fees (PKR)',
+                                    ur: 'کلیئرنگ فیس (روپے)',
+                                  ),
                                 ),
                                 onChanged: (_) => setState(() {}),
                               ),
@@ -594,8 +700,12 @@ class _NewCrossBorderShipmentDialogState
                               child: TextFormField(
                                 controller: _otherExpensesCtrl,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Tolls / Other (دیگر)',
+                                decoration: InputDecoration(
+                                  labelText: AppStrings.val(
+                                    context,
+                                    en: 'Tolls / Other (PKR)',
+                                    ur: 'دیگر اخراجات (روپے)',
+                                  ),
                                 ),
                                 onChanged: (_) => setState(() {}),
                               ),
@@ -611,7 +721,7 @@ class _NewCrossBorderShipmentDialogState
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                             labelText:
-                                'Advance Disbursed to Supplier (${_currency.symbol} ${_currency.code})',
+                                '${AppStrings.val(context, en: "Advance Disbursed to Farmer", ur: "زمیندار کو پیشگی ادائیگی")} (${_currency.symbol} ${_currency.code})',
                             prefixIcon: const Icon(Icons.payment, size: 18),
                           ),
                           onChanged: (_) => setState(() {}),
@@ -635,10 +745,16 @@ class _NewCrossBorderShipmentDialogState
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('ESTIMATED LANDED COST / کل لاگت:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12)),
+                                  Text(
+                                    AppStrings.val(
+                                      context,
+                                      en: 'ESTIMATED LANDED COST:',
+                                      ur: 'منڈی پہنچ کل لاگت:',
+                                    ),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12),
+                                  ),
                                   Text(
                                     'Rs. ${_currencyFmt.format(_totalLandedPkr)}',
                                     style: const TextStyle(
@@ -655,11 +771,11 @@ class _NewCrossBorderShipmentDialogState
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Weight: ${_numberFmt.format(_maunds)} Maunds',
+                                    '${AppStrings.val(context, en: "Weight:", ur: "وزن:")} ${_numberFmt.format(_maunds)} ${AppStrings.val(context, en: "Maunds", ur: "من")}',
                                     style: const TextStyle(fontSize: 11),
                                   ),
                                   Text(
-                                    'Cost / Maund: Rs. ${_currencyFmt.format(_costPerMaund)}',
+                                    '${AppStrings.val(context, en: "Cost / Maund: Rs.", ur: "لاگت فی من: روپے")} ${_currencyFmt.format(_costPerMaund)}',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
@@ -675,8 +791,12 @@ class _NewCrossBorderShipmentDialogState
 
                         TextFormField(
                           controller: _notesCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Remarks & Border Notes (تفصیل)',
+                          decoration: InputDecoration(
+                            labelText: AppStrings.val(
+                              context,
+                              en: 'Remarks & Border Notes',
+                              ur: 'تفصیل و نوٹس',
+                            ),
                           ),
                           maxLines: 2,
                         ),
@@ -693,7 +813,11 @@ class _NewCrossBorderShipmentDialogState
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Cancel / منسوخ'),
+                        child: Text(AppStrings.val(
+                          context,
+                          en: 'Cancel',
+                          ur: 'منسوخ',
+                        )),
                       ),
                     ),
                     const SizedBox(width: MSpacing.md),
@@ -710,7 +834,9 @@ class _NewCrossBorderShipmentDialogState
                               )
                             : const Icon(Icons.check_circle_outline),
                         label: Text(
-                          _isSaving ? 'Saving...' : 'Record Border Cargo (درج کریں)',
+                          _isSaving
+                              ? AppStrings.val(context, en: 'Saving...', ur: 'محفوظ ہو رہا ہے...')
+                              : AppStrings.val(context, en: 'Record Border Cargo', ur: 'سرحدی مال درج کریں'),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(

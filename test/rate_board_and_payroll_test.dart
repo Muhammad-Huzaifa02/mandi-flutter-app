@@ -150,7 +150,15 @@ void main() {
 
       expect(msg.contains('KISAN DOST COMMISSION SHOP'), isTrue);
       expect(msg.contains('Vehari'), isTrue);
-      expect(msg.contains('روزانہ منڈی ریٹ بورڈ'), isTrue);
+      expect(msg.contains('Daily Mandi Rate Board'), isTrue);
+
+      final urduMsg = provider.generateBroadcastMessage(
+        shopName: 'Kisan Dost Commission Shop',
+        city: 'Vehari',
+        date: DateTime(2026, 11, 10),
+        isUrdu: true,
+      );
+      expect(urduMsg.contains('روزانہ منڈی ریٹ بورڈ'), isTrue);
     });
   });
 

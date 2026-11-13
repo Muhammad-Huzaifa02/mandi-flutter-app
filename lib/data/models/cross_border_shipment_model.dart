@@ -231,13 +231,13 @@ extension CrossBorderShipmentStatusExt on CrossBorderShipmentStatus {
   String get labelUrdu {
     switch (this) {
       case CrossBorderShipmentStatus.inTransit:
-        return 'راستے میں (ٹرانزٹ)';
+        return 'راستے میں';
       case CrossBorderShipmentStatus.clearedAtBorder:
         return 'کسٹم ڈیوٹی کلیئرڈ';
       case CrossBorderShipmentStatus.arrivedInMandi:
-        return 'منڈی آمد (پھڑ پر موجود)';
+        return 'منڈی آمد';
       case CrossBorderShipmentStatus.auctioned:
-        return 'نیلام شدہ (بولی مکمل)';
+        return 'نیلام شدہ';
       case CrossBorderShipmentStatus.settled:
         return 'مکمل کھاتہ بیباق';
     }

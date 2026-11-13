@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/supplier_model.dart';
@@ -79,15 +80,8 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Register Arrival Lot'),
-            Text(
-              'نئی آمد / ڈھیری کا اندراج',
-              style: TextStyle(fontSize: 11, color: MColors.gold),
-            ),
-          ],
+        title: Text(
+          AppStrings.val(context, en: 'Register Arrival Lot', ur: 'نئی آمد و ڈھیری کا اندراج'),
         ),
       ),
       body: SingleChildScrollView(
@@ -103,7 +97,7 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Consignment Details (تفصیلات مال)',
+                      AppStrings.val(context, en: 'Consignment Details', ur: 'مال کی تفصیلات'),
                       style: MText.titleMd.copyWith(color: Colors.white),
                     ),
                     const SizedBox(height: MSpacing.md),
@@ -111,21 +105,22 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                     // Lot Number
                     TextFormField(
                       controller: _lotNumCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Lot / Dheri # (ڈھیری نمبر) *',
-                        prefixIcon: Icon(Icons.tag),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(context, en: 'Lot / Dheri # *', ur: 'ڈھیری نمبر *'),
+                        prefixIcon: const Icon(Icons.tag),
                       ),
-                      validator: (val) =>
-                          val?.trim().isEmpty == true ? 'Enter lot #' : null,
+                      validator: (val) => val?.trim().isEmpty == true
+                          ? AppStrings.val(context, en: 'Enter lot #', ur: 'ڈھیری نمبر درج کریں')
+                          : null,
                     ),
                     const SizedBox(height: MSpacing.sm),
 
                     // Supplier / Farmer Dropdown
                     DropdownButtonFormField<Supplier>(
                       initialValue: _selectedSupplier,
-                      decoration: const InputDecoration(
-                        labelText: 'Farmer / Supplier (زمیندار / بیوپاری) *',
-                        prefixIcon: Icon(Icons.person_outline),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(context, en: 'Farmer *', ur: 'زمیندار *'),
+                        prefixIcon: const Icon(Icons.person_outline),
                       ),
                       items: suppliers
                           .map((s) => DropdownMenuItem(
@@ -135,17 +130,18 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                           .toList(),
                       onChanged: (val) =>
                           setState(() => _selectedSupplier = val),
-                      validator: (val) =>
-                          val == null ? 'Please select farmer' : null,
+                      validator: (val) => val == null
+                          ? AppStrings.val(context, en: 'Please select farmer', ur: 'زمیندار منتخب کریں')
+                          : null,
                     ),
                     const SizedBox(height: MSpacing.sm),
 
                     // Commodity / Product Dropdown
                     DropdownButtonFormField<Product>(
                       initialValue: _selectedProduct,
-                      decoration: const InputDecoration(
-                        labelText: 'Commodity / Product (جنس / فصل) *',
-                        prefixIcon: Icon(Icons.grass_outlined),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(context, en: 'Commodity / Product *', ur: 'جنس / فصل *'),
+                        prefixIcon: const Icon(Icons.grass_outlined),
                       ),
                       items: products
                           .map((p) => DropdownMenuItem(
@@ -155,18 +151,23 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                           .toList(),
                       onChanged: (val) =>
                           setState(() => _selectedProduct = val),
-                      validator: (val) =>
-                          val == null ? 'Please select product' : null,
+                      validator: (val) => val == null
+                          ? AppStrings.val(context, en: 'Please select product', ur: 'جنس منتخب کریں')
+                          : null,
                     ),
                     const SizedBox(height: MSpacing.sm),
 
                     // Vehicle / Trolley Number
                     TextFormField(
                       controller: _vehicleCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Vehicle / Trolley # (گاڑی نمبر)',
-                        prefixIcon: Icon(Icons.local_shipping_outlined),
-                        hintText: 'e.g. Trolley # 14 or MN-9901',
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(context, en: 'Vehicle / Trolley #', ur: 'گاڑی / ٹرالی نمبر'),
+                        prefixIcon: const Icon(Icons.local_shipping_outlined),
+                        hintText: AppStrings.val(
+                          context,
+                          en: 'e.g. Trolley # 14 or MN-9901',
+                          ur: 'مثلاً ٹرالی نمبر 14 یا MN-9901',
+                        ),
                       ),
                     ),
                   ],
@@ -180,7 +181,7 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Weight & Bag Count (وزن و بوریاں)',
+                      AppStrings.val(context, en: 'Weight & Bag Count', ur: 'وزن اور بوریاں'),
                       style: MText.titleMd.copyWith(color: Colors.white),
                     ),
                     const SizedBox(height: MSpacing.md),
@@ -189,13 +190,15 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                     TextFormField(
                       controller: _bagsCtrl,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Number of Bags (تعداد بوریاں) *',
-                        prefixIcon: Icon(Icons.inventory_2_outlined),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(context, en: 'Number of Bags *', ur: 'تعداد بوریاں *'),
+                        prefixIcon: const Icon(Icons.inventory_2_outlined),
                       ),
                       validator: (val) {
                         final n = int.tryParse(val?.trim() ?? '');
-                        if (n == null || n <= 0) return 'Enter valid bag count';
+                        if (n == null || n <= 0) {
+                          return AppStrings.val(context, en: 'Enter valid bag count', ur: 'بوریوں کی درست تعداد درج کریں');
+                        }
                         return null;
                       },
                     ),
@@ -207,14 +210,16 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
-                        labelText: 'Gross Weight in KG (وزن کلوگرام) *',
+                        labelText: AppStrings.val(context, en: 'Gross Weight in KG *', ur: 'بھرا وزن (کلوگرام) *'),
                         prefixIcon: const Icon(Icons.scale_outlined),
-                        suffixText: '${_maunds.toStringAsFixed(2)} Manns',
+                        suffixText: '${_maunds.toStringAsFixed(2)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                       ),
                       onChanged: (_) => setState(() {}),
                       validator: (val) {
                         final n = double.tryParse(val?.trim() ?? '');
-                        if (n == null || n <= 0) return 'Enter valid weight in KG';
+                        if (n == null || n <= 0) {
+                          return AppStrings.val(context, en: 'Enter valid weight in KG', ur: 'درست وزن درج کریں');
+                        }
                         return null;
                       },
                     ),
@@ -225,10 +230,13 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                       controller: _rateCtrl,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText:
-                            'Base / Asking Rate per Maund (ابتدائی ریٹ فی من)',
-                        prefixIcon: Icon(Icons.price_change_outlined),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(
+                          context,
+                          en: 'Base / Asking Rate per Maund',
+                          ur: 'ابتدائی ریٹ فی من',
+                        ),
+                        prefixIcon: const Icon(Icons.price_change_outlined),
                         prefixText: 'Rs. ',
                       ),
                       onChanged: (_) => setState(() {}),
@@ -250,11 +258,11 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Weight in Manns (40 KG):',
+                              AppStrings.val(context, en: 'Weight in Maunds (40 KG):', ur: 'وزن فی من (40 کلو):'),
                               style: MText.caption.copyWith(color: Colors.white),
                             ),
                             Text(
-                              '${_maunds.toStringAsFixed(2)} من (Manns)',
+                              '${_maunds.toStringAsFixed(2)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                               style: MText.bodySm.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: MColors.gold,
@@ -269,9 +277,9 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                     TextFormField(
                       controller: _notesCtrl,
                       maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Remarks / Notes (نوٹ)',
-                        prefixIcon: Icon(Icons.notes_outlined),
+                      decoration: InputDecoration(
+                        labelText: AppStrings.val(context, en: 'Remarks / Notes', ur: 'نوٹ / تبصرہ'),
+                        prefixIcon: const Icon(Icons.notes_outlined),
                       ),
                     ),
                   ],
@@ -294,8 +302,8 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
                         )
                       : const Icon(Icons.check_circle_outline),
                   label: Text(_isSaving
-                      ? 'Saving Arrival Lot...'
-                      : 'Register Arrival Lot (ڈھیری درج کریں)'),
+                      ? AppStrings.val(context, en: 'Saving Arrival Lot...', ur: 'ڈھیری محفوظ ہو رہی ہے...')
+                      : AppStrings.val(context, en: 'Register Arrival Lot', ur: 'ڈھیری درج کریں')),
                   onPressed: _isSaving ? null : _saveLot,
                 ),
               ),
@@ -332,14 +340,27 @@ class _AddConsignmentLotPageState extends State<AddConsignmentLotPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Arrival lot ${_lotNumCtrl.text.trim()} registered successfully!'),
+              AppStrings.val(
+                context,
+                en: 'Arrival lot ${_lotNumCtrl.text.trim()} registered successfully!',
+                ur: 'ڈھیری نمبر ${_lotNumCtrl.text.trim()} کا کامیابی سے اندراج ہو گیا!',
+              ),
+            ),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save arrival lot: $e')),
+          SnackBar(
+            content: Text(
+              AppStrings.val(
+                context,
+                en: 'Failed to save arrival lot: $e',
+                ur: 'ڈھیری محفوظ کرنے میں ناکامی: $e',
+              ),
+            ),
+          ),
         );
       }
     } finally {

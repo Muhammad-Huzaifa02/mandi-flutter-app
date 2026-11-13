@@ -1,8 +1,8 @@
-// Dialog to Record Partner Drawing or Capital Injection
-// (*حصہ دار کا ذاتی خرچ یا تازہ سرمایہ اندراج*).
+// Dialog to Record Partner Drawing or Capital Injection.
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/data/models/partner_capital_model.dart';
 import 'package:mandi/modules/partner_capital/providers/partner_capital_provider.dart';
 
@@ -34,9 +34,16 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
   void initState() {
     super.initState();
     _selectedPartnerId = widget.initialPartner?.id;
-    _descCtrl.text = widget.isCapitalInjection
-        ? 'Capital Injection / تازہ سرمایہ'
-        : 'Monthly Drawing / ماہانہ ذاتی خرچ';
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_descCtrl.text.isEmpty) {
+      _descCtrl.text = widget.isCapitalInjection
+          ? AppStrings.val(context, en: 'Capital Injection', ur: 'سرمایہ اضافہ')
+          : AppStrings.val(context, en: 'Monthly Drawing', ur: 'ماہانہ ذاتی خرچ');
+    }
   }
 
   @override
@@ -51,7 +58,15 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
     if (!_formKey.currentState!.validate()) return;
     if (_selectedPartnerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a partner.')),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Please select a partner.',
+              ur: 'براہ کرم شراکت دار منتخب کریں۔',
+            ),
+          ),
+        ),
       );
       return;
     }
@@ -90,8 +105,16 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
           SnackBar(
             content: Text(
               widget.isCapitalInjection
-                  ? 'Capital Added Successfully! (سرمایہ جمع ہو گیا)'
-                  : 'Drawing Recorded Successfully! (ذاتی خرچ درج ہو گیا)',
+                  ? AppStrings.val(
+                      context,
+                      en: 'Capital added successfully!',
+                      ur: 'سرمایہ کامیابی سے جمع ہو گیا!',
+                    )
+                  : AppStrings.val(
+                      context,
+                      en: 'Drawing recorded successfully!',
+                      ur: 'ذاتی خرچ کامیابی سے درج ہو گیا!',
+                    ),
             ),
             backgroundColor: Colors.teal,
           ),
@@ -122,8 +145,8 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
           const SizedBox(width: 8),
           Text(
             widget.isCapitalInjection
-                ? 'Capital Injection\n(سرمایہ اضافہ اندراج)'
-                : 'Partner Drawing\n(ذاتی خرچ / نکلوانا)',
+                ? AppStrings.val(context, en: 'Capital Injection', ur: 'سرمایہ اضافہ')
+                : AppStrings.val(context, en: 'Partner Drawing', ur: 'ذاتی خرچ یا نکلوانا'),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
@@ -136,10 +159,14 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
             children: [
               DropdownButtonFormField<String>(
                 initialValue: _selectedPartnerId ?? (partners.isNotEmpty ? partners.first.id : null),
-                decoration: const InputDecoration(
-                  labelText: 'Select Partner / حصہ دار *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(
+                    context,
+                    en: 'Select Partner *',
+                    ur: 'شراکت دار منتخب کریں *',
+                  ),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.person),
                 ),
                 items: partners.map((p) {
                   return DropdownMenuItem<String>(
@@ -155,25 +182,40 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
               TextFormField(
                 controller: _amountCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Amount (رقم) *',
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(context, en: 'Amount *', ur: 'رقم *'),
                   prefixText: 'Rs. ',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.payments),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.payments),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? AppStrings.val(context, en: 'Required', ur: 'لازمی')
+                    : null,
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _paymentMethod,
-                decoration: const InputDecoration(
-                  labelText: 'Payment Method / ادائیگی طریقہ',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(
+                    context,
+                    en: 'Payment Method',
+                    ur: 'طریقہ ادائیگی',
+                  ),
+                  border: const OutlineInputBorder(),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'cash', child: Text('Cash / نقد')),
-                  DropdownMenuItem(value: 'bank_transfer', child: Text('Bank Transfer / بینک ٹرانسفر')),
-                  DropdownMenuItem(value: 'cheque', child: Text('Cheque / چیک')),
+                items: [
+                  DropdownMenuItem(
+                    value: 'cash',
+                    child: Text(AppStrings.val(context, en: 'Cash', ur: 'نقد')),
+                  ),
+                  DropdownMenuItem(
+                    value: 'bank_transfer',
+                    child: Text(AppStrings.val(context, en: 'Bank Transfer', ur: 'بینک ٹرانسفر')),
+                  ),
+                  DropdownMenuItem(
+                    value: 'cheque',
+                    child: Text(AppStrings.val(context, en: 'Cheque', ur: 'چیک')),
+                  ),
                 ],
                 onChanged: (val) {
                   if (val != null) setState(() => _paymentMethod = val);
@@ -182,17 +224,21 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
               const SizedBox(height: 12),
               TextFormField(
                 controller: _referenceCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Cheque / Ref No.',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(
+                    context,
+                    en: 'Cheque / Ref No.',
+                    ur: 'چیک یا حوالہ نمبر',
+                  ),
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _descCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Description / تفصیل',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(context, en: 'Description', ur: 'تفصیل'),
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ],
@@ -202,7 +248,7 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('منسوخ (Cancel)'),
+          child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
         ),
         ElevatedButton(
           onPressed: _isSaving ? null : _submit,
@@ -216,7 +262,9 @@ class _RecordPartnerDrawingDialogState extends State<RecordPartnerDrawingDialog>
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
               : Text(
-                  widget.isCapitalInjection ? 'جمع کریں (Inject Capital)' : 'درج کریں (Save Drawing)',
+                  widget.isCapitalInjection
+                      ? AppStrings.val(context, en: 'Inject Capital', ur: 'سرمایہ جمع کریں')
+                      : AppStrings.val(context, en: 'Save Drawing', ur: 'ذاتی خرچ درج کریں'),
                   style: const TextStyle(color: Colors.white),
                 ),
         ),

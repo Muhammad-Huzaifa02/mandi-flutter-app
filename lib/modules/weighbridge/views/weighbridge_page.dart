@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/scale_service.dart';
 import 'package:mandi/core/utils/thermal_receipt_service.dart';
@@ -33,12 +33,16 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
 
   double _liveScaleWeight = 0.0;
   bool _scaleIsStable = true;
-  StreamSubscription<ScaleReading>? _scaleSub;
+  StreamSubscription<ScaleReading>? _scaleSubscription;
 
   @override
   void initState() {
     super.initState();
-    _scaleSub = ScaleService().readingStream.listen((reading) {
+    _subscribeScale();
+  }
+
+  void _subscribeScale() {
+    _scaleSubscription = ScaleService().readingStream.listen((reading) {
       if (mounted) {
         setState(() {
           _liveScaleWeight = reading.weightKg;
@@ -50,37 +54,30 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
 
   @override
   void dispose() {
-    _scaleSub?.cancel();
+    _scaleSubscription?.cancel();
     _searchCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _exportRegisterPdf(
-    String shopName,
-    WeighbridgeProvider wbProv,
-  ) async {
-    try {
-      final Uint8List pdfBytes =
-          await WeighbridgeSlipPdfGenerator.generateRegisterPdf(
-        shopName: shopName,
-        tickets: wbProv.filteredTickets,
-        summary: wbProv.summary,
-      );
+  Future<void> _openRecordGrossDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const NewWeighbridgeTicketDialog(),
+    );
+    if (result == true && mounted) {
+      setState(() {});
+    }
+  }
 
-      await Printing.layoutPdf(
-        onLayout: (format) async => pdfBytes,
-        name:
-            'Weighbridge_Register_${DateFormat('yyyyMMdd').format(DateTime.now())}.pdf',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to generate register PDF: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+  Future<void> _openRecordTareDialog(WeighbridgeTicket ticket) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => RecordTareDialog(ticket: ticket),
+    );
+    if (result == true && mounted) {
+      setState(() {});
     }
   }
 
@@ -89,21 +86,45 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
     WeighbridgeTicket ticket,
   ) async {
     try {
-      final Uint8List pdfBytes =
-          await WeighbridgeSlipPdfGenerator.generateSlipPdf(
+      final pdfBytes = await WeighbridgeSlipPdfGenerator.generateSlipPdf(
         shopName: shopName,
         ticket: ticket,
       );
-
       await Printing.layoutPdf(
-        onLayout: (format) async => pdfBytes,
-        name: 'Kanda_Slip_${ticket.ticketNumber}.pdf',
+        onLayout: (_) async => pdfBytes,
+        name: 'Weighbridge_Slip_${ticket.ticketNumber}.pdf',
       );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to print slip: $e'),
+            content: Text('${AppStrings.val(context, en: "Print error", ur: "پرنٹنگ میں خرابی")}: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportRegisterPdf(
+    String shopName,
+    WeighbridgeProvider wbProv,
+  ) async {
+    try {
+      final pdfBytes = await WeighbridgeSlipPdfGenerator.generateRegisterPdf(
+        shopName: shopName,
+        tickets: wbProv.filteredTickets,
+        summary: wbProv.summary,
+      );
+      await Printing.layoutPdf(
+        onLayout: (_) async => pdfBytes,
+        name: 'Weighbridge_Daily_Register.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppStrings.val(context, en: "Register export error", ur: "رجسٹر ایکسپورٹ میں خرابی")}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -115,38 +136,43 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
     String shopName,
     WeighbridgeTicket ticket,
   ) {
+    final isUrdu = AppStrings.isUrdu(context);
     final shop = context.read<ShopContextProvider>().currentShop;
     final lines = [
       '*** ${shopName.toUpperCase()} ***',
-      if (shop?.city != null && shop!.city.isNotEmpty) 'Mandi: ${shop.city}',
-      if (shop?.phone != null && shop!.phone.isNotEmpty) 'Ph: ${shop.phone}',
+      if (shop?.city != null && shop!.city.isNotEmpty)
+        '${isUrdu ? "منڈی" : "Mandi"}: ${shop.city}',
+      if (shop?.phone != null && shop!.phone.isNotEmpty)
+        '${isUrdu ? "فون" : "Ph"}: ${shop.phone}',
       '--------------------------------',
-      '*** DHARAM KANDA / دھرم کنڈا ***',
-      'Ticket #: ${ticket.ticketNumber}',
-      'Vehicle: ${ticket.vehicleNumber} (${ticket.vehicleType.labelEnglish})',
-      'Party: ${ticket.partyName.isNotEmpty ? ticket.partyName : "Walk-in"}',
-      'Commodity: ${ticket.commodityName}',
-      if (ticket.driverName.isNotEmpty) 'Driver: ${ticket.driverName}',
-      if (ticket.bagCount > 0) 'Bags: ${ticket.bagCount} Bags',
+      isUrdu ? '*** دھرم کنڈا وزن پرچی ***' : '*** DHARAM KANDA WEIGHMENT ***',
+      '${isUrdu ? "پرچی نمبر" : "Ticket #"}: ${ticket.ticketNumber}',
+      '${isUrdu ? "گاڑی" : "Vehicle"}: ${ticket.vehicleNumber} (${isUrdu ? ticket.vehicleType.labelUrdu : ticket.vehicleType.labelEnglish})',
+      '${isUrdu ? "کھاتہ" : "Party"}: ${ticket.partyName.isNotEmpty ? ticket.partyName : (isUrdu ? "عام" : "Walk-in")}',
+      '${isUrdu ? "جنس" : "Commodity"}: ${ticket.commodityName}',
+      if (ticket.driverName.isNotEmpty)
+        '${isUrdu ? "ڈرائیور" : "Driver"}: ${ticket.driverName}',
+      if (ticket.bagCount > 0)
+        '${isUrdu ? "بوریاں" : "Bags"}: ${ticket.bagCount}',
       '--------------------------------',
-      '1st Gross Wt: ${ticket.grossWeightKg.toStringAsFixed(0)} KG (${ticket.grossMaunds.toStringAsFixed(2)}M)',
-      '2nd Tare Wt:  ${ticket.tareWeightKg.toStringAsFixed(0)} KG (${ticket.tareMaunds.toStringAsFixed(2)}M)',
-      'Net Weight:   ${ticket.computedNetWeightKg.toStringAsFixed(0)} KG (${ticket.netMaunds.toStringAsFixed(2)}M)',
+      '${isUrdu ? "پہلا بھرا وزن" : "1st Gross Wt"}: ${ticket.grossWeightKg.toStringAsFixed(0)} KG (${ticket.grossMaunds.toStringAsFixed(2)} M)',
+      '${isUrdu ? "دوسرا خالی وزن" : "2nd Tare Wt"}:  ${ticket.tareWeightKg.toStringAsFixed(0)} KG (${ticket.tareMaunds.toStringAsFixed(2)} M)',
+      '${isUrdu ? "صاف وزن" : "Net Weight"}:   ${ticket.computedNetWeightKg.toStringAsFixed(0)} KG (${ticket.netMaunds.toStringAsFixed(2)} M)',
       if (ticket.deductionKg > 0)
-        'Katoti:       -${ticket.deductionKg.toStringAsFixed(0)} KG (${ticket.deductionReason})',
+        '${isUrdu ? "کٹوتی" : "Katoti"}:       -${ticket.deductionKg.toStringAsFixed(0)} KG (${ticket.deductionReason})',
       '================================',
-      'FINAL WEIGHT: ${ticket.computedFinalWeightKg.toStringAsFixed(0)} KG',
-      '              (${ticket.maunds.toStringAsFixed(2)} Maunds)',
-      'Kanda Fee:    Rs. ${ticket.kandaFee.toStringAsFixed(0)}',
+      '${isUrdu ? "خالص بل وزن" : "FINAL WEIGHT"}: ${ticket.computedFinalWeightKg.toStringAsFixed(0)} KG',
+      '              (${ticket.maunds.toStringAsFixed(2)} ${isUrdu ? "من" : "Maunds"})',
+      '${isUrdu ? "کنڈا فیس" : "Kanda Fee"}:    Rs. ${ticket.kandaFee.toStringAsFixed(0)}',
       '--------------------------------',
-      'Driver: ________  Incharge: ________',
-      '*** Certified Mandi Weighment ***',
+      '${isUrdu ? "دستخط ڈرائیور" : "Driver"}: ________  ${isUrdu ? "کنڈا انچارج" : "Incharge"}: ________',
+      isUrdu ? '*** تصدیق شدہ منڈی کنڈا پرچی ***' : '*** Certified Mandi Weighment ***',
     ];
 
     ThermalPrintPreviewDialog.show(
       context: context,
-      title: 'Kanda Thermal Slip',
-      subtitle: 'Ticket #${ticket.ticketNumber} • ${ticket.vehicleNumber}',
+      title: AppStrings.val(context, en: 'Kanda Thermal Slip', ur: 'تھرمل کنڈا پرچی'),
+      subtitle: '${AppStrings.val(context, en: "Ticket", ur: "پرچی")} #${ticket.ticketNumber} • ${ticket.vehicleNumber}',
       previewLines: lines,
       onPrint: (rollWidth, copies) async {
         for (int i = 0; i < copies; i++) {
@@ -162,27 +188,13 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
     );
   }
 
-  void _openRecordGrossDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => const NewWeighbridgeTicketDialog(),
-    );
-  }
-
-  void _openRecordTareDialog(WeighbridgeTicket ticket) {
-    showDialog(
-      context: context,
-      builder: (_) => RecordTareDialog(ticket: ticket),
-    );
-  }
-
   void _createConsignmentLotFromTicket(WeighbridgeTicket ticket) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => AddConsignmentLotPage(
           initialVehicleNumber: ticket.vehicleNumber,
-          initialBags: ticket.bagCount,
           initialWeightKg: ticket.computedFinalWeightKg,
+          initialBags: ticket.bagCount,
         ),
       ),
     );
@@ -196,33 +208,43 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Mandi Weighbridge (دھرم کنڈا)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              AppStrings.val(context, en: 'Mandi Weighbridge', ur: 'دھرم کنڈا'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             Text(
-              'Electronic Scale & Vehicle Gross/Tare Weighment',
-              style: TextStyle(fontSize: 11, color: Colors.grey),
+              AppStrings.val(
+                context,
+                en: 'Electronic Scale & Vehicle Gross/Tare Weighment',
+                ur: 'الیکٹرانک ترازو و گاڑی کا بھرا/خالی وزن',
+              ),
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
             ),
           ],
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf_outlined),
-            tooltip: 'Export Register PDF',
+            tooltip: AppStrings.val(context, en: 'Export Register PDF', ur: 'کنڈا رجسٹر پی ڈی ایف'),
             onPressed: () => _exportRegisterPdf(shopName, wbProv),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh Tickets',
+            tooltip: AppStrings.val(context, en: 'Refresh Tickets', ur: 'تازہ ترین کریں'),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Weighbridge data updated in real-time'),
-                  duration: Duration(seconds: 1),
+                SnackBar(
+                  content: Text(
+                    AppStrings.val(
+                      context,
+                      en: 'Weighbridge data updated in real-time',
+                      ur: 'کنڈا ریکارڈ کی تازہ ترین معلومات موصول ہو گئی ہیں',
+                    ),
+                  ),
+                  duration: const Duration(seconds: 1),
                 ),
               );
             },
@@ -234,7 +256,9 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
         backgroundColor: MColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.scale_rounded),
-        label: const Text('Record 1st Weight (بھرا گاڑی)'),
+        label: Text(
+          AppStrings.val(context, en: 'Record 1st Weight', ur: 'پہلا وزن محفوظ کریں'),
+        ),
       ),
       body: wbProv.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -248,40 +272,40 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
 
                   const SizedBox(height: 16),
 
-                  // ── KPI Summary Cards ──────────────────────────────────────────
+                  // ── KPI Metrics Section ────────────────────────────────────────
                   _buildKpiSection(wbProv.summary),
+
+                  const SizedBox(height: 20),
+
+                  // ── Search & Filter Controls ───────────────────────────────────
+                  _buildSearchAndFilters(wbProv),
 
                   const SizedBox(height: 16),
 
-                  // ── Search & Filter Tabs ───────────────────────────────────────
-                  _buildSearchAndFilters(wbProv),
-
-                  const SizedBox(height: 14),
-
-                  // ── Tickets List ───────────────────────────────────────────────
+                  // ── Tickets List or Empty State ────────────────────────────────
                   if (wbProv.filteredTickets.isEmpty)
                     _buildEmptyState(wbProv)
                   else
                     ...wbProv.filteredTickets.map(
-                      (t) => _buildTicketCard(t, shopName, wbProv),
+                      (ticket) => _buildTicketCard(ticket, shopName, wbProv),
                     ),
 
-                  const SizedBox(height: 80), // Fab padding
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
     );
   }
 
-  // ── Digital Scale Live Indicator Banner ────────────────────────────────────
+  // ── Live Digital Scale Banner ──────────────────────────────────────────────
   Widget _buildLiveScaleBanner() {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
+            const Color(0xFF1E293B),
             Colors.blueGrey.shade900,
-            Colors.black87,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -313,7 +337,11 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'DIGITAL WEIGHBRIDGE INDICATOR (الیکٹرانک ترازو)',
+                    AppStrings.val(
+                      context,
+                      en: 'DIGITAL WEIGHBRIDGE INDICATOR',
+                      ur: 'الیکٹرانک کنڈا پیمانہ',
+                    ),
                     style: TextStyle(
                       color: Colors.blueGrey.shade200,
                       fontSize: 11,
@@ -337,7 +365,9 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                   ),
                 ),
                 child: Text(
-                  _scaleIsStable ? 'STABLE (ST)' : 'MOTION (US)',
+                  _scaleIsStable
+                      ? AppStrings.val(context, en: 'STABLE (ST)', ur: 'مستحکم (ST)')
+                      : AppStrings.val(context, en: 'MOTION (US)', ur: 'متحرک (US)'),
                   style: TextStyle(
                     color: _scaleIsStable ? Colors.greenAccent : Colors.orangeAccent,
                     fontSize: 10,
@@ -377,7 +407,7 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                   ),
                   const SizedBox(width: 14),
                   Text(
-                    '≈ ${_numberFmt.format(_liveScaleWeight / 40.0)} Maunds (من)',
+                    '≈ ${_numberFmt.format(_liveScaleWeight / 40.0)} ${AppStrings.val(context, en: "Maunds", ur: "من")}',
                     style: TextStyle(
                       color: Colors.blueGrey.shade300,
                       fontSize: 13,
@@ -392,7 +422,9 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                       ScaleService().startSimulation(targetWeightKg: 8520.0);
                     },
                     icon: const Icon(Icons.play_arrow, size: 14),
-                    label: const Text('Simulate Truck'),
+                    label: Text(
+                      AppStrings.val(context, en: 'Simulate Truck', ur: 'ٹرک نمونہ'),
+                    ),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
                       side: BorderSide(color: Colors.blueGrey.shade600),
@@ -417,7 +449,9 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                       ),
                       textStyle: const TextStyle(fontSize: 11),
                     ),
-                    child: const Text('Zero (0.0)'),
+                    child: Text(
+                      AppStrings.val(context, en: 'Zero (0.0)', ur: 'صفر کریں (0.0)'),
+                    ),
                   ),
                 ],
               ),
@@ -433,34 +467,34 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
     return Row(
       children: [
         _buildStatCard(
-          label: 'Awaiting Tare (خالی گاڑی باقی)',
+          label: AppStrings.val(context, en: 'Awaiting Tare', ur: 'خالی گاڑی باقی'),
           value: '${s.awaitingTareCount}',
-          subtitle: 'Pending 2nd weight',
+          subtitle: AppStrings.val(context, en: 'Pending 2nd weight', ur: 'دوسرا وزن باقی'),
           icon: Icons.rv_hookup,
           color: s.awaitingTareCount > 0 ? Colors.orange : Colors.grey,
           isAlert: s.awaitingTareCount > 0,
         ),
         const SizedBox(width: 10),
         _buildStatCard(
-          label: 'Completed Slips (مکمل)',
+          label: AppStrings.val(context, en: 'Completed Slips', ur: 'مکمل پرچیاں'),
           value: '${s.completedCount}',
-          subtitle: 'Certified slips',
+          subtitle: AppStrings.val(context, en: 'Certified slips', ur: 'تصدیق شدہ پرچیاں'),
           icon: Icons.check_circle_outline,
           color: Colors.green,
         ),
         const SizedBox(width: 10),
         _buildStatCard(
-          label: 'Net Weighed (کل وزن)',
+          label: AppStrings.val(context, en: 'Net Weighed', ur: 'صاف کل وزن'),
           value: '${_currencyFmt.format(s.totalFinalWeightKg)} KG',
-          subtitle: '${_numberFmt.format(s.totalFinalMaunds)} Maunds',
+          subtitle: '${_numberFmt.format(s.totalFinalMaunds)} ${AppStrings.val(context, en: "Maunds", ur: "من")}',
           icon: Icons.fitness_center,
           color: MColors.primary,
         ),
         const SizedBox(width: 10),
         _buildStatCard(
-          label: 'Kanda Fee (کنڈا فیس)',
+          label: AppStrings.val(context, en: 'Kanda Fee', ur: 'کنڈا فیس'),
           value: 'Rs. ${_currencyFmt.format(s.totalKandaFee)}',
-          subtitle: 'Revenue collected',
+          subtitle: AppStrings.val(context, en: 'Revenue collected', ur: 'حاصل شدہ آمدن'),
           icon: Icons.receipt_long_outlined,
           color: Colors.purple,
         ),
@@ -540,7 +574,11 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
               child: TextField(
                 controller: _searchCtrl,
                 decoration: InputDecoration(
-                  hintText: 'Search by vehicle plate, slip #, party, driver...',
+                  hintText: AppStrings.val(
+                    context,
+                    en: 'Search by vehicle plate, slip #, party, driver...',
+                    ur: 'گاڑی نمبر، پرچی، کھاتہ، یا ڈرائیور سے تلاش کریں...',
+                  ),
                   prefixIcon: const Icon(Icons.search, size: 20),
                   suffixIcon: _searchCtrl.text.isNotEmpty
                       ? IconButton(
@@ -568,22 +606,32 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
         Row(
           children: [
             _buildFilterChip(
-              label: 'All Tickets (${wbProv.tickets.length})',
+              label: AppStrings.val(
+                context,
+                en: 'All Tickets (${wbProv.tickets.length})',
+                ur: 'تمام پرچیاں (${wbProv.tickets.length})',
+              ),
               isSelected: wbProv.filter == 'all',
               onTap: () => wbProv.setFilter('all'),
             ),
             const SizedBox(width: 8),
             _buildFilterChip(
-              label:
-                  'Awaiting Tare (${wbProv.tickets.where((t) => t.isAwaitingTare).length})',
+              label: AppStrings.val(
+                context,
+                en: 'Awaiting Tare (${wbProv.tickets.where((t) => t.isAwaitingTare).length})',
+                ur: 'خالی وزن باقی (${wbProv.tickets.where((t) => t.isAwaitingTare).length})',
+              ),
               isSelected: wbProv.filter == 'awaitingTare',
               onTap: () => wbProv.setFilter('awaitingTare'),
               badgeColor: Colors.orange,
             ),
             const SizedBox(width: 8),
             _buildFilterChip(
-              label:
-                  'Completed (${wbProv.tickets.where((t) => t.status == WeighbridgeStatus.completed).length})',
+              label: AppStrings.val(
+                context,
+                en: 'Completed (${wbProv.tickets.where((t) => t.status == WeighbridgeStatus.completed).length})',
+                ur: 'مکمل شدہ (${wbProv.tickets.where((t) => t.status == WeighbridgeStatus.completed).length})',
+              ),
               isSelected: wbProv.filter == 'completed',
               onTap: () => wbProv.setFilter('completed'),
               badgeColor: Colors.green,
@@ -636,6 +684,7 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
     String shopName,
     WeighbridgeProvider wbProv,
   ) {
+    final isUrdu = AppStrings.isUrdu(context);
     final isAwaiting = ticket.isAwaitingTare;
     final cardBorderColor = isAwaiting ? Colors.orange : Colors.grey.shade300;
 
@@ -687,7 +736,7 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '(${ticket.vehicleType.labelEnglish})',
+                      '(${isUrdu ? ticket.vehicleType.labelUrdu : ticket.vehicleType.labelEnglish})',
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
@@ -705,8 +754,8 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                   ),
                   child: Text(
                     isAwaiting
-                        ? 'Awaiting Tare (خالی وزن باقی)'
-                        : 'Completed (مکمل)',
+                        ? AppStrings.val(context, en: 'Awaiting Tare', ur: 'خالی وزن باقی')
+                        : AppStrings.val(context, en: 'Completed', ur: 'مکمل'),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -725,7 +774,9 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                 const Icon(Icons.person_outline, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
-                  ticket.partyName.isEmpty ? 'Walk-in Party' : ticket.partyName,
+                  ticket.partyName.isEmpty
+                      ? AppStrings.val(context, en: 'Walk-in Party', ur: 'عام کھاتہ')
+                      : ticket.partyName,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -736,7 +787,7 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                 const SizedBox(width: 4),
                 Text(
                   ticket.commodityName.isEmpty
-                      ? 'General Crop'
+                      ? AppStrings.val(context, en: 'General Crop', ur: 'عام جنس')
                       : ticket.commodityName,
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
@@ -749,7 +800,7 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${ticket.bagCount} Bags',
+                    '${ticket.bagCount} ${AppStrings.val(context, en: "Bags", ur: "بوریاں")}',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
@@ -765,31 +816,31 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildWeightCell(
-                  '1st Gross (بھرا)',
+                  AppStrings.val(context, en: '1st Gross', ur: 'پہلا بھرا وزن'),
                   '${_numberFmt.format(ticket.grossWeightKg)} KG',
-                  '${_numberFmt.format(ticket.grossMaunds)} Maunds',
+                  '${_numberFmt.format(ticket.grossMaunds)} ${AppStrings.val(context, en: "Maunds", ur: "من")}',
                   Colors.blueGrey.shade800,
                 ),
                 _buildWeightCell(
-                  '2nd Tare (خالی)',
+                  AppStrings.val(context, en: '2nd Tare', ur: 'دوسرا خالی وزن'),
                   ticket.tareWeightKg > 0
                       ? '${_numberFmt.format(ticket.tareWeightKg)} KG'
-                      : 'Pending Tare...',
+                      : AppStrings.val(context, en: 'Pending Tare...', ur: 'خالی وزن باقی...'),
                   ticket.tareWeightKg > 0
-                      ? '${_numberFmt.format(ticket.tareMaunds)} Maunds'
-                      : 'Awaiting',
+                      ? '${_numberFmt.format(ticket.tareMaunds)} ${AppStrings.val(context, en: "Maunds", ur: "من")}'
+                      : AppStrings.val(context, en: 'Awaiting', ur: 'انتظار'),
                   ticket.tareWeightKg > 0 ? Colors.black87 : Colors.orange,
                 ),
                 _buildWeightCell(
-                  'Net Weight (صاف)',
+                  AppStrings.val(context, en: 'Net Weight', ur: 'صاف وزن'),
                   '${_numberFmt.format(ticket.computedNetWeightKg)} KG',
-                  '${_numberFmt.format(ticket.netMaunds)} Maunds',
+                  '${_numberFmt.format(ticket.netMaunds)} ${AppStrings.val(context, en: "Maunds", ur: "من")}',
                   Colors.blue.shade800,
                 ),
                 _buildWeightCell(
-                  'Final Billable (خالص)',
+                  AppStrings.val(context, en: 'Final Billable', ur: 'خالص وزن'),
                   '${_numberFmt.format(ticket.computedFinalWeightKg)} KG',
-                  '${_numberFmt.format(ticket.maunds)} Maunds',
+                  '${_numberFmt.format(ticket.maunds)} ${AppStrings.val(context, en: "Maunds", ur: "من")}',
                   MColors.primary,
                   isHighlight: true,
                 ),
@@ -803,7 +854,7 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Kanda Fee: Rs. ${_currencyFmt.format(ticket.kandaFee)} (${ticket.feePaidBy.labelEnglish})',
+                  '${AppStrings.val(context, en: "Kanda Fee", ur: "کنڈا فیس")}: Rs. ${_currencyFmt.format(ticket.kandaFee)} (${isUrdu ? ticket.feePaidBy.labelUrdu : ticket.feePaidBy.labelEnglish})',
                   style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
                 Row(
@@ -812,7 +863,9 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                       ElevatedButton.icon(
                         onPressed: () => _openRecordTareDialog(ticket),
                         icon: const Icon(Icons.rv_hookup, size: 16),
-                        label: const Text('Record Tare (خالی وزن)'),
+                        label: Text(
+                          AppStrings.val(context, en: 'Record Tare', ur: 'خالی وزن درج کریں'),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange.shade800,
                           foregroundColor: Colors.white,
@@ -828,7 +881,9 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                         onPressed: () =>
                             _createConsignmentLotFromTicket(ticket),
                         icon: const Icon(Icons.inventory, size: 14),
-                        label: const Text('Create Lot (ڈھیری)'),
+                        label: Text(
+                          AppStrings.val(context, en: 'Create Lot', ur: 'ڈھیری بنائیں'),
+                        ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: MColors.primary,
                           padding: const EdgeInsets.symmetric(
@@ -842,14 +897,20 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
                       IconButton(
                         onPressed: () => _printThermalTicketSlip(shopName, ticket),
                         icon: const Icon(Icons.receipt_long, size: 18),
-                        tooltip: 'Print 58mm/80mm Thermal Slip (تھرمل پرچی)',
+                        tooltip: AppStrings.val(
+                          context,
+                          en: 'Print Thermal Slip',
+                          ur: 'تھرمل پرچی پرنٹ کریں',
+                        ),
                         color: Colors.blueGrey.shade800,
                       ),
                       const SizedBox(width: 4),
                       ElevatedButton.icon(
                         onPressed: () => _printTicketSlip(shopName, ticket),
                         icon: const Icon(Icons.print, size: 14),
-                        label: const Text('Print A4 (پرچی)'),
+                        label: Text(
+                          AppStrings.val(context, en: 'Print A4', ur: 'A4 پرچی'),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: MColors.primary,
                           foregroundColor: Colors.white,
@@ -884,7 +945,7 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
         Text(
           title,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 11,
             color: isHighlight ? color : Colors.grey,
             fontWeight: isHighlight ? FontWeight.bold : FontWeight.normal,
           ),
@@ -893,7 +954,7 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
         Text(
           valueKg,
           style: TextStyle(
-            fontSize: isHighlight ? 14 : 12,
+            fontSize: 13,
             fontWeight: FontWeight.bold,
             color: color,
           ),
@@ -923,15 +984,23 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
             color: Colors.grey.shade400,
           ),
           const SizedBox(height: 14),
-          const Text(
-            'No Weighbridge Tickets Found',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            AppStrings.val(
+              context,
+              en: 'No Weighbridge Tickets Found',
+              ur: 'کوئی کنڈا پرچی نہیں ملی',
+            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
           Text(
             wbProv.searchQuery.isNotEmpty
-                ? 'No tickets match "${wbProv.searchQuery}".'
-                : 'Click "Record 1st Weight" to record a new vehicle arriving at the weighbridge.',
+                ? '${AppStrings.val(context, en: "No tickets match", ur: "کوئی پرچی نہیں ملی برائے")} "${wbProv.searchQuery}".'
+                : AppStrings.val(
+                    context,
+                    en: 'Click "Record 1st Weight" to record a new vehicle arriving at the weighbridge.',
+                    ur: 'کنڈا پر آنے والی نئی گاڑی کا وزن درج کرنے کے لیے "پہلا وزن محفوظ کریں" دبائیں',
+                  ),
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
@@ -939,7 +1008,13 @@ class _WeighbridgePageState extends State<WeighbridgePage> {
           ElevatedButton.icon(
             onPressed: _openRecordGrossDialog,
             icon: const Icon(Icons.add),
-            label: const Text('Record 1st Weight (بھرا گاڑی)'),
+            label: Text(
+              AppStrings.val(
+                context,
+                en: 'Record 1st Weight',
+                ur: 'پہلا وزن محفوظ کریں',
+              ),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: MColors.primary,
               foregroundColor: Colors.white,

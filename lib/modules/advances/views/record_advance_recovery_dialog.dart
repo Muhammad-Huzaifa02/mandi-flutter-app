@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/farmer_advance_model.dart';
 import 'package:mandi/modules/advances/providers/farmer_advance_provider.dart';
@@ -146,15 +147,19 @@ class _RecordAdvanceRecoveryDialogState
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Record Advance Recovery (قرض کٹوتی)',
-                              style: TextStyle(
+                            Text(
+                              AppStrings.val(
+                                context,
+                                en: 'Record Advance Recovery',
+                                ur: 'قرض کٹوتی اندراج',
+                              ),
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              'Farmer: ${widget.advance.farmerName} (${widget.advance.advanceType.labelEnglish})',
+                              '${AppStrings.val(context, en: "Farmer", ur: "زمیندار")}: ${widget.advance.farmerName} (${AppStrings.val(context, en: widget.advance.advanceType.labelEnglish, ur: widget.advance.advanceType.labelUrdu)})',
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: Colors.grey,
@@ -193,9 +198,13 @@ class _RecordAdvanceRecoveryDialogState
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Total Loan (اصل + منافع):',
-                                    style: TextStyle(
+                                  Text(
+                                    AppStrings.val(
+                                      context,
+                                      en: 'Total Loan (Principal + Markup):',
+                                      ur: 'کل قرضہ (اصل + منافع):',
+                                    ),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                     ),
@@ -214,9 +223,13 @@ class _RecordAdvanceRecoveryDialogState
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Already Recovered (وصول شدہ):',
-                                    style: TextStyle(
+                                  Text(
+                                    AppStrings.val(
+                                      context,
+                                      en: 'Already Recovered:',
+                                      ur: 'وصول شدہ رقم:',
+                                    ),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                     ),
@@ -236,9 +249,13 @@ class _RecordAdvanceRecoveryDialogState
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Remaining Balance (بقایا قرضہ):',
-                                    style: TextStyle(
+                                  Text(
+                                    AppStrings.val(
+                                      context,
+                                      en: 'Remaining Balance:',
+                                      ur: 'بقایا قرضہ:',
+                                    ),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.red,
@@ -263,13 +280,17 @@ class _RecordAdvanceRecoveryDialogState
                         // Quick Presets
                         Row(
                           children: [
-                            const Text(
-                              'Quick Presets:',
-                              style: TextStyle(fontSize: 11, color: Colors.grey),
+                            Text(
+                              AppStrings.val(
+                                context,
+                                en: 'Quick Presets:',
+                                ur: 'تیز انتخاب:',
+                              ),
+                              style: const TextStyle(fontSize: 11, color: Colors.grey),
                             ),
                             const SizedBox(width: 8),
                             _buildPresetChip(
-                              'Full (100%)',
+                              AppStrings.val(context, en: 'Full (100%)', ur: 'مکمل (100%)'),
                               () => _setPreset(1.0),
                             ),
                             const SizedBox(width: 6),
@@ -299,7 +320,11 @@ class _RecordAdvanceRecoveryDialogState
                             color: Colors.green,
                           ),
                           decoration: InputDecoration(
-                            labelText: 'Recovery Amount (وصولی رقم Rs) *',
+                            labelText: AppStrings.val(
+                              context,
+                              en: 'Recovery Amount (Rs.) *',
+                              ur: 'وصولی رقم روپے *',
+                            ),
                             prefixText: 'Rs. ',
                             border: OutlineInputBorder(
                               borderRadius: MRadius.sm,
@@ -309,11 +334,11 @@ class _RecordAdvanceRecoveryDialogState
                           onChanged: (_) => setState(() {}),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
-                              return 'Amount required';
+                              return AppStrings.val(context, en: 'Amount required', ur: 'رقم لازمی ہے');
                             }
                             final num = double.tryParse(val.trim());
                             if (num == null || num <= 0) {
-                              return 'Must be > 0';
+                              return AppStrings.val(context, en: 'Must be > 0', ur: '0 سے زیادہ ہو');
                             }
                             return null;
                           },
@@ -325,25 +350,45 @@ class _RecordAdvanceRecoveryDialogState
                         DropdownButtonFormField<String>(
                           initialValue: _recoveryMethod,
                           decoration: InputDecoration(
-                            labelText: 'Recovery Method (طریقہ کٹوتی)',
+                            labelText: AppStrings.val(
+                              context,
+                              en: 'Recovery Method',
+                              ur: 'طریقہ کٹوتی',
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: MRadius.sm,
                             ),
                           ),
-                          items: const [
+                          items: [
                             DropdownMenuItem(
                               value: 'consignment_deduction',
                               child: Text(
-                                'Consignment Auction Deduction (ڈھیری کٹوتی)',
+                                AppStrings.val(
+                                  context,
+                                  en: 'Auction Consignment Deduction',
+                                  ur: 'ڈھیری نیلامی کٹوتی',
+                                ),
                               ),
                             ),
                             DropdownMenuItem(
                               value: 'cash_payment',
-                              child: Text('Direct Cash Payment (نقد ادائیگی)'),
+                              child: Text(
+                                AppStrings.val(
+                                  context,
+                                  en: 'Direct Cash Payment',
+                                  ur: 'براہ راست نقد ادائیگی',
+                                ),
+                              ),
                             ),
                             DropdownMenuItem(
                               value: 'bank_transfer',
-                              child: Text('Bank Transfer (بینک ٹرانسفر)'),
+                              child: Text(
+                                AppStrings.val(
+                                  context,
+                                  en: 'Bank Transfer',
+                                  ur: 'بینک ٹرانسفر',
+                                ),
+                              ),
                             ),
                           ],
                           onChanged: (val) {
@@ -368,16 +413,24 @@ class _RecordAdvanceRecoveryDialogState
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'New Remaining Loan Balance:',
-                                style: TextStyle(
+                              Text(
+                                AppStrings.val(
+                                  context,
+                                  en: 'New Remaining Loan Balance:',
+                                  ur: 'نیا بقایا قرضہ بیلنس:',
+                                ),
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
                                 ),
                               ),
                               Text(
                                 newBalance <= 0
-                                    ? 'Fully Cleared! (مکمل بیباق)'
+                                    ? AppStrings.val(
+                                        context,
+                                        en: 'Fully Cleared!',
+                                        ur: 'مکمل بیباق!',
+                                      )
                                     : 'Rs. ${_currencyFmt.format(newBalance)}',
                                 style: TextStyle(
                                   fontSize: 14,
@@ -397,8 +450,16 @@ class _RecordAdvanceRecoveryDialogState
                         TextFormField(
                           controller: _notesCtrl,
                           decoration: InputDecoration(
-                            labelText: 'Notes (تفصیل / حوالہ نمبر)',
-                            hintText: 'e.g. Deducted from Wheat Lot #DH-402',
+                            labelText: AppStrings.val(
+                              context,
+                              en: 'Notes / Reference',
+                              ur: 'تفصیل و حوالہ نمبر',
+                            ),
+                            hintText: AppStrings.val(
+                              context,
+                              en: 'e.g. Deducted from Wheat Lot #DH-402',
+                              ur: 'مثلاً گندم ڈھیری سے کٹوتی #DH-402',
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: MRadius.sm,
                             ),
@@ -418,7 +479,9 @@ class _RecordAdvanceRecoveryDialogState
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(
+                        AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں'),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -434,7 +497,9 @@ class _RecordAdvanceRecoveryDialogState
                             )
                           : const Icon(Icons.check_circle_outline),
                       label: Text(
-                        _isSaving ? 'Saving...' : 'Record Recovery (کٹوتی درج کریں)',
+                        _isSaving
+                            ? AppStrings.val(context, en: 'Saving...', ur: 'محفوظ ہو رہا ہے...')
+                            : AppStrings.val(context, en: 'Record Recovery', ur: 'کٹوتی درج کریں'),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade800,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/storage_location_model.dart';
 import 'package:mandi/modules/storage/providers/storage_provider.dart';
@@ -162,8 +163,8 @@ class _AddEditStorageLocationDialogState
                         const SizedBox(width: 8),
                         Text(
                           isEdit
-                              ? 'Edit Storage Facility'
-                              : 'Add Storage Facility (گودام / کولڈ سٹوریج)',
+                              ? AppStrings.val(context, en: 'Edit Storage Facility', ur: 'گودام معلومات تبدیل کریں')
+                              : AppStrings.val(context, en: 'Add Storage Facility', ur: 'نیا گودام یا سٹوریج درج کریں'),
                           style:
                               Theme.of(context).textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -181,7 +182,7 @@ class _AddEditStorageLocationDialogState
 
                 // Location Type Choice
                 Text(
-                  'Facility Type (قسم):',
+                  AppStrings.val(context, en: 'Facility Type:', ur: 'سہولت کی قسم:'),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -190,7 +191,7 @@ class _AddEditStorageLocationDialogState
                 Row(
                   children: [
                     ChoiceChip(
-                      label: const Text('Godown (منڈی گودام)'),
+                      label: Text(AppStrings.val(context, en: 'Godown', ur: 'منڈی گودام')),
                       selected: _type == StorageLocationType.godown,
                       selectedColor: MColors.primary.withValues(alpha: 0.15),
                       onSelected: (v) {
@@ -201,7 +202,7 @@ class _AddEditStorageLocationDialogState
                     ),
                     const SizedBox(width: 8),
                     ChoiceChip(
-                      label: const Text('Cold Store (کولڈ سٹوریج)'),
+                      label: Text(AppStrings.val(context, en: 'Cold Store', ur: 'کولڈ سٹوریج')),
                       selected: _type == StorageLocationType.coldStorage,
                       selectedColor: Colors.blueAccent.withValues(alpha: 0.15),
                       onSelected: (v) {
@@ -213,7 +214,7 @@ class _AddEditStorageLocationDialogState
                     ),
                     const SizedBox(width: 8),
                     ChoiceChip(
-                      label: const Text('Shop Pharr (پھڑ)'),
+                      label: Text(AppStrings.val(context, en: 'Shop Pharr', ur: 'پھڑ')),
                       selected: _type == StorageLocationType.shopPharr,
                       selectedColor: MColors.gold.withValues(alpha: 0.15),
                       onSelected: (v) {
@@ -230,13 +231,13 @@ class _AddEditStorageLocationDialogState
                 // Facility Name
                 TextFormField(
                   controller: _nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Facility Name (گودام یا سٹور کا نام) *',
-                    hintText: 'e.g. Al-Rehman Cold Store / Mandi Godown #3',
-                    prefixIcon: Icon(Icons.business_outlined),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(context, en: 'Facility Name *', ur: 'گودام یا سٹور کا نام *'),
+                    hintText: AppStrings.val(context, en: 'e.g. Al-Rehman Cold Store / Mandi Godown #3', ur: 'مثلاً الرحمٰن کولڈ سٹور / گودام نمبر ۳'),
+                    prefixIcon: const Icon(Icons.business_outlined),
                   ),
                   validator: (v) => v == null || v.trim().isEmpty
-                      ? 'Please enter facility name'
+                      ? AppStrings.val(context, en: 'Please enter facility name', ur: 'براہ کرم گودام کا نام درج کریں')
                       : null,
                 ),
                 const SizedBox(height: 14),
@@ -247,16 +248,16 @@ class _AddEditStorageLocationDialogState
                     Expanded(
                       child: TextFormField(
                         controller: _capacityCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Capacity (کل گنجائش بوریاں) *',
-                          hintText: 'e.g. 5000',
-                          prefixIcon: Icon(Icons.inventory_2_outlined),
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Capacity (Total Bags) *', ur: 'کل گنجائش (بوریاں) *'),
+                          hintText: '5000',
+                          prefixIcon: const Icon(Icons.inventory_2_outlined),
                         ),
                         keyboardType: TextInputType.number,
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Required';
+                          if (v == null || v.trim().isEmpty) return AppStrings.val(context, en: 'Required', ur: 'لازمی');
                           final n = int.tryParse(v.trim());
-                          if (n == null || n <= 0) return 'Must be > 0';
+                          if (n == null || n <= 0) return AppStrings.val(context, en: 'Must be > 0', ur: 'صفر سے بڑا ہو');
                           return null;
                         },
                       ),
@@ -265,10 +266,10 @@ class _AddEditStorageLocationDialogState
                     Expanded(
                       child: TextFormField(
                         controller: _rentCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Monthly Rent / Bag (کرایہ)',
-                          hintText: 'e.g. 80 (0 if own shop)',
-                          prefixIcon: Icon(Icons.monetization_on_outlined),
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Monthly Rent / Bag (PKR)', ur: 'ماہانہ کرایہ فی بوری (روپیہ)'),
+                          hintText: AppStrings.val(context, en: 'e.g. 80 (0 if own shop)', ur: 'مثلاً ۸۰ (اپنی دکان ہو تو صفر)'),
+                          prefixIcon: const Icon(Icons.monetization_on_outlined),
                         ),
                         keyboardType: TextInputType.number,
                       ),
@@ -283,10 +284,10 @@ class _AddEditStorageLocationDialogState
                     Expanded(
                       child: TextFormField(
                         controller: _contactPersonCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Manager / Munshi Name',
-                          hintText: 'e.g. Haji Bashir',
-                          prefixIcon: Icon(Icons.person_outline),
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Manager / Munshi Name', ur: 'منیجر یا منشی کا نام'),
+                          hintText: AppStrings.val(context, en: 'e.g. Haji Bashir', ur: 'مثلاً حاجی بشیر'),
+                          prefixIcon: const Icon(Icons.person_outline),
                         ),
                       ),
                     ),
@@ -294,10 +295,10 @@ class _AddEditStorageLocationDialogState
                     Expanded(
                       child: TextFormField(
                         controller: _phoneCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Phone (فون نمبر)',
+                        decoration: InputDecoration(
+                          labelText: AppStrings.val(context, en: 'Phone Number', ur: 'فون نمبر'),
                           hintText: '03001234567',
-                          prefixIcon: Icon(Icons.phone_outlined),
+                          prefixIcon: const Icon(Icons.phone_outlined),
                         ),
                         keyboardType: TextInputType.phone,
                       ),
@@ -309,10 +310,10 @@ class _AddEditStorageLocationDialogState
                 // Address
                 TextFormField(
                   controller: _addressCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Location / Address (پتہ)',
-                    hintText: 'e.g. Depalpur Road near Grain Market',
-                    prefixIcon: Icon(Icons.location_on_outlined),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(context, en: 'Location / Address', ur: 'پتہ یا مقام'),
+                    hintText: AppStrings.val(context, en: 'e.g. Depalpur Road near Grain Market', ur: 'مثلاً دیپالپور روڈ غلہ منڈی'),
+                    prefixIcon: const Icon(Icons.location_on_outlined),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -320,9 +321,9 @@ class _AddEditStorageLocationDialogState
                 // Notes
                 TextFormField(
                   controller: _notesCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Notes / Remarks (تفصیل)',
-                    prefixIcon: Icon(Icons.note_alt_outlined),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(context, en: 'Notes / Remarks', ur: 'تفصیل یا ہدایات'),
+                    prefixIcon: const Icon(Icons.note_alt_outlined),
                   ),
                 ),
 
@@ -335,7 +336,7 @@ class _AddEditStorageLocationDialogState
                     TextButton(
                       onPressed:
                           _isSaving ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -351,7 +352,9 @@ class _AddEditStorageLocationDialogState
                             )
                           : const Icon(Icons.check),
                       label: Text(
-                        isEdit ? 'Update Facility' : 'Save Facility',
+                        isEdit
+                            ? AppStrings.val(context, en: 'Update Facility', ur: 'معلومات محفوظ کریں')
+                            : AppStrings.val(context, en: 'Save Facility', ur: 'گودام محفوظ کریں'),
                       ),
                     ),
                   ],

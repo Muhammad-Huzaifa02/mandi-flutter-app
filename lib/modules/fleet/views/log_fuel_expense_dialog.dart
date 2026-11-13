@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/modules/fleet/providers/fleet_provider.dart';
 
@@ -39,14 +40,34 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
 
   bool _isSaving = false;
 
-  final Map<String, String> _fuelTypes = {
-    'diesel': 'Diesel (ڈیزل)',
-    'petrol': 'Petrol (پٹرول)',
-    'cng': 'CNG (گیس)',
-    'engine_oil': 'Engine Oil & Filter (مبلائل)',
-    'maintenance': 'Workshop Repair (مرمت و خرابی)',
-    'tire_puncture': 'Tire & Tube (ٹائر و پنکچر)',
-  };
+  static const List<String> _fuelTypeKeys = [
+    'diesel',
+    'petrol',
+    'cng',
+    'engine_oil',
+    'maintenance',
+    'tire_puncture',
+  ];
+
+  static String _getFuelTypeLabel(BuildContext context, String key) {
+    final isUrdu = AppStrings.isUrdu(context);
+    switch (key) {
+      case 'diesel':
+        return isUrdu ? 'ڈیزل' : 'Diesel';
+      case 'petrol':
+        return isUrdu ? 'پٹرول' : 'Petrol';
+      case 'cng':
+        return isUrdu ? 'سی این جی' : 'CNG';
+      case 'engine_oil':
+        return isUrdu ? 'مبلائل و فلٹر' : 'Engine Oil & Filter';
+      case 'maintenance':
+        return isUrdu ? 'مرمت و ورکشاپ' : 'Workshop Repair';
+      case 'tire_puncture':
+        return isUrdu ? 'ٹائر و پنکچر' : 'Tire & Tube';
+      default:
+        return key;
+    }
+  }
 
   @override
   void initState() {
@@ -125,16 +146,16 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Log Fuel / Expense (ڈیزل و خرچ لاگ)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Log Fuel / Expense', ur: 'ڈیزل و خرچ کا اندراج'),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Fuel purchases, lubricants & fleet maintenance',
+                            AppStrings.val(context, en: 'Fuel purchases, lubricants & fleet maintenance', ur: 'ڈیزل خریداری، مبلائل اور مرمتی اخراجات'),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -161,16 +182,16 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Select Vehicle / گاڑی *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Select Vehicle *', ur: 'گاڑی منتخب کریں *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
                           if (vehicles.isEmpty)
-                            const Text('No vehicles available',
+                            Text(AppStrings.val(context, en: 'No vehicles available', ur: 'کوئی گاڑی دستیاب نہیں'),
                                 style:
-                                    TextStyle(color: Colors.red, fontSize: 12))
+                                    const TextStyle(color: Colors.red, fontSize: 12))
                           else
                             DropdownButtonFormField<String>(
                               initialValue: _selectedVehicleId,
@@ -185,7 +206,7 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                                 return DropdownMenuItem(
                                   value: v.id,
                                   child: Text(
-                                    '${v.registrationNumber} (${v.vehicleType.labelEnglish})',
+                                    '${v.registrationNumber} (${AppStrings.isUrdu(context) ? v.vehicleType.labelUrdu : v.vehicleType.labelEnglish})',
                                     style: const TextStyle(fontSize: 12),
                                   ),
                                 );
@@ -211,9 +232,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Date / تاریخ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Date', ur: 'تاریخ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -260,9 +281,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Expense Type / قسم خرچہ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Expense Type', ur: 'خرچ کی قسم'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -275,10 +296,10 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 10),
                             ),
-                            items: _fuelTypes.entries.map((e) {
+                            items: _fuelTypeKeys.map((key) {
                               return DropdownMenuItem(
-                                value: e.key,
-                                child: Text(e.value,
+                                value: key,
+                                child: Text(_getFuelTypeLabel(context, key),
                                     style: const TextStyle(fontSize: 12)),
                               );
                             }).toList(),
@@ -296,9 +317,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Linked Trip (اختیاری ٹرپ لنک)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Linked Trip (Optional)', ur: 'منسلک ٹرپ (اختیاری)'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -312,10 +333,10 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                                   horizontal: 12, vertical: 10),
                             ),
                             items: [
-                              const DropdownMenuItem<String?>(
+                              DropdownMenuItem<String?>(
                                 value: null,
-                                child: Text('No Trip (General Fleet)',
-                                    style: TextStyle(fontSize: 12)),
+                                child: Text(AppStrings.val(context, en: 'No Trip (General Fleet)', ur: 'کوئی ٹرپ نہیں (عام کھاتہ)'),
+                                    style: const TextStyle(fontSize: 12)),
                               ),
                               ...vehicleTrips.map((t) {
                                 return DropdownMenuItem<String?>(
@@ -346,9 +367,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Pump / Vendor / پٹرول پمپ یا دکان *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Pump / Vendor *', ur: 'پٹرول پمپ یا دکان *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -377,9 +398,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Voucher # / پرچی نمبر',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Voucher #', ur: 'پرچی نمبر'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -408,9 +429,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Quantity / Liters / مقدار',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Quantity / Liters', ur: 'مقدار (لیٹر)'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -435,9 +456,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Rate / ریٹ فی لیٹر',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Rate Per Liter', ur: 'ریٹ فی لیٹر'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -462,9 +483,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Total Cost / کل لاگت *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Total Cost *', ur: 'کل لاگت *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -499,9 +520,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Odometer / موجودہ میٹر ریڈنگ (KM)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Odometer (KM)', ur: 'میٹر ریڈنگ (کلومیٹر)'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -529,9 +550,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                 const SizedBox(height: 14),
 
                 // Notes
-                const Text(
-                  'Remarks / تفصیل',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(context, en: 'Remarks', ur: 'تفصیل و ریمارکس'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -558,9 +579,9 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Total Fuel / Expense Payable:',
-                        style: TextStyle(
+                      Text(
+                        AppStrings.val(context, en: 'Total Fuel / Expense Payable:', ur: 'کل واجب الادا رقم:'),
+                        style: const TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 13),
                       ),
                       Text(
@@ -582,7 +603,7 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -603,7 +624,7 @@ class _LogFuelExpenseDialogState extends State<LogFuelExpenseDialog> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.check),
-                      label: const Text('Log Expense (خرچ درج کریں)'),
+                      label: Text(AppStrings.val(context, en: 'Log Expense', ur: 'خرچ درج کریں')),
                     ),
                   ],
                 ),

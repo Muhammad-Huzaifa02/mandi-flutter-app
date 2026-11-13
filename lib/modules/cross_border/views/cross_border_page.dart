@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/cross_border_pdf_generator.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
@@ -60,28 +61,33 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
   Widget build(BuildContext context) {
     final shopCtx = context.watch<ShopContextProvider>();
     final shop = shopCtx.currentShop;
-    final shopName = shop?.name ?? 'Mandi Commission Shop';
+    final shopName = shop?.name ??
+        AppStrings.val(
+          context,
+          en: 'Mandi Commission Shop',
+          ur: 'منڈی کمیشن شاپ',
+        );
     final cbProv = context.watch<CrossBorderProvider>();
     final summary = cbProv.summary;
     final shipments = cbProv.filteredShipments;
+    final isUrdu = AppStrings.isUrdu(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Cross-Border Trade'),
-            Text(
-              'پاک افغان و پاک ایران بین الاقوامی تجارت',
-              style: TextStyle(fontSize: 11, color: MColors.gold),
-            ),
-          ],
-        ),
+        title: Text(AppStrings.val(
+          context,
+          en: 'Cross-Border Trade',
+          ur: 'بین الاقوامی سرحد تجارت',
+        )),
         actions: [
           IconButton(
             icon: const Icon(Icons.print_outlined),
-            tooltip: 'Print Cross-Border Register (رجسٹر پرنٹ)',
+            tooltip: AppStrings.val(
+              context,
+              en: 'Print Cross-Border Register',
+              ur: 'سرحدی رجسٹر پرنٹ کریں',
+            ),
             onPressed: shipments.isEmpty
                 ? null
                 : () => _printAllRegister(
@@ -93,7 +99,11 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            tooltip: 'Record Border Cargo (نیا مال درج کریں)',
+            tooltip: AppStrings.val(
+              context,
+              en: 'Record Border Cargo',
+              ur: 'سرحدی مال درج کریں',
+            ),
             onPressed: _openNewShipmentDialog,
           ),
         ],
@@ -101,7 +111,11 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openNewShipmentDialog,
         icon: const Icon(Icons.add),
-        label: const Text('New Cargo (نیا مال)'),
+        label: Text(AppStrings.val(
+          context,
+          en: 'New Cargo',
+          ur: 'نیا مال',
+        )),
         backgroundColor: MColors.gold,
         foregroundColor: Colors.black,
       ),
@@ -119,15 +133,15 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
                   const SizedBox(height: MSpacing.md),
 
                   // Search and Filters
-                  _buildSearchAndFilters(cbProv),
+                  _buildSearchAndFilters(cbProv, isUrdu),
                   const SizedBox(height: MSpacing.md),
 
                   // Shipment List or Empty State
                   if (shipments.isEmpty)
                     _buildEmptyState(cbProv)
                   else
-                    ...shipments.map((s) => _buildShipmentCard(s, shopName)),
-                  const SizedBox(height: 70), // Floating action button padding
+                    ...shipments.map((s) => _buildShipmentCard(s, shopName, isUrdu)),
+                  const SizedBox(height: 70),
                 ],
               ),
             ),
@@ -142,10 +156,13 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                title: 'Total Border Cargo',
-                urduTitle: 'کل بین الاقوامی مال',
-                value: '${_numberFmt.format(summary.totalCargoMaunds)} M',
-                subtitle: '${summary.totalShipments} Vehicles Imported',
+                title: AppStrings.val(
+                  context,
+                  en: 'Total Border Cargo',
+                  ur: 'کل بین الاقوامی مال',
+                ),
+                value: '${_numberFmt.format(summary.totalCargoMaunds)} ${AppStrings.val(context, en: "M", ur: "من")}',
+                subtitle: '${summary.totalShipments} ${AppStrings.val(context, en: "Vehicles Imported", ur: "درآمدی گاڑیاں")}',
                 icon: Icons.local_shipping_outlined,
                 color: Colors.blue.shade700,
               ),
@@ -153,10 +170,13 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
             const SizedBox(width: MSpacing.sm),
             Expanded(
               child: _buildMetricCard(
-                title: 'Foreign Debt (PKR Equiv)',
-                urduTitle: 'غیر ملکی قرضہ واجب الادا',
+                title: AppStrings.val(
+                  context,
+                  en: 'Foreign Debt (PKR Equiv)',
+                  ur: 'غیر ملکی قرضہ واجب الادا',
+                ),
                 value: 'Rs. ${_currencyFmt.format(summary.totalOutstandingSupplierPkr)}',
-                subtitle: '${summary.activeShipments} Active Shipments',
+                subtitle: '${summary.activeShipments} ${AppStrings.val(context, en: "Active Shipments", ur: "زیر التواء مال")}',
                 icon: Icons.public_outlined,
                 color: Colors.red.shade700,
               ),
@@ -168,10 +188,17 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                title: 'Total Landed Value',
-                urduTitle: 'کل لاگت منڈی پہنچ',
+                title: AppStrings.val(
+                  context,
+                  en: 'Total Landed Value',
+                  ur: 'کل لاگت منڈی پہنچ',
+                ),
                 value: 'Rs. ${_currencyFmt.format(summary.totalLandedCostPkr)}',
-                subtitle: 'Cargo + Tariffs + Freight',
+                subtitle: AppStrings.val(
+                  context,
+                  en: 'Cargo + Tariffs + Freight',
+                  ur: 'مال + ڈیوٹی + کرایہ',
+                ),
                 icon: Icons.warehouse_outlined,
                 color: const Color(0xFF2E7D32),
               ),
@@ -179,10 +206,17 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
             const SizedBox(width: MSpacing.sm),
             Expanded(
               child: _buildMetricCard(
-                title: 'Customs & Border Freight',
-                urduTitle: 'کسٹم ڈیوٹی و گاڑی کرایہ',
+                title: AppStrings.val(
+                  context,
+                  en: 'Customs & Border Freight',
+                  ur: 'کسٹم ڈیوٹی و گاڑی کرایہ',
+                ),
                 value: 'Rs. ${_currencyFmt.format(summary.totalCustomsFreightPkr)}',
-                subtitle: 'Border Logistics Paid',
+                subtitle: AppStrings.val(
+                  context,
+                  en: 'Border Logistics Paid',
+                  ur: 'ادا شدہ اخراجات',
+                ),
                 icon: Icons.verified_outlined,
                 color: Colors.amber.shade900,
               ),
@@ -195,7 +229,6 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
 
   Widget _buildMetricCard({
     required String title,
-    required String urduTitle,
     required String value,
     required String subtitle,
     required IconData icon,
@@ -218,10 +251,6 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
               Icon(icon, size: 16, color: color),
             ],
           ),
-          Text(
-            urduTitle,
-            style: TextStyle(fontSize: 8.5, color: color.withValues(alpha: 0.8)),
-          ),
           const SizedBox(height: 4),
           Text(
             value,
@@ -243,7 +272,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
   }
 
   // ── Search & Filter Tabs ───────────────────────────────────────────────────
-  Widget _buildSearchAndFilters(CrossBorderProvider cbProv) {
+  Widget _buildSearchAndFilters(CrossBorderProvider cbProv, bool isUrdu) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -251,7 +280,11 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
         TextField(
           controller: _searchCtrl,
           decoration: InputDecoration(
-            hintText: 'Search by GD #, vehicle plate, driver, commodity...',
+            hintText: AppStrings.val(
+              context,
+              en: 'Search by GD #, vehicle plate, driver, commodity...',
+              ur: 'جی ڈی نمبر، گاڑی نمبر، ڈرائیور یا جنس سے تلاش کریں...',
+            ),
             prefixIcon: const Icon(Icons.search, size: 20),
             suffixIcon: _searchCtrl.text.isNotEmpty
                 ? IconButton(
@@ -280,25 +313,41 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
           child: Row(
             children: [
               _buildFilterChip(
-                label: 'All Origins (${cbProv.shipments.length})',
+                label: AppStrings.val(
+                  context,
+                  en: 'All Origins (${cbProv.shipments.length})',
+                  ur: 'تمام ممالک (${cbProv.shipments.length})',
+                ),
                 isSelected: cbProv.countryFilter == 'all',
                 onTap: () => cbProv.setCountryFilter('all'),
               ),
               const SizedBox(width: 6),
               _buildFilterChip(
-                label: '🇦🇫 Afghanistan (افغانستان)',
+                label: AppStrings.val(
+                  context,
+                  en: '🇦🇫 Afghanistan',
+                  ur: '🇦🇫 افغانستان',
+                ),
                 isSelected: cbProv.countryFilter == 'afghanistan',
                 onTap: () => cbProv.setCountryFilter('afghanistan'),
               ),
               const SizedBox(width: 6),
               _buildFilterChip(
-                label: '🇮🇷 Iran (ایران)',
+                label: AppStrings.val(
+                  context,
+                  en: '🇮🇷 Iran',
+                  ur: '🇮🇷 ایران',
+                ),
                 isSelected: cbProv.countryFilter == 'iran',
                 onTap: () => cbProv.setCountryFilter('iran'),
               ),
               const SizedBox(width: 6),
               _buildFilterChip(
-                label: '🇺🇿 Central Asia (وسطی ایشیا)',
+                label: AppStrings.val(
+                  context,
+                  en: '🇺🇿 Central Asia',
+                  ur: '🇺🇿 وسطی ایشیا',
+                ),
                 isSelected: cbProv.countryFilter == 'centralAsia',
                 onTap: () => cbProv.setCountryFilter('centralAsia'),
               ),
@@ -313,34 +362,54 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
           child: Row(
             children: [
               _buildFilterChip(
-                label: 'All Status',
+                label: AppStrings.val(
+                  context,
+                  en: 'All Status',
+                  ur: 'تمام کیفیت',
+                ),
                 isSelected: cbProv.statusFilter == 'all',
                 onTap: () => cbProv.setStatusFilter('all'),
               ),
               const SizedBox(width: 6),
               _buildFilterChip(
-                label: 'In Transit (راستے میں)',
+                label: AppStrings.val(
+                  context,
+                  en: 'In Transit',
+                  ur: 'راستے میں',
+                ),
                 isSelected: cbProv.statusFilter == 'inTransit',
                 onTap: () => cbProv.setStatusFilter('inTransit'),
                 badgeColor: Colors.orange,
               ),
               const SizedBox(width: 6),
               _buildFilterChip(
-                label: 'Customs Cleared (کلیئرڈ)',
+                label: AppStrings.val(
+                  context,
+                  en: 'Customs Cleared',
+                  ur: 'کسٹم کلیئرڈ',
+                ),
                 isSelected: cbProv.statusFilter == 'clearedAtBorder',
                 onTap: () => cbProv.setStatusFilter('clearedAtBorder'),
                 badgeColor: Colors.blue,
               ),
               const SizedBox(width: 6),
               _buildFilterChip(
-                label: 'Mandi Arrived (آمد)',
+                label: AppStrings.val(
+                  context,
+                  en: 'Mandi Arrived',
+                  ur: 'منڈی آمد',
+                ),
                 isSelected: cbProv.statusFilter == 'arrivedInMandi',
                 onTap: () => cbProv.setStatusFilter('arrivedInMandi'),
                 badgeColor: Colors.teal,
               ),
               const SizedBox(width: 6),
               _buildFilterChip(
-                label: 'Settled (بیباق)',
+                label: AppStrings.val(
+                  context,
+                  en: 'Settled',
+                  ur: 'بیباق',
+                ),
                 isSelected: cbProv.statusFilter == 'settled',
                 onTap: () => cbProv.setStatusFilter('settled'),
                 badgeColor: const Color(0xFF2E7D32),
@@ -406,7 +475,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
   }
 
   // ── Shipment Card Widget ────────────────────────────────────────────────────
-  Widget _buildShipmentCard(CrossBorderShipment s, String shopName) {
+  Widget _buildShipmentCard(CrossBorderShipment s, String shopName, bool isUrdu) {
     final shop = context.read<ShopContextProvider>().currentShop;
 
     return GlassCard(
@@ -440,7 +509,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      '${s.originCountry.labelEnglish} • ${s.borderCrossing.labelEnglish.split(" ").first}',
+                      '${isUrdu ? s.originCountry.labelUrdu : s.originCountry.labelEnglish} • ${isUrdu ? s.borderCrossing.labelUrdu.split(" ").first : s.borderCrossing.labelEnglish.split(" ").first}',
                       style: const TextStyle(
                           fontSize: 9.5, fontWeight: FontWeight.bold),
                     ),
@@ -455,7 +524,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  '${s.status.labelEnglish} (${s.status.labelUrdu})',
+                  isUrdu ? s.status.labelUrdu : s.status.labelEnglish,
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.bold,
@@ -480,7 +549,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
                 ),
               ),
               Text(
-                '${s.packageCount} ${s.packageType}s (${_numberFmt.format(s.maunds)} M)',
+                '${s.packageCount} ${s.packageType}s (${_numberFmt.format(s.maunds)} ${AppStrings.val(context, en: "M", ur: "من")})',
                 style: const TextStyle(fontSize: 11, color: Colors.grey),
               ),
             ],
@@ -490,7 +559,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
-                'Customs GD #: ${s.customsGdNumber}  |  Agent: ${s.clearingAgentName.isNotEmpty ? s.clearingAgentName : "Direct"}',
+                '${AppStrings.val(context, en: "Customs GD #:", ur: "کسٹم جی ڈی #:")} ${s.customsGdNumber}  |  ${AppStrings.val(context, en: "Agent:", ur: "ایجنٹ:")} ${s.clearingAgentName.isNotEmpty ? s.clearingAgentName : (isUrdu ? "براہ راست" : "Direct")}',
                 style: const TextStyle(fontSize: 10, color: Colors.grey),
               ),
             ),
@@ -503,17 +572,23 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _cell('Contract Price',
-                  '${s.currency.symbol} ${_currencyFmt.format(s.foreignContractAmount)}',
-                  '@ Rs. ${_numberFmt.format(s.exchangeRateToPkr)}'),
-              _cell('Border Surcharges',
-                  'Rs. ${_currencyFmt.format(s.totalBorderExpensesPkr)}',
-                  'Duty + Freight'),
-              _cell('Landed Cost (منڈی)',
-                  'Rs. ${_currencyFmt.format(s.computedTotalLandedCostPkr)}',
-                  'Rs. ${_currencyFmt.format(s.costPerMaundPkr)} / Maund',
-                  isBold: true,
-                  color: const Color(0xFF2E7D32)),
+              _cell(
+                AppStrings.val(context, en: 'Contract Price', ur: 'معاہدہ قیمت'),
+                '${s.currency.symbol} ${_currencyFmt.format(s.foreignContractAmount)}',
+                '@ Rs. ${_numberFmt.format(s.exchangeRateToPkr)}',
+              ),
+              _cell(
+                AppStrings.val(context, en: 'Border Surcharges', ur: 'سرحدی اخراجات'),
+                'Rs. ${_currencyFmt.format(s.totalBorderExpensesPkr)}',
+                AppStrings.val(context, en: 'Duty + Freight', ur: 'ڈیوٹی + کرایہ'),
+              ),
+              _cell(
+                AppStrings.val(context, en: 'Landed Cost', ur: 'منڈی لاگت'),
+                'Rs. ${_currencyFmt.format(s.computedTotalLandedCostPkr)}',
+                'Rs. ${_currencyFmt.format(s.costPerMaundPkr)} / ${AppStrings.val(context, en: "Maund", ur: "من")}',
+                isBold: true,
+                color: const Color(0xFF2E7D32),
+              ),
             ],
           ),
 
@@ -527,12 +602,12 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Supplier: ${s.supplierName}',
+                    '${AppStrings.val(context, en: "Farmer:", ur: "زمیندار:")} ${s.supplierName}',
                     style: const TextStyle(
                         fontSize: 10.5, fontWeight: FontWeight.w600),
                   ),
                   Text(
-                    'Debt: ${s.currency.symbol} ${_currencyFmt.format(s.computedRemainingSupplierForeign)} (Rs. ${_currencyFmt.format(s.computedRemainingSupplierPkr)})',
+                    '${AppStrings.val(context, en: "Debt:", ur: "قرضہ:")} ${s.currency.symbol} ${_currencyFmt.format(s.computedRemainingSupplierForeign)} (Rs. ${_currencyFmt.format(s.computedRemainingSupplierPkr)})',
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.bold,
@@ -579,7 +654,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
                   );
                 },
                 icon: const Icon(Icons.inventory_2_outlined, size: 14),
-                label: const Text('Bridge Lot (ڈھیری)'),
+                label: Text(AppStrings.val(context, en: 'Bridge Lot', ur: 'ڈھیری لاٹ')),
                 style: OutlinedButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -590,7 +665,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
               OutlinedButton.icon(
                 onPressed: () => _openUpdateStatusDialog(s),
                 icon: const Icon(Icons.sync, size: 14),
-                label: const Text('Update / Pay'),
+                label: Text(AppStrings.val(context, en: 'Update / Pay', ur: 'اپ ڈیٹ / ادائیگی')),
                 style: OutlinedButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -608,7 +683,7 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
                   );
                 },
                 icon: const Icon(Icons.print, size: 14),
-                label: const Text('Manifest (پرچہ)'),
+                label: Text(AppStrings.val(context, en: 'Manifest', ur: 'پرچہ مال')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MColors.primary,
                   foregroundColor: Colors.white,
@@ -655,15 +730,27 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
           Icon(Icons.public_off_outlined,
               size: 56, color: Colors.grey.shade400),
           const SizedBox(height: 12),
-          const Text(
-            'No Cross-Border Shipments Found',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          Text(
+            AppStrings.val(
+              context,
+              en: 'No Cross-Border Shipments Found',
+              ur: 'کوئی سرحدی مال نہیں ملا',
+            ),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
           Text(
             cbProv.searchQuery.isNotEmpty
-                ? 'No shipments match "${cbProv.searchQuery}".'
-                : 'Tap "New Cargo" to log imported fruits & vegetables from Afghanistan or Iran.',
+                ? AppStrings.val(
+                    context,
+                    en: 'No shipments match "${cbProv.searchQuery}".',
+                    ur: 'کوئی مال تلاش سے مطابقت نہیں رکھتا۔',
+                  )
+                : AppStrings.val(
+                    context,
+                    en: 'Tap "New Cargo" to log imported fruits & vegetables from Afghanistan or Iran.',
+                    ur: 'افغانستان یا ایران سے درآمدی پھل و سبزی کے اندراج کے لیے "نیا مال" پر کلک کریں۔',
+                  ),
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 11, color: Colors.grey),
           ),
@@ -671,7 +758,11 @@ class _CrossBorderPageState extends State<CrossBorderPage> {
           ElevatedButton.icon(
             onPressed: _openNewShipmentDialog,
             icon: const Icon(Icons.add),
-            label: const Text('Record 1st Border Cargo (نیا مال)'),
+            label: Text(AppStrings.val(
+              context,
+              en: 'Record 1st Border Cargo',
+              ur: 'پہلا سرحدی مال درج کریں',
+            )),
             style: ElevatedButton.styleFrom(
               backgroundColor: MColors.primary,
               foregroundColor: Colors.white,

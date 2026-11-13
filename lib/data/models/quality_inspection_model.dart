@@ -87,11 +87,11 @@ enum ColdChainStatus {
   String get labelUrdu {
     switch (this) {
       case ColdChainStatus.optimal:
-        return 'بہترین (Optimal)';
+        return 'بہترین';
       case ColdChainStatus.warning:
-        return 'توجہ طلب (Warning)';
+        return 'توجہ طلب';
       case ColdChainStatus.critical:
-        return 'خرابی خطرہ (Critical)';
+        return 'خرابی کا خطرہ';
     }
   }
 

@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/cross_border_shipment_model.dart';
 import 'package:mandi/modules/consignment/views/add_consignment_lot_page.dart';
 import 'package:mandi/modules/cross_border/providers/cross_border_provider.dart';
 
-/// Modal dialog to update transit status, record foreign supplier settlements,
-/// or bridge into an incoming Mandi Consignment Lot (Dheri / آمد و ڈھیری).
+/// Modal dialog to update transit status, record foreign farmer settlements,
+/// or bridge into an incoming Mandi Consignment Lot.
 class UpdateCrossBorderStatusDialog extends StatefulWidget {
   final CrossBorderShipment shipment;
 
@@ -41,6 +42,7 @@ class _UpdateCrossBorderStatusDialogState
   }
 
   Future<void> _updateStatus() async {
+    final isUrdu = AppStrings.isUrdu(context);
     setState(() => _isUpdating = true);
     try {
       await context.read<CrossBorderProvider>().updateShipmentStatus(
@@ -51,8 +53,9 @@ class _UpdateCrossBorderStatusDialogState
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Shipment status updated to ${_selectedStatus.labelEnglish}'),
+            content: Text(isUrdu
+                ? 'مال کی حالت تبدیل ہو کر ${_selectedStatus.labelUrdu} ہو گئی'
+                : 'Shipment status updated to ${_selectedStatus.labelEnglish}'),
             backgroundColor: const Color(0xFF2E7D32),
             behavior: SnackBarBehavior.floating,
           ),
@@ -62,7 +65,9 @@ class _UpdateCrossBorderStatusDialogState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update status: $e'),
+            content: Text(isUrdu
+                ? 'حالت تبدیل کرنے میں ناکامی: $e'
+                : 'Failed to update status: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -74,6 +79,7 @@ class _UpdateCrossBorderStatusDialogState
   }
 
   Future<void> _recordPayment() async {
+    final isUrdu = AppStrings.isUrdu(context);
     final payAmount = double.tryParse(_additionalPaymentCtrl.text) ?? 0.0;
     if (payAmount <= 0) return;
 
@@ -87,8 +93,9 @@ class _UpdateCrossBorderStatusDialogState
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                'Recorded ${widget.shipment.currency.symbol} ${_currencyFmt.format(payAmount)} payment to supplier'),
+            content: Text(isUrdu
+                ? 'زمیندار کو ${widget.shipment.currency.symbol} ${_currencyFmt.format(payAmount)} کی ادائیگی محفوظ کر لی گئی'
+                : 'Recorded ${widget.shipment.currency.symbol} ${_currencyFmt.format(payAmount)} payment to farmer'),
             backgroundColor: const Color(0xFF2E7D32),
             behavior: SnackBarBehavior.floating,
           ),
@@ -98,7 +105,9 @@ class _UpdateCrossBorderStatusDialogState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to record payment: $e'),
+            content: Text(isUrdu
+                ? 'ادائیگی درج کرنے میں ناکامی: $e'
+                : 'Failed to record payment: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -126,6 +135,7 @@ class _UpdateCrossBorderStatusDialogState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final s = widget.shipment;
+    final isUrdu = AppStrings.isUrdu(context);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -155,7 +165,11 @@ class _UpdateCrossBorderStatusDialogState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Update Cargo Status (حالت اپڈیٹ)',
+                          AppStrings.val(
+                            context,
+                            en: 'Update Cargo Status',
+                            ur: 'مال کی حالت تبدیل کریں',
+                          ),
                           style: MText.titleMd.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -186,8 +200,14 @@ class _UpdateCrossBorderStatusDialogState
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Status Selection
-                      const Text('Change Cargo Status (سرحدی مال کی موجودہ حالت):',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                        AppStrings.val(
+                          context,
+                          en: 'Change Cargo Status:',
+                          ur: 'سرحدی مال کی موجودہ حالت:',
+                        ),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: MSpacing.xs),
                       DropdownButtonFormField<CrossBorderShipmentStatus>(
                         initialValue: _selectedStatus,
@@ -209,7 +229,7 @@ class _UpdateCrossBorderStatusDialogState
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '${st.labelEnglish} (${st.labelUrdu})',
+                                  isUrdu ? st.labelUrdu : st.labelEnglish,
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ],
@@ -225,7 +245,11 @@ class _UpdateCrossBorderStatusDialogState
                       ElevatedButton.icon(
                         onPressed: _isUpdating ? null : _updateStatus,
                         icon: const Icon(Icons.save_outlined, size: 16),
-                        label: const Text('Save Status (حالت محفوظ کریں)'),
+                        label: Text(AppStrings.val(
+                          context,
+                          en: 'Save Status',
+                          ur: 'حالت محفوظ کریں',
+                        )),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: theme.colorScheme.primary,
                           foregroundColor: Colors.white,
@@ -249,7 +273,7 @@ class _UpdateCrossBorderStatusDialogState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Foreign Supplier Ledger (${s.currency.code} / غیر ملکی کھاتہ):',
+                              '${AppStrings.val(context, en: "Foreign Farmer Ledger", ur: "غیر ملکی زمیندار کھاتہ")} (${s.currency.code}):',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 12),
                             ),
@@ -258,8 +282,14 @@ class _UpdateCrossBorderStatusDialogState
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Total Contract:',
-                                    style: TextStyle(fontSize: 11)),
+                                Text(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Total Contract:',
+                                    ur: 'کل معاہدہ:',
+                                  ),
+                                  style: const TextStyle(fontSize: 11),
+                                ),
                                 Text(
                                   '${s.currency.symbol} ${_currencyFmt.format(s.foreignContractAmount)}',
                                   style: const TextStyle(
@@ -272,8 +302,14 @@ class _UpdateCrossBorderStatusDialogState
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Disbursed So Far:',
-                                    style: TextStyle(fontSize: 11)),
+                                Text(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Disbursed So Far:',
+                                    ur: 'ادا شدہ رقم:',
+                                  ),
+                                  style: const TextStyle(fontSize: 11),
+                                ),
                                 Text(
                                   '${s.currency.symbol} ${_currencyFmt.format(s.paidToSupplierForeign)}',
                                   style: const TextStyle(
@@ -288,10 +324,16 @@ class _UpdateCrossBorderStatusDialogState
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Outstanding Debt:',
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold)),
+                                Text(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Outstanding Debt:',
+                                    ur: 'بقایا واجب الادا:',
+                                  ),
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold),
+                                ),
                                 Text(
                                   '${s.currency.symbol} ${_currencyFmt.format(s.computedRemainingSupplierForeign)} (Rs. ${_currencyFmt.format(s.computedRemainingSupplierPkr)})',
                                   style: TextStyle(
@@ -311,7 +353,7 @@ class _UpdateCrossBorderStatusDialogState
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
                                   labelText:
-                                      'Add Payment (${s.currency.symbol} ${s.currency.code})',
+                                      '${AppStrings.val(context, en: "Add Payment", ur: "ادائیگی درج کریں")} (${s.currency.symbol} ${s.currency.code})',
                                   hintText: 'e.g. 2000',
                                   isDense: true,
                                 ),
@@ -320,7 +362,11 @@ class _UpdateCrossBorderStatusDialogState
                               OutlinedButton.icon(
                                 onPressed: _isUpdating ? null : _recordPayment,
                                 icon: const Icon(Icons.payment, size: 16),
-                                label: const Text('Record Foreign Payment (ادائیگی درج کریں)'),
+                                label: Text(AppStrings.val(
+                                  context,
+                                  en: 'Record Foreign Payment',
+                                  ur: 'غیر ملکی ادائیگی درج کریں',
+                                )),
                               ),
                             ],
                           ],
@@ -352,16 +398,24 @@ class _UpdateCrossBorderStatusDialogState
                                     color: theme.colorScheme.secondary,
                                     size: 18),
                                 const SizedBox(width: 8),
-                                const Text(
-                                  'Mandi Auction Bridge (آمد و ڈھیری انضمام)',
-                                  style: TextStyle(
+                                Text(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Mandi Auction Bridge',
+                                    ur: 'آمد و ڈھیری انضمام',
+                                  ),
+                                  style: const TextStyle(
                                       fontWeight: FontWeight.bold, fontSize: 12),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'When vehicle reaches the Mandi yard, create a Consignment Lot to start auction bidding (Boli).',
+                              AppStrings.val(
+                                context,
+                                en: 'When vehicle reaches the Mandi yard, create a Consignment Lot to start auction bidding.',
+                                ur: 'جب گاڑی منڈی کے پھڑ پر پہنچ جائے تو بولی شروع کرنے کے لیے ڈھیری لاٹ بنائیں۔',
+                              ),
                               style: TextStyle(
                                 fontSize: 10.5,
                                 color: theme.colorScheme.onSurface
@@ -375,8 +429,11 @@ class _UpdateCrossBorderStatusDialogState
                                 onPressed: _bridgeToConsignmentLot,
                                 icon: const Icon(Icons.add_shopping_cart,
                                     size: 16),
-                                label: const Text(
-                                    'Create Consignment Lot (ڈھیری بنائیں)'),
+                                label: Text(AppStrings.val(
+                                  context,
+                                  en: 'Create Consignment Lot',
+                                  ur: 'ڈھیری لاٹ بنائیں',
+                                )),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: theme.colorScheme.secondary,
                                   foregroundColor: Colors.white,
@@ -394,7 +451,11 @@ class _UpdateCrossBorderStatusDialogState
               const SizedBox(height: MSpacing.md),
               OutlinedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Close / بند کریں'),
+                child: Text(AppStrings.val(
+                  context,
+                  en: 'Close',
+                  ur: 'بند کریں',
+                )),
               ),
             ],
           ),

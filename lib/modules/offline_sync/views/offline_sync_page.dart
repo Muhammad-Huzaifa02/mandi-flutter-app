@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../../core/utils/offline_sync_pdf_generator.dart';
-import '../../../data/models/offline_sync_model.dart';
+
+import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/utils/offline_sync_pdf_generator.dart';
+import 'package:mandi/data/models/offline_sync_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import '../providers/offline_sync_provider.dart';
 import 'resolve_conflict_dialog.dart';
@@ -40,29 +42,33 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
     final shopCtx = context.watch<ShopContextProvider>();
     final syncProvider = context.watch<OfflineSyncProvider>();
     final activeShop = shopCtx.currentShop;
+    final isUrdu = AppStrings.isUrdu(context);
 
     if (activeShop == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Offline Sync Engine')),
-        body: const Center(child: Text('Please select an active shop')),
+        appBar: AppBar(title: Text(AppStrings.val(context, en: 'Offline Sync Engine', ur: 'آف لائن سنک سسٹم'))),
+        body: Center(child: Text(AppStrings.val(context, en: 'Please select an active shop', ur: 'براہ کرم فعال دکان منتخب کریں'))),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Offline Sync Engine', style: TextStyle(fontSize: 16)),
-            Text('آف لائن سنک اور مقامی ڈیٹا بیس', style: TextStyle(fontSize: 11, color: Colors.white70)),
-          ],
+        title: Text(
+          AppStrings.val(
+            context,
+            en: 'Offline Sync Engine',
+            ur: 'آف لائن سنک اور مقامی ڈیٹا بیس',
+          ),
+          style: const TextStyle(fontSize: 16),
         ),
         actions: [
           // Simulated Offline Mode Toggle
           Row(
             children: [
               Text(
-                syncProvider.simulatedOffline ? 'Sim Offline' : 'Live Net',
+                syncProvider.simulatedOffline
+                    ? AppStrings.val(context, en: 'Sim Offline', ur: 'فرضی آف لائن')
+                    : AppStrings.val(context, en: 'Live Net', ur: 'آن لائن نیٹ'),
                 style: const TextStyle(fontSize: 11, color: Colors.white70),
               ),
               Switch(
@@ -74,7 +80,11 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
           ),
           IconButton(
             icon: const Icon(Icons.print_outlined),
-            tooltip: 'Print Sync Audit Report',
+            tooltip: AppStrings.val(
+              context,
+              en: 'Print Sync Audit Report',
+              ur: 'سنک رپورٹ پرنٹ کریں',
+            ),
             onPressed: () {
               OfflineSyncPdfGenerator.printSyncAuditReport(
                 shopName: activeShop.name,
@@ -96,7 +106,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Pending'),
+                  Text(AppStrings.val(context, en: 'Pending', ur: 'زیر التواء')),
                   if (syncProvider.pendingCount > 0) ...[
                     const SizedBox(width: 6),
                     Badge(label: Text('${syncProvider.pendingCount}')),
@@ -108,7 +118,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Conflicts'),
+                  Text(AppStrings.val(context, en: 'Conflicts', ur: 'ٹکراؤ')),
                   if (syncProvider.conflictsCount > 0) ...[
                     const SizedBox(width: 6),
                     Badge(
@@ -119,13 +129,15 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
                 ],
               ),
             ),
-            const Tab(text: 'Audit Log'),
+            Tab(
+              text: AppStrings.val(context, en: 'Audit Log', ur: 'آڈٹ لاگ'),
+            ),
           ],
         ),
       ),
       body: Column(
         children: [
-          _buildStatusBar(syncProvider),
+          _buildStatusBar(syncProvider, isUrdu),
           _buildKpiBanner(syncProvider),
           _buildActionToolbar(context, syncProvider),
           const Divider(height: 1),
@@ -133,9 +145,9 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildPendingQueueTab(syncProvider),
-                _buildConflictsTab(syncProvider),
-                _buildAuditLogTab(syncProvider),
+                _buildPendingQueueTab(syncProvider, isUrdu),
+                _buildConflictsTab(syncProvider, isUrdu),
+                _buildAuditLogTab(syncProvider, isUrdu),
               ],
             ),
           ),
@@ -144,7 +156,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
     );
   }
 
-  Widget _buildStatusBar(OfflineSyncProvider provider) {
+  Widget _buildStatusBar(OfflineSyncProvider provider, bool isUrdu) {
     Color bg;
     IconData icon;
     String statusText;
@@ -152,15 +164,27 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
     if (provider.isSyncing) {
       bg = Colors.amber.shade700;
       icon = Icons.sync;
-      statusText = 'Syncing offline records to cloud... (کلاؤڈ پر منتقل ہو رہا ہے)';
+      statusText = AppStrings.val(
+        context,
+        en: 'Syncing offline records to cloud...',
+        ur: 'آف لائن ڈیٹا کلاؤڈ پر منتقل ہو رہا ہے...',
+      );
     } else if (provider.isOnline) {
       bg = Colors.green.shade700;
       icon = Icons.cloud_done;
-      statusText = 'Connected to Supabase Cloud • Live Sync Active (آن لائن)';
+      statusText = AppStrings.val(
+        context,
+        en: 'Connected to Supabase Cloud • Live Sync Active',
+        ur: 'کلاؤڈ سے منسلک ہے • لائیو سنک فعال ہے',
+      );
     } else {
       bg = Colors.red.shade700;
       icon = Icons.cloud_off;
-      statusText = 'Operating in Offline Mode • Changes queued locally (آف لائن)';
+      statusText = AppStrings.val(
+        context,
+        en: 'Operating in Offline Mode • Changes queued locally',
+        ur: 'آف لائن موڈ میں فعال • تبدیلیاں مقامی طور پر محفوظ ہیں',
+      );
     }
 
     return Container(
@@ -179,7 +203,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
           ),
           if (provider.lastSyncTime != null)
             Text(
-              'Last: ${DateFormat('hh:mm a').format(provider.lastSyncTime!)}',
+              '${AppStrings.val(context, en: "Last:", ur: "آخری:")} ${DateFormat('hh:mm a').format(provider.lastSyncTime!)}',
               style: const TextStyle(color: Colors.white70, fontSize: 11),
             ),
         ],
@@ -193,13 +217,34 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
       color: Colors.grey.shade100,
       child: Row(
         children: [
-          _buildKpiTile('Pending Queue', '${provider.pendingCount}', Colors.amber.shade900, Icons.queue),
+          _buildKpiTile(
+            AppStrings.val(context, en: 'Pending Queue', ur: 'زیر التواء قطار'),
+            '${provider.pendingCount}',
+            Colors.amber.shade900,
+            Icons.queue,
+          ),
           const SizedBox(width: 8),
-          _buildKpiTile('Conflicts', '${provider.conflictsCount}', Colors.red.shade800, Icons.merge_type),
+          _buildKpiTile(
+            AppStrings.val(context, en: 'Conflicts', ur: 'ڈیٹا ٹکراؤ'),
+            '${provider.conflictsCount}',
+            Colors.red.shade800,
+            Icons.merge_type,
+          ),
           const SizedBox(width: 8),
-          _buildKpiTile('Synced History', '${provider.historyCount}', Colors.green.shade800, Icons.done_all),
+          _buildKpiTile(
+            AppStrings.val(context, en: 'Synced History', ur: 'کامیاب سنک'),
+            '${provider.historyCount}',
+            Colors.green.shade800,
+            Icons.done_all,
+          ),
           const SizedBox(width: 8),
-          _buildKpiTile('Device ID', provider.deviceId, Colors.blueGrey.shade800, Icons.perm_device_information, isSmallText: true),
+          _buildKpiTile(
+            AppStrings.val(context, en: 'Device ID', ur: 'ڈیوائس آئی ڈی'),
+            provider.deviceId,
+            Colors.blueGrey.shade800,
+            Icons.perm_device_information,
+            isSmallText: true,
+          ),
         ],
       ),
     );
@@ -265,7 +310,11 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                   )
                 : const Icon(Icons.sync, size: 16),
-            label: Text(provider.isSyncing ? 'Syncing...' : 'Sync Now (ابھی سنک کریں)'),
+            label: Text(
+              provider.isSyncing
+                  ? AppStrings.val(context, en: 'Syncing...', ur: 'منتقلی جاری...')
+                  : AppStrings.val(context, en: 'Sync Now', ur: 'ابھی سنک کریں'),
+            ),
             onPressed: provider.isSyncing
                 ? null
                 : () async {
@@ -274,7 +323,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            'Sync Completed: ${res.successCount} synced, ${res.conflictCount} conflicts, ${res.failureCount} failed',
+                            '${AppStrings.val(context, en: "Sync Completed:", ur: "سنک مکمل:")} ${res.successCount} synced, ${res.conflictCount} conflicts, ${res.failureCount} failed',
                           ),
                         ),
                       );
@@ -284,13 +333,16 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
           const SizedBox(width: 8),
           OutlinedButton.icon(
             icon: const Icon(Icons.add_task, size: 16),
-            label: const Text('Queue Demo Record'),
+            label: Text(AppStrings.val(context, en: 'Queue Demo Record', ur: 'ڈیمو ڈیٹا شامل کریں')),
             onPressed: () => _enqueueDemoRecord(context, provider),
           ),
           const Spacer(),
           TextButton.icon(
             icon: const Icon(Icons.delete_sweep, size: 16, color: Colors.grey),
-            label: const Text('Clear History', style: TextStyle(color: Colors.grey, fontSize: 12)),
+            label: Text(
+              AppStrings.val(context, en: 'Clear History', ur: 'ہسٹری صاف کریں'),
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
             onPressed: () => provider.clearHistory(),
           ),
         ],
@@ -299,11 +351,12 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
   }
 
   void _enqueueDemoRecord(BuildContext context, OfflineSyncProvider provider) async {
+    final isUrdu = AppStrings.isUrdu(context);
     await provider.enqueueMutation(
       entityType: SyncEntityType.commodityRates,
       operation: SyncOperation.create,
       payload: {
-        'commodity_name': 'گندم (Wheat)',
+        'commodity_name': isUrdu ? 'گندم' : 'Wheat',
         'variety': 'Faisalabad 2008',
         'min_rate_per_40kg': 3900.0,
         'max_rate_per_40kg': 4100.0,
@@ -314,12 +367,16 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
     );
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Demo rate record enqueued locally in offline storage!')),
+        SnackBar(
+          content: Text(isUrdu
+              ? 'ڈیمو ریٹ ریکارڈ آف لائن محفوظ کر لیا گیا!'
+              : 'Demo rate record enqueued locally in offline storage!'),
+        ),
       );
     }
   }
 
-  Widget _buildPendingQueueTab(OfflineSyncProvider provider) {
+  Widget _buildPendingQueueTab(OfflineSyncProvider provider, bool isUrdu) {
     if (provider.pendingQueue.isEmpty) {
       return Center(
         child: Column(
@@ -327,9 +384,19 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
           children: [
             Icon(Icons.cloud_done_outlined, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            const Text('Queue is Empty', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              AppStrings.val(context, en: 'Queue is Empty', ur: 'قطار خالی ہے'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            Text('All records have been synchronized to Supabase Cloud.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'All records have been synchronized to Supabase Cloud.',
+                ur: 'تمام ریکارڈز کلاؤڈ پر کامیابی سے سنک ہو چکے ہیں۔',
+              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
           ],
         ),
       );
@@ -365,7 +432,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
               ),
             ),
             title: Text(
-              '${mutation.entityType.labelEn} (${mutation.operation.value.toUpperCase()})',
+              '${isUrdu ? mutation.entityType.labelUr : mutation.entityType.labelEn} (${mutation.operation.value.toUpperCase()})',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             subtitle: Column(
@@ -382,7 +449,10 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
               ],
             ),
             trailing: Chip(
-              label: Text(mutation.status.labelEn, style: const TextStyle(fontSize: 10)),
+              label: Text(
+                isUrdu ? mutation.status.labelUr : mutation.status.labelEn,
+                style: const TextStyle(fontSize: 10),
+              ),
               backgroundColor: mutation.status == SyncMutationStatus.conflict ? Colors.red.shade50 : Colors.amber.shade50,
             ),
           ),
@@ -391,7 +461,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
     );
   }
 
-  Widget _buildConflictsTab(OfflineSyncProvider provider) {
+  Widget _buildConflictsTab(OfflineSyncProvider provider, bool isUrdu) {
     if (provider.activeConflicts.isEmpty) {
       return Center(
         child: Column(
@@ -399,9 +469,19 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
           children: [
             Icon(Icons.verified_outlined, size: 48, color: Colors.green.shade400),
             const SizedBox(height: 12),
-            const Text('No Conflicts Detected', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              AppStrings.val(context, en: 'No Conflicts Detected', ur: 'کوئی ٹکراؤ نہیں ہے'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            Text('Local offline mutations match server states seamlessly.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'Local offline mutations match server states seamlessly.',
+                ur: 'مقامی آف لائن ڈیٹا کلاؤڈ ڈیٹا سے مکمل مطابقت رکھتا ہے۔',
+              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
           ],
         ),
       );
@@ -432,7 +512,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${conflict.entityType.labelEn} • Conflict in ${conflict.entityType.labelUr}',
+                        '${isUrdu ? conflict.entityType.labelUr : conflict.entityType.labelEn} • ${AppStrings.val(context, en: "Data Conflict", ur: "ڈیٹا ٹکراؤ")}',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                     ),
@@ -443,7 +523,10 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
                       icon: const Icon(Icons.merge_type, size: 14),
-                      label: const Text('Resolve Conflict', style: TextStyle(fontSize: 11)),
+                      label: Text(
+                        AppStrings.val(context, en: 'Resolve Conflict', ur: 'ٹکراؤ حل کریں'),
+                        style: const TextStyle(fontSize: 11),
+                      ),
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -455,7 +538,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Local Key: ${conflict.idempotencyKey} • ${conflict.errorMessage ?? "Modified on cloud during offline session"}',
+                  'Local Key: ${conflict.idempotencyKey} • ${conflict.errorMessage ?? (isUrdu ? "آف لائن سیشن کے دوران کلاؤڈ پر ترمیم ہوئی" : "Modified on cloud during offline session")}',
                   style: TextStyle(fontSize: 11, color: Colors.grey.shade800),
                 ),
               ],
@@ -466,7 +549,7 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
     );
   }
 
-  Widget _buildAuditLogTab(OfflineSyncProvider provider) {
+  Widget _buildAuditLogTab(OfflineSyncProvider provider, bool isUrdu) {
     if (provider.syncedHistory.isEmpty && provider.auditLogs.isEmpty) {
       return Center(
         child: Column(
@@ -474,7 +557,10 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
           children: [
             Icon(Icons.history, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            const Text('No Sync Audit Records Yet', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              AppStrings.val(context, en: 'No Sync Audit Records Yet', ur: 'کوئی آڈٹ ریکارڈ موجود نہیں ہے'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       );
@@ -484,7 +570,14 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
       padding: const EdgeInsets.all(16),
       children: [
         if (provider.syncedHistory.isNotEmpty) ...[
-          const Text('Locally Resolved & Synced Mutations', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(
+            AppStrings.val(
+              context,
+              en: 'Locally Resolved & Synced Mutations',
+              ur: 'کامیابی سے حل اور سنک شدہ تبدیلیاں',
+            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
           const SizedBox(height: 8),
           ...provider.syncedHistory.take(20).map((m) {
             return Card(
@@ -496,11 +589,17 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
               child: ListTile(
                 dense: true,
                 leading: const Icon(Icons.cloud_done, color: Colors.green, size: 18),
-                title: Text('${m.entityType.labelEn} (${m.operation.value.toUpperCase()})', style: const TextStyle(fontSize: 12)),
+                title: Text(
+                  '${isUrdu ? m.entityType.labelUr : m.entityType.labelEn} (${m.operation.value.toUpperCase()})',
+                  style: const TextStyle(fontSize: 12),
+                ),
                 subtitle: Text('Key: ${m.idempotencyKey} • ${DateFormat('dd MMM hh:mm a').format(m.clientTimestamp)}', style: const TextStyle(fontSize: 10)),
-                trailing: const Chip(
-                  label: Text('Synced', style: TextStyle(fontSize: 9, color: Colors.green)),
-                  backgroundColor: Color(0xFFE8F5E9),
+                trailing: Chip(
+                  label: Text(
+                    AppStrings.val(context, en: 'Synced', ur: 'سنک شدہ'),
+                    style: const TextStyle(fontSize: 9, color: Colors.green),
+                  ),
+                  backgroundColor: const Color(0xFFE8F5E9),
                   padding: EdgeInsets.zero,
                 ),
               ),
@@ -509,7 +608,14 @@ class _OfflineSyncPageState extends State<OfflineSyncPage> with SingleTickerProv
           const SizedBox(height: 16),
         ],
         if (provider.auditLogs.isNotEmpty) ...[
-          const Text('Cloud Sync Sessions Audit Trail', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(
+            AppStrings.val(
+              context,
+              en: 'Cloud Sync Sessions Audit Trail',
+              ur: 'کلاؤڈ سنک سیشنز کی تفصیل',
+            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          ),
           const SizedBox(height: 8),
           ...provider.auditLogs.map((log) {
             return Card(

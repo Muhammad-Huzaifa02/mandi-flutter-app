@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/scale_service.dart';
 import 'package:mandi/core/utils/weighbridge_slip_pdf_generator.dart';
@@ -80,8 +81,14 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
     final tareWeight = double.tryParse(_tareWeightCtrl.text.trim()) ?? 0.0;
     if (tareWeight <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid Tare Weight (خالی وزن) > 0 KG'),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Please enter a valid Tare Weight > 0 KG',
+              ur: 'برائے مہربانی درست خالی وزن درج کریں (> 0 کلوگرام)',
+            ),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -92,7 +99,11 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Tare weight (${_numberFmt.format(tareWeight)} KG) cannot be >= Gross weight (${_numberFmt.format(widget.ticket.grossWeightKg)} KG)',
+            AppStrings.val(
+              context,
+              en: 'Tare weight (${_numberFmt.format(tareWeight)} KG) cannot be >= Gross weight (${_numberFmt.format(widget.ticket.grossWeightKg)} KG)',
+              ur: 'خالی وزن (${_numberFmt.format(tareWeight)} کلوگرام) بھرے وزن (${_numberFmt.format(widget.ticket.grossWeightKg)} کلوگرام) کے برابر یا زیادہ نہیں ہو سکتا',
+            ),
           ),
           backgroundColor: Colors.red,
         ),
@@ -128,32 +139,42 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
           tareWeighedAt: DateTime.now(),
         );
 
-        final pdfBytes = await WeighbridgeSlipPdfGenerator.generateSlipPdf(
-          shopName: shopName,
+        final pdfBytes =
+            await WeighbridgeSlipPdfGenerator.generateSlipPdf(
           ticket: updatedTicket,
+          shopName: shopName,
         );
+
         await Printing.layoutPdf(
-          onLayout: (format) async => pdfBytes,
-          name: 'Kanda_Slip_${widget.ticket.ticketNumber}.pdf',
+          onLayout: (_) async => pdfBytes,
+          name: 'Kanda_Slip_${updatedTicket.ticketNumber}.pdf',
         );
       }
 
-      if (!mounted) return;
-      Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Tare weight recorded & ticket completed successfully!',
+      if (mounted) {
+        Navigator.of(context).pop(true);
+        final finalWeight =
+            (widget.ticket.grossWeightKg - tareWeight - deductionKg)
+                .clamp(0.0, double.infinity);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppStrings.val(
+                context,
+                en: 'Tare weight completed successfully! Net Weight: ${_numberFmt.format(finalWeight)} KG',
+                ur: 'گاڑی کا خالی وزن کامیابی سے مکمل ہو گیا۔ صاف وزن: ${_numberFmt.format(finalWeight)} کلوگرام',
+              ),
+            ),
+            backgroundColor: Colors.green,
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
+        );
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to record tare: $e'),
+            content: Text('${AppStrings.val(context, en: "Failed to record tare", ur: "خالی وزن درج کرنے میں خرابی")}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -163,21 +184,19 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
     final tareWeight = double.tryParse(_tareWeightCtrl.text.trim()) ?? 0.0;
     final deductionKg = double.tryParse(_deductionKgCtrl.text.trim()) ?? 0.0;
-    final netWeight = (widget.ticket.grossWeightKg > tareWeight && tareWeight > 0)
-        ? widget.ticket.grossWeightKg - tareWeight
-        : 0.0;
-    final finalWeight =
-        (netWeight - deductionKg).clamp(0.0, double.infinity);
+    final netWeight = (widget.ticket.grossWeightKg - tareWeight).clamp(0.0, double.infinity);
+    final finalWeight = (netWeight - deductionKg).clamp(0.0, double.infinity);
     final finalMaunds = finalWeight / 40.0;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: MRadius.lg),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 720),
+        constraints: const BoxConstraints(maxWidth: 680, maxHeight: 680),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -196,7 +215,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                             borderRadius: MRadius.sm,
                           ),
                           child: const Icon(
-                            Icons.rv_hookup,
+                            Icons.rv_hookup_rounded,
                             color: Colors.amber,
                             size: 24,
                           ),
@@ -205,15 +224,19 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Record 2nd Weight (Tare / خالی گاڑی)',
-                              style: TextStyle(
+                            Text(
+                              AppStrings.val(
+                                context,
+                                en: 'Record 2nd Weight (Tare)',
+                                ur: 'گاڑی کا دوسرا وزن (خالی گاڑی)',
+                              ),
+                              style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              'Slip #${widget.ticket.ticketNumber} | ${widget.ticket.vehicleNumber}',
+                              '${AppStrings.val(context, en: "Slip", ur: "پرچی")} #${widget.ticket.ticketNumber} | ${widget.ticket.vehicleNumber}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
@@ -253,7 +276,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Vehicle: ${widget.ticket.vehicleNumber} (${widget.ticket.vehicleType.labelEnglish})',
+                                    '${AppStrings.val(context, en: "Vehicle", ur: "گاڑی")}: ${widget.ticket.vehicleNumber} (${isUrdu ? widget.ticket.vehicleType.labelUrdu : widget.ticket.vehicleType.labelEnglish})',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
@@ -261,7 +284,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Party: ${widget.ticket.partyName.isEmpty ? 'Walk-in' : widget.ticket.partyName} | Crop: ${widget.ticket.commodityName}',
+                                    '${AppStrings.val(context, en: "Party", ur: "کھاتہ")}: ${widget.ticket.partyName.isEmpty ? (isUrdu ? "عام" : "Walk-in") : widget.ticket.partyName} | ${AppStrings.val(context, en: "Crop", ur: "جنس")}: ${widget.ticket.commodityName}',
                                     style: const TextStyle(
                                       fontSize: 11,
                                       color: Colors.grey,
@@ -272,9 +295,9 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  const Text(
-                                    '1st Gross Weight',
-                                    style: TextStyle(
+                                  Text(
+                                    AppStrings.val(context, en: '1st Gross Weight', ur: 'پہلا بھرا وزن'),
+                                    style: const TextStyle(
                                       fontSize: 10,
                                       color: Colors.grey,
                                     ),
@@ -288,7 +311,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                     ),
                                   ),
                                   Text(
-                                    '${_numberFmt.format(widget.ticket.grossMaunds)} Maunds',
+                                    '${_numberFmt.format(widget.ticket.grossMaunds)} ${AppStrings.val(context, en: "Maunds", ur: "من")}',
                                     style: const TextStyle(
                                       fontSize: 10,
                                       color: Colors.grey,
@@ -334,15 +357,15 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'Digital Scale Reading',
-                                        style: TextStyle(
+                                      Text(
+                                        AppStrings.val(context, en: 'Digital Scale Reading', ur: 'الیکٹرانک ترازو پیمانہ'),
+                                        style: const TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                       Text(
-                                        _scaleIsStable ? 'STABLE' : 'MOTION...',
+                                        _scaleIsStable ? AppStrings.val(context, en: 'STABLE', ur: 'مستحکم') : AppStrings.val(context, en: 'MOTION...', ur: 'متحرک...'),
                                         style: TextStyle(
                                           fontSize: 10,
                                           color: _scaleIsStable
@@ -368,7 +391,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                   ElevatedButton.icon(
                                     onPressed: _fetchFromScale,
                                     icon: const Icon(Icons.download, size: 16),
-                                    label: const Text('Capture Tare'),
+                                    label: Text(AppStrings.val(context, en: 'Capture Tare', ur: 'خالی وزن لیں')),
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 10,
@@ -398,7 +421,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                             color: Colors.amber,
                           ),
                           decoration: InputDecoration(
-                            labelText: '2nd Weight (Tare / خالی گاڑی وزن KG) *',
+                            labelText: '${AppStrings.val(context, en: '2nd Weight (Tare KG)', ur: 'دوسرا وزن (خالی گاڑی کلوگرام)')} *',
                             suffixText: 'KG',
                             border: OutlineInputBorder(
                               borderRadius: MRadius.sm,
@@ -408,11 +431,11 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                           onChanged: (_) => setState(() {}),
                           validator: (val) {
                             if (val == null || val.trim().isEmpty) {
-                              return 'Tare weight required';
+                              return AppStrings.val(context, en: 'Tare weight required', ur: 'خالی وزن لازمی درج کریں');
                             }
                             final num = double.tryParse(val.trim());
                             if (num == null || num <= 0) {
-                              return 'Must be > 0';
+                              return AppStrings.val(context, en: 'Must be > 0', ur: '0 سے زیادہ ہونا چاہیے');
                             }
                             return null;
                           },
@@ -431,7 +454,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                   decimal: true,
                                 ),
                                 decoration: InputDecoration(
-                                  labelText: 'Katoti / Cut (کٹوتی KG)',
+                                  labelText: AppStrings.val(context, en: 'Deduction (KG)', ur: 'کٹوتی (کلوگرام)'),
                                   suffixText: 'KG',
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
@@ -447,8 +470,8 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                               child: TextFormField(
                                 controller: _deductionReasonCtrl,
                                 decoration: InputDecoration(
-                                  labelText: 'Katoti Reason (وجہ کٹوتی)',
-                                  hintText: 'e.g. Moisture 2%, Trash, Bag tare',
+                                  labelText: AppStrings.val(context, en: 'Deduction Reason', ur: 'وجہ کٹوتی'),
+                                  hintText: AppStrings.val(context, en: 'e.g. Moisture, Dust, Bag tare', ur: 'مثلاً نمی، گرد، بوری کٹوتی'),
                                   border: OutlineInputBorder(
                                     borderRadius: MRadius.sm,
                                   ),
@@ -478,9 +501,9 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Net Weight (صاف وزن گاڑی):',
-                                    style: TextStyle(
+                                  Text(
+                                    AppStrings.val(context, en: 'Net Vehicle Weight:', ur: 'صاف وزن گاڑی:'),
+                                    style: const TextStyle(
                                       fontSize: 13,
                                       color: Colors.grey,
                                     ),
@@ -500,9 +523,9 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
-                                      'Katoti / Deductions:',
-                                      style: TextStyle(
+                                    Text(
+                                      AppStrings.val(context, en: 'Deductions:', ur: 'کٹوتی:'),
+                                      style: const TextStyle(
                                         fontSize: 13,
                                         color: Colors.red,
                                       ),
@@ -523,23 +546,16 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Column(
+                                  Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Final Payable Weight',
-                                        style: TextStyle(
+                                        AppStrings.val(context, en: 'Final Payable Weight', ur: 'خالص قابلِ ادائیگی وزن'),
+                                        style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
                                           color: MColors.primary,
-                                        ),
-                                      ),
-                                      Text(
-                                        'خالص قابلِ ادائیگی وزن',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey,
                                         ),
                                       ),
                                     ],
@@ -557,7 +573,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                                         ),
                                       ),
                                       Text(
-                                        '${_numberFmt.format(finalMaunds)} Maunds (من)',
+                                        '${_numberFmt.format(finalMaunds)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                                         style: const TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
@@ -585,7 +601,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
                     ),
                     const SizedBox(width: 8),
                     OutlinedButton.icon(
@@ -593,7 +609,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                           ? null
                           : () => _completeTareWeight(printSlip: false),
                       icon: const Icon(Icons.check, size: 16),
-                      label: const Text('Complete (مکمل)'),
+                      label: Text(AppStrings.val(context, en: 'Complete', ur: 'مکمل کریں')),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
@@ -601,7 +617,7 @@ class _RecordTareDialogState extends State<RecordTareDialog> {
                           ? null
                           : () => _completeTareWeight(printSlip: true),
                       icon: const Icon(Icons.print, size: 16),
-                      label: const Text('Save & Print Slip'),
+                      label: Text(AppStrings.val(context, en: 'Save & Print Slip', ur: 'محفوظ اور پرچی پرنٹ کریں')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: MColors.primary,
                         foregroundColor: Colors.white,

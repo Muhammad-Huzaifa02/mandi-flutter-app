@@ -69,13 +69,13 @@ enum AudienceType {
   String get labelEn {
     switch (this) {
       case AudienceType.allFarmers:
-        return 'Registered Farmers (زمیندار)';
+        return 'Registered Farmers';
       case AudienceType.allBuyers:
-        return 'Millers & Buyers (خریدار)';
+        return 'Millers & Buyers';
       case AudienceType.commissionAgents:
-        return 'Commission Agents (آڑھتی)';
+        return 'Commission Agents';
       case AudienceType.transporters:
-        return 'Transporters & Drivers (ٹرانسپورٹ)';
+        return 'Transporters & Drivers';
       case AudienceType.custom:
         return 'Custom Contact List';
     }

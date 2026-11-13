@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/shop_member_model.dart';
 import 'package:mandi/data/models/staff_payroll_model.dart';
 import 'package:mandi/modules/payroll/providers/staff_payroll_provider.dart';
 
-/// Modal dialog to compute and generate monthly salary disbursement vouchers
-/// (*ماہانہ تنخواہ واؤچر تیاری و حساب کتاب*).
+/// Modal dialog to compute and generate monthly salary disbursement vouchers.
 class NewPayrollVoucherDialog extends StatefulWidget {
   final ShopMember? preselectedMember;
 
@@ -111,16 +111,20 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Generate Salary Voucher (تنخواہ واؤچر)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Generate Salary Voucher',
+                              ur: 'تنخواہ واؤچر بنائیں',
+                            ),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Pay Period: $selectedMonth',
+                            '${AppStrings.val(context, en: "Pay Period:", ur: "مدت ادائیگی:")} $selectedMonth',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -148,9 +152,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Staff Member / ملازم *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Staff Member *',
+                              ur: 'ملازم *',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -181,8 +189,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                                 });
                               }
                             },
-                            validator: (val) =>
-                                val == null ? 'Select staff' : null,
+                            validator: (val) => val == null
+                                ? AppStrings.val(
+                                    context,
+                                    en: 'Select staff',
+                                    ur: 'ملازم منتخب کریں',
+                                  )
+                                : null,
                           ),
                         ],
                       ),
@@ -193,9 +206,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Base Salary (بنیادی) *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Base Salary *',
+                              ur: 'بنیادی تنخواہ *',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -212,8 +229,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                                   horizontal: 12, vertical: 12),
                             ),
                             onChanged: (_) => setState(() {}),
-                            validator: (v) =>
-                                v == null || v.isEmpty ? 'Required' : null,
+                            validator: (v) => v == null || v.isEmpty
+                                ? AppStrings.val(
+                                    context,
+                                    en: 'Required',
+                                    ur: 'ضروری ہے',
+                                  )
+                                : null,
                           ),
                         ],
                       ),
@@ -229,9 +251,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Present (حاضر)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Present',
+                              ur: 'حاضر',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -239,7 +265,11 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                             controller: _daysPresentCtrl,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              suffixText: 'Days',
+                              suffixText: AppStrings.val(
+                                context,
+                                en: 'Days',
+                                ur: 'دن',
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -256,9 +286,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Absent (چھٹی)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Absent',
+                              ur: 'چھٹی',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -266,7 +300,11 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                             controller: _daysAbsentCtrl,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              suffixText: 'Days',
+                              suffixText: AppStrings.val(
+                                context,
+                                en: 'Days',
+                                ur: 'دن',
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -283,9 +321,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Half-Days (نصف)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Half-Days',
+                              ur: 'نصف دن',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -293,7 +335,11 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                             controller: _daysHalfDayCtrl,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
-                              suffixText: 'Days',
+                              suffixText: AppStrings.val(
+                                context,
+                                en: 'Days',
+                                ur: 'دن',
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -316,9 +362,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Overtime (اوور ٹائم)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Overtime',
+                              ur: 'اوور ٹائم',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -327,7 +377,11 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                             keyboardType:
                                 const TextInputType.numberWithOptions(decimal: true),
                             decoration: InputDecoration(
-                              suffixText: 'Hrs',
+                              suffixText: AppStrings.val(
+                                context,
+                                en: 'Hrs',
+                                ur: 'گھنٹے',
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -344,9 +398,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Bonus / انعام (PKR)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Bonus (PKR)',
+                              ur: 'انعام (روپے)',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -372,9 +430,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Advance Ded (پیشگی)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Advance Ded',
+                              ur: 'پیشگی کٹوتی',
+                            ),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -410,21 +472,37 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                   child: Column(
                     children: [
                       _buildCalcRow(
-                        'Daily Wage Rate (یومیہ اجرت):',
-                        'Rs. ${_currencyFmt.format(breakdown["dailyWage"])} / day',
+                        AppStrings.val(
+                          context,
+                          en: 'Daily Wage Rate:',
+                          ur: 'یومیہ اجرت:',
+                        ),
+                        'Rs. ${_currencyFmt.format(breakdown["dailyWage"])} ${AppStrings.val(context, en: "/ day", ur: "/ یوم")}',
                       ),
                       _buildCalcRow(
-                        'Overtime Allowance (+ الاؤنس):',
+                        AppStrings.val(
+                          context,
+                          en: 'Overtime Allowance (+):',
+                          ur: 'اوور ٹائم الاؤنس (+):',
+                        ),
                         '+ Rs. ${_currencyFmt.format(breakdown["overtimeAllowance"])}',
                         color: Colors.green.shade800,
                       ),
                       _buildCalcRow(
-                        'Absenteeism Deduction (- کٹوتی):',
+                        AppStrings.val(
+                          context,
+                          en: 'Absenteeism Deduction (-):',
+                          ur: 'غیر حاضری کٹوتی (-):',
+                        ),
                         '- Rs. ${_currencyFmt.format(breakdown["absenteeDeduction"])}',
                         color: Colors.red.shade800,
                       ),
                       _buildCalcRow(
-                        'Advance Recovery (- پیشگی):',
+                        AppStrings.val(
+                          context,
+                          en: 'Advance Recovery (-):',
+                          ur: 'پیشگی وصولی (-):',
+                        ),
                         '- Rs. ${_currencyFmt.format(breakdown["advanceDeduction"])}',
                         color: Colors.red.shade800,
                       ),
@@ -432,9 +510,13 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Net Payable Wage (خالص تنخواہ):',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(
+                              context,
+                              en: 'Net Payable Wage:',
+                              ur: 'خالص واجب الادا تنخواہ:',
+                            ),
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
@@ -456,15 +538,23 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                 const SizedBox(height: 14),
 
                 // Remarks
-                const Text(
-                  'Notes / تفصیل',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Notes',
+                    ur: 'تفصیل',
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _notesCtrl,
                   decoration: InputDecoration(
-                    hintText: 'e.g. Monthly salary voucher approved by Munshi',
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'e.g. Monthly salary voucher approved by Munshi',
+                      ur: 'مثلاً ماہانہ تنخواہ واؤچر منشی سے منظور شدہ',
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -480,7 +570,11 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(
+                        context,
+                        en: 'Cancel',
+                        ur: 'منسوخ',
+                      )),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -501,7 +595,11 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.check),
-                      label: const Text('Save Voucher (محفوظ کریں)'),
+                      label: Text(AppStrings.val(
+                        context,
+                        en: 'Save Voucher',
+                        ur: 'واؤچر محفوظ کریں',
+                      )),
                     ),
                   ],
                 ),
@@ -538,6 +636,7 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedMember == null) return;
 
+    final isUrdu = AppStrings.isUrdu(context);
     setState(() => _isSaving = true);
 
     final provider = context.read<StaffPayrollProvider>();
@@ -560,15 +659,19 @@ class _NewPayrollVoucherDialogState extends State<NewPayrollVoucherDialog> {
       if (success) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Salary voucher generated successfully!'),
+          SnackBar(
+            content: Text(isUrdu
+                ? 'تنخواہ واؤچر کامیابی سے تیار ہو گیا!'
+                : 'Salary voucher generated successfully!'),
             backgroundColor: Colors.green,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to generate salary voucher.'),
+          SnackBar(
+            content: Text(isUrdu
+                ? 'تنخواہ واؤچر تیار کرنے میں ناکامی۔'
+                : 'Failed to generate salary voucher.'),
             backgroundColor: Colors.red,
           ),
         );

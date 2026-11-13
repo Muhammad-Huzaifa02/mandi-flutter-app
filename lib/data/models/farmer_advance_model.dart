@@ -14,13 +14,13 @@ extension FarmerAdvanceTypeExt on FarmerAdvanceType {
       case FarmerAdvanceType.cash:
         return 'Cash Advance';
       case FarmerAdvanceType.fertilizer:
-        return 'Fertilizer (کھاد)';
+        return 'Fertilizer';
       case FarmerAdvanceType.seed:
-        return 'Seed (بیج)';
+        return 'Seed';
       case FarmerAdvanceType.pesticide:
-        return 'Pesticide (سپرے)';
+        return 'Pesticide';
       case FarmerAdvanceType.diesel:
-        return 'Diesel (ڈیزل)';
+        return 'Diesel';
       case FarmerAdvanceType.other:
         return 'Other Input';
     }
@@ -31,13 +31,13 @@ extension FarmerAdvanceTypeExt on FarmerAdvanceType {
       case FarmerAdvanceType.cash:
         return 'نقد رقم ایڈوانس';
       case FarmerAdvanceType.fertilizer:
-        return 'کھاد بوری (ڈی اے پی / یوریا)';
+        return 'کھاد بوری';
       case FarmerAdvanceType.seed:
         return 'زرعی بیج';
       case FarmerAdvanceType.pesticide:
-        return 'سپرے / زرعی ادویات';
+        return 'سپرے زرعی ادویات';
       case FarmerAdvanceType.diesel:
-        return 'ڈیزل / پیٹرول ایندھن';
+        return 'ڈیزل ایندھن';
       case FarmerAdvanceType.other:
         return 'دیگر زرعی اخراجات';
     }
@@ -56,7 +56,7 @@ extension FarmerAdvanceStatusExt on FarmerAdvanceStatus {
   String get labelEnglish {
     switch (this) {
       case FarmerAdvanceStatus.active:
-        return 'Active (Pending)';
+        return 'Active';
       case FarmerAdvanceStatus.partiallyRecovered:
         return 'Partially Recovered';
       case FarmerAdvanceStatus.fullyRecovered:
@@ -73,9 +73,9 @@ extension FarmerAdvanceStatusExt on FarmerAdvanceStatus {
       case FarmerAdvanceStatus.partiallyRecovered:
         return 'جزوی وصول شدہ';
       case FarmerAdvanceStatus.fullyRecovered:
-        return 'مکمل بیباق (وصول)';
+        return 'مکمل بیباق';
       case FarmerAdvanceStatus.writtenOff:
-        return 'ختم شدہ (رائٹ آف)';
+        return 'ختم شدہ کھاتہ';
     }
   }
 }

@@ -25,13 +25,13 @@ enum AttendanceStatus {
   String get labelUrdu {
     switch (this) {
       case AttendanceStatus.present:
-        return 'حاضر (Present)';
+        return 'حاضر';
       case AttendanceStatus.absent:
-        return 'غیر حاضر (Absent)';
+        return 'غیر حاضر';
       case AttendanceStatus.halfDay:
-        return 'نصف دن (Half Day)';
+        return 'نصف دن';
       case AttendanceStatus.leave:
-        return 'رخصت (Leave)';
+        return 'رخصت';
     }
   }
 
@@ -158,11 +158,11 @@ enum PayrollStatus {
   String get labelUrdu {
     switch (this) {
       case PayrollStatus.draft:
-        return 'کچا رجسٹر (Draft)';
+        return 'کچا رجسٹر';
       case PayrollStatus.approved:
-        return 'منظور شدہ (Approved)';
+        return 'منظور شدہ';
       case PayrollStatus.paid:
-        return 'ادا شدہ (Paid)';
+        return 'ادا شدہ';
     }
   }
 

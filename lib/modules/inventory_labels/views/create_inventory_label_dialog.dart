@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/inventory_label_pdf_generator.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
@@ -60,18 +61,34 @@ class _CreateInventoryLabelDialogState
   double _computedTareKg = 0.0;
   bool _isSaving = false;
 
-  final List<String> _popularCommodities = [
-    'Wheat (گندم)',
-    'Super Basmati Rice (باسمتی چاول)',
-    'Basmati 1121 Kainat',
-    'Corn / Maize (مکئی)',
-    'Cotton (پھٹی / کپاس)',
-    'Canola (کینولا)',
-    'Sunflower (سورج مکھی)',
-    'Potato (آلو)',
-    'Onion (پیاز)',
-    'Kinnow Citrus (کنو)',
-  ];
+  List<String> _getPopularCommodities(bool isUrdu) {
+    if (isUrdu) {
+      return [
+        'گندم',
+        'سپر باسمتی چاول',
+        'باسمتی ۱۱۲۱ کائنات',
+        'مکئی',
+        'کپاس / پھٹی',
+        'کینولا',
+        'سورج مکھی',
+        'آلو',
+        'پیاز',
+        'کنو',
+      ];
+    }
+    return [
+      'Wheat',
+      'Super Basmati Rice',
+      'Basmati 1121 Kainat',
+      'Corn / Maize',
+      'Cotton',
+      'Canola',
+      'Sunflower',
+      'Potato',
+      'Onion',
+      'Kinnow Citrus',
+    ];
+  }
 
   @override
   void initState() {
@@ -86,7 +103,7 @@ class _CreateInventoryLabelDialogState
     _labelCodeCtrl = TextEditingController(text: code);
     _barcodeCtrl = TextEditingController(text: barcode);
     _commodityCtrl = TextEditingController(
-        text: widget.initialCommodity ?? 'Wheat (گندم)');
+        text: widget.initialCommodity ?? 'Wheat');
     _partyCtrl = TextEditingController(text: widget.initialParty ?? '');
     _vehicleCtrl = TextEditingController(text: widget.initialVehicle ?? '');
     _bagCountCtrl = TextEditingController(
@@ -282,24 +299,14 @@ class _CreateInventoryLabelDialogState
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Generate Inventory Barcode / QR',
-                              style: MText.bodyMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              'بارکوڈ اور کیو آر پیلیٹ لیبل',
-                              style: MText.caption.copyWith(
-                                color: MColors.primaryLight,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          AppStrings.val(context,
+                              en: 'Generate Inventory Barcode / QR',
+                              ur: 'بارکوڈ اور کیو آر پیلیٹ لیبل'),
+                          style: MText.bodyMd.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
@@ -393,7 +400,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Label Category / قسم',
+                            AppStrings.val(context, en: 'Label Category', ur: 'لیبل کی قسم'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -413,7 +420,7 @@ class _CreateInventoryLabelDialogState
                               return DropdownMenuItem(
                                 value: t,
                                 child: Text(
-                                  t.labelEnglish,
+                                  AppStrings.isUrdu(context) ? t.labelUrdu : t.labelEnglish,
                                   style: const TextStyle(
                                       color: Colors.white, fontSize: 13),
                                 ),
@@ -431,7 +438,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Label Code / لیبل کوڈ',
+                            AppStrings.val(context, en: 'Label Code', ur: 'لیبل کوڈ'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -450,7 +457,7 @@ class _CreateInventoryLabelDialogState
                                   horizontal: 12, vertical: 10),
                             ),
                             validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Required'
+                                ? AppStrings.val(context, en: 'Required', ur: 'لازمی')
                                 : null,
                             onChanged: (_) => setState(() {}),
                           ),
@@ -470,7 +477,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Commodity / جنس',
+                            AppStrings.val(context, en: 'Commodity', ur: 'جنس'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -478,10 +485,11 @@ class _CreateInventoryLabelDialogState
                             initialValue: TextEditingValue(
                                 text: _commodityCtrl.text),
                             optionsBuilder: (textEditingValue) {
+                              final list = _getPopularCommodities(AppStrings.isUrdu(context));
                               if (textEditingValue.text.isEmpty) {
-                                return _popularCommodities;
+                                return list;
                               }
-                              return _popularCommodities.where((c) => c
+                              return list.where((c) => c
                                   .toLowerCase()
                                   .contains(
                                       textEditingValue.text.toLowerCase()));
@@ -497,7 +505,7 @@ class _CreateInventoryLabelDialogState
                                 focusNode: focusNode,
                                 style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
-                                  hintText: 'e.g. Wheat / گندم',
+                                  hintText: AppStrings.val(context, en: 'e.g. Wheat', ur: 'مثلاً گندم'),
                                   filled: true,
                                   fillColor:
                                       Colors.white.withValues(alpha: 0.05),
@@ -523,7 +531,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Variety / قسم',
+                            AppStrings.val(context, en: 'Variety', ur: 'قسم / ورائٹی'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -531,7 +539,7 @@ class _CreateInventoryLabelDialogState
                             controller: _varietyCtrl,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              hintText: 'e.g. Kainat 1121',
+                              hintText: AppStrings.val(context, en: 'e.g. Kainat 1121', ur: 'مثلاً کائنات ۱۱۲۱'),
                               filled: true,
                               fillColor: Colors.white.withValues(alpha: 0.05),
                               border: OutlineInputBorder(
@@ -557,7 +565,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Grower / Party (زمیندار / بیوپاری)',
+                            AppStrings.val(context, en: 'Grower / Farmer Party', ur: 'زمیندار / بیوپاری'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -565,7 +573,7 @@ class _CreateInventoryLabelDialogState
                             controller: _partyCtrl,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              hintText: 'e.g. Haji Bashir Ahmad',
+                              hintText: AppStrings.val(context, en: 'e.g. Haji Bashir Ahmad', ur: 'مثلاً حاجی بشیر احمد'),
                               filled: true,
                               fillColor: Colors.white.withValues(alpha: 0.05),
                               border: OutlineInputBorder(
@@ -585,7 +593,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Vehicle # / گاڑی نمبر',
+                            AppStrings.val(context, en: 'Vehicle Number', ur: 'گاڑی نمبر'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -593,7 +601,7 @@ class _CreateInventoryLabelDialogState
                             controller: _vehicleCtrl,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              hintText: 'e.g. FD-8921',
+                              hintText: 'FD-8921',
                               filled: true,
                               fillColor: Colors.white.withValues(alpha: 0.05),
                               border: OutlineInputBorder(
@@ -619,7 +627,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Packaging / باردانہ قسم',
+                            AppStrings.val(context, en: 'Packaging Type', ur: 'باردانہ کی قسم'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -639,7 +647,7 @@ class _CreateInventoryLabelDialogState
                               return DropdownMenuItem(
                                 value: p,
                                 child: Text(
-                                  p.labelEnglish,
+                                  AppStrings.isUrdu(context) ? p.labelUrdu : p.labelEnglish,
                                   style: const TextStyle(
                                       color: Colors.white, fontSize: 13),
                                 ),
@@ -662,7 +670,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Bag Count / بوریاں',
+                            AppStrings.val(context, en: 'Bag Count', ur: 'تعداد بوریاں'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -681,7 +689,7 @@ class _CreateInventoryLabelDialogState
                                   horizontal: 12, vertical: 10),
                             ),
                             validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Required'
+                                ? AppStrings.val(context, en: 'Required', ur: 'لازمی')
                                 : null,
                             onChanged: (_) => _recomputeWeights(),
                           ),
@@ -701,7 +709,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Gross Weight (KG) / بھرا وزن',
+                            AppStrings.val(context, en: 'Gross Weight (KG)', ur: 'بھرا وزن (کلوگرام)'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -721,7 +729,7 @@ class _CreateInventoryLabelDialogState
                                   horizontal: 12, vertical: 10),
                             ),
                             validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Required'
+                                ? AppStrings.val(context, en: 'Required', ur: 'لازمی')
                                 : null,
                             onChanged: (_) => _recomputeWeights(),
                           ),
@@ -735,7 +743,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Quality Grade / معیار',
+                            AppStrings.val(context, en: 'Quality Grade', ur: 'معیار / گریڈ'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -751,26 +759,26 @@ class _CreateInventoryLabelDialogState
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 10),
                             ),
-                            items: const [
+                            items: [
                               DropdownMenuItem(
                                 value: 'grade_a_super',
-                                child: Text('Grade A (Super)',
-                                    style: TextStyle(color: Colors.white)),
+                                child: Text(AppStrings.val(context, en: 'Grade A (Super)', ur: 'گریڈ اے (اعلیٰ)'),
+                                    style: const TextStyle(color: Colors.white)),
                               ),
                               DropdownMenuItem(
                                 value: 'grade_b_faq',
-                                child: Text('Grade B (Standard FAQ)',
-                                    style: TextStyle(color: Colors.white)),
+                                child: Text(AppStrings.val(context, en: 'Grade B (Standard FAQ)', ur: 'گریڈ بی (معیاری)'),
+                                    style: const TextStyle(color: Colors.white)),
                               ),
                               DropdownMenuItem(
                                 value: 'grade_c_substandard',
-                                child: Text('Grade C (Substandard)',
-                                    style: TextStyle(color: Colors.white)),
+                                child: Text(AppStrings.val(context, en: 'Grade C (Substandard)', ur: 'گریڈ سی (زیادہ نمی)'),
+                                    style: const TextStyle(color: Colors.white)),
                               ),
                               DropdownMenuItem(
                                 value: 'rejected',
-                                child: Text('Rejected / Unfit',
-                                    style: TextStyle(color: Colors.white)),
+                                child: Text(AppStrings.val(context, en: 'Rejected / Unfit', ur: 'مسترد شدہ (ناقص)'),
+                                    style: const TextStyle(color: Colors.white)),
                               ),
                             ],
                             onChanged: (g) {
@@ -798,7 +806,7 @@ class _CreateInventoryLabelDialogState
                     children: [
                       Column(
                         children: [
-                          Text('Tare Deduct',
+                          Text(AppStrings.val(context, en: 'Tare Deduct', ur: 'باردانہ کٹوتی'),
                               style: MText.caption
                                   .copyWith(color: Colors.white70)),
                           const SizedBox(height: 2),
@@ -812,7 +820,7 @@ class _CreateInventoryLabelDialogState
                       ),
                       Column(
                         children: [
-                          Text('Net Weight',
+                          Text(AppStrings.val(context, en: 'Net Weight', ur: 'صاف وزن'),
                               style: MText.caption
                                   .copyWith(color: Colors.white70)),
                           const SizedBox(height: 2),
@@ -826,12 +834,12 @@ class _CreateInventoryLabelDialogState
                       ),
                       Column(
                         children: [
-                          Text('Mandi Maunds (من)',
+                          Text(AppStrings.val(context, en: 'Mandi Maunds', ur: 'من'),
                               style: MText.caption
                                   .copyWith(color: MColors.primaryLight)),
                           const SizedBox(height: 2),
                           Text(
-                            '${_computedNetMaunds.toStringAsFixed(2)} Mnds',
+                            '${_computedNetMaunds.toStringAsFixed(2)} ${AppStrings.val(context, en: 'Mnds', ur: 'من')}',
                             style: const TextStyle(
                               color: MColors.primaryLight,
                               fontSize: 16,
@@ -854,7 +862,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Facility / گودام مقام',
+                            AppStrings.val(context, en: 'Facility / Location', ur: 'گودام یا مقام'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -862,7 +870,7 @@ class _CreateInventoryLabelDialogState
                             controller: _facilityCtrl,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              hintText: 'e.g. Main Godown',
+                              hintText: 'Main Godown',
                               filled: true,
                               fillColor: Colors.white.withValues(alpha: 0.05),
                               border: OutlineInputBorder(
@@ -882,7 +890,7 @@ class _CreateInventoryLabelDialogState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Bay / Stack (چٹہ / بلاک)',
+                            AppStrings.val(context, en: 'Bay / Stack', ur: 'چٹہ / بلاک'),
                             style: MText.caption.copyWith(color: Colors.white70),
                           ),
                           const SizedBox(height: 6),
@@ -890,7 +898,7 @@ class _CreateInventoryLabelDialogState
                             controller: _bayCtrl,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              hintText: 'e.g. Bay B-02, Stack 4',
+                              hintText: 'Bay B-02, Stack 4',
                               filled: true,
                               fillColor: Colors.white.withValues(alpha: 0.05),
                               border: OutlineInputBorder(
@@ -909,7 +917,7 @@ class _CreateInventoryLabelDialogState
 
                 // Notes
                 Text(
-                  'Instructions / ہدایات',
+                  AppStrings.val(context, en: 'Instructions / Notes', ur: 'ہدایات / تفصیل'),
                   style: MText.caption.copyWith(color: Colors.white70),
                 ),
                 const SizedBox(height: 6),
@@ -918,7 +926,7 @@ class _CreateInventoryLabelDialogState
                   maxLines: 2,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Special stacking or preservation instructions...',
+                    hintText: AppStrings.val(context, en: 'Special stacking or preservation instructions...', ur: 'سٹوریج اور دیکھ بھال کی خصوصی ہدایات...'),
                     filled: true,
                     fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
@@ -947,7 +955,7 @@ class _CreateInventoryLabelDialogState
                             ? null
                             : () => _submit(printAfter: true),
                         icon: const Icon(Icons.print_outlined, size: 18),
-                        label: const Text('Save & Print A4'),
+                        label: Text(AppStrings.val(context, en: 'Save & Print A4', ur: 'محفوظ و پرنٹ کریں')),
                       ),
                     ),
                     const SizedBox(width: MSpacing.sm),
@@ -973,7 +981,7 @@ class _CreateInventoryLabelDialogState
                                 ),
                               )
                             : const Icon(Icons.check_circle_outline, size: 18),
-                        label: const Text('Save Label'),
+                        label: Text(AppStrings.val(context, en: 'Save Label', ur: 'لیبل محفوظ کریں')),
                       ),
                     ),
                   ],

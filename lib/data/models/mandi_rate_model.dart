@@ -22,11 +22,11 @@ enum MarketTrend {
   String get labelUrdu {
     switch (this) {
       case MarketTrend.bullish:
-        return 'تیزی (Bullish ▲)';
+        return 'تیزی ▲';
       case MarketTrend.bearish:
-        return 'مندی (Bearish ▼)';
+        return 'مندی ▼';
       case MarketTrend.stable:
-        return 'مستحکم (Stable ▬)';
+        return 'مستحکم ▬';
     }
   }
 

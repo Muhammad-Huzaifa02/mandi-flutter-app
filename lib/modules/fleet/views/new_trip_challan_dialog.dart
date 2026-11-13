@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/fleet_model.dart';
 import 'package:mandi/modules/fleet/providers/fleet_provider.dart';
@@ -137,16 +138,16 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Dispatch Trip Bilty (نیا ٹرپ و بلٹی چالان)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Dispatch Trip Bilty', ur: 'نیا ٹرپ و بلٹی چالان'),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: MColors.textPrimary,
                             ),
                           ),
                           Text(
-                            'Cargo Weight, Freight Billing & Driver Advance',
+                            AppStrings.val(context, en: 'Cargo Weight, Freight Billing & Driver Advance', ur: 'وزن، کرایہ بلنگ اور ڈرائیور ایڈوانس'),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -173,16 +174,16 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Select Vehicle / گاڑی منتخب کریں *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Select Vehicle *', ur: 'گاڑی منتخب کریں *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
                           if (vehicles.isEmpty)
-                            const Text(
-                              'No vehicles registered. Please register a vehicle first.',
-                              style: TextStyle(color: Colors.red, fontSize: 12),
+                            Text(
+                              AppStrings.val(context, en: 'No vehicles registered. Please register a vehicle first.', ur: 'کوئی گاڑی درج نہیں ہے۔ پہلے گاڑی رجسٹر کریں۔'),
+                              style: const TextStyle(color: Colors.red, fontSize: 12),
                             )
                           else
                             DropdownButtonFormField<String>(
@@ -195,10 +196,13 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                                     horizontal: 12, vertical: 10),
                               ),
                               items: vehicles.map((v) {
+                                final driverText = v.driverName.isEmpty
+                                    ? (AppStrings.isUrdu(context) ? 'بغیر ڈرائیور' : 'No Driver')
+                                    : v.driverName;
                                 return DropdownMenuItem(
                                   value: v.id,
                                   child: Text(
-                                    '${v.registrationNumber} (${v.vehicleType.labelEnglish}) - ${v.driverName.isEmpty ? 'No Driver' : v.driverName}',
+                                    '${v.registrationNumber} (${AppStrings.isUrdu(context) ? v.vehicleType.labelUrdu : v.vehicleType.labelEnglish}) - $driverText',
                                     style: const TextStyle(fontSize: 12),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -222,9 +226,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Trip Date / تاریخ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Trip Date', ur: 'ٹرپ کی تاریخ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -271,9 +275,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Origin / روانگی مقام *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Origin *', ur: 'روانگی کا مقام *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -301,9 +305,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Destination / منزل مقصود *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Destination *', ur: 'منزل مقصود *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -338,16 +342,16 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Commodity / جنس *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Commodity *', ur: 'جنس / فصل *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
                           TextFormField(
                             controller: _commodityCtrl,
                             decoration: InputDecoration(
-                              hintText: 'e.g. گندم (Wheat) / مکی (Corn)',
+                              hintText: AppStrings.val(context, en: 'e.g. Wheat, Corn, Paddy', ur: 'مثلاً گندم، مکی، دھان'),
                               prefixIcon: const Icon(Icons.grass, size: 18),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -367,9 +371,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Bags / بوریاں',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Bags', ur: 'تعداد بوریاں'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -394,9 +398,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Party / گاہک یا خریدار نام',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Party / Buyer Name', ur: 'گاہک یا خریدار کا نام'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -427,9 +431,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Weight in KG / وزن کلوگرام',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Weight in KG', ur: 'وزن کلوگرام'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -454,9 +458,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Calculated Maunds / من (40 KG)',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Calculated Maunds (40 KG)', ur: 'حساب شدہ من (40 کلو)'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                           const SizedBox(height: 6),
@@ -465,7 +469,7 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                             keyboardType: const TextInputType.numberWithOptions(
                                 decimal: true),
                             decoration: InputDecoration(
-                              suffixText: 'من',
+                              suffixText: AppStrings.val(context, en: 'Mnds', ur: 'من'),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -483,9 +487,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                 const SizedBox(height: 8),
 
                 // Financial Section
-                const Text(
-                  'Trip Freight & Operating Expenses / کرایہ و سفری اخراجات',
-                  style: TextStyle(
+                Text(
+                  AppStrings.val(context, en: 'Trip Freight & Operating Expenses', ur: 'کرایہ اور سفری اخراجات'),
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: MColors.textPrimary,
@@ -499,9 +503,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Agreed Freight / طے شدہ کرایہ *',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Agreed Freight *', ur: 'طے شدہ کرایہ *'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -530,9 +534,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Driver Advance / ایڈوانس',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Driver Advance', ur: 'ڈرائیور ایڈوانس'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -557,9 +561,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Diesel / ڈیزل خرچ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Diesel Expense', ur: 'ڈیزل کا خرچ'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -589,9 +593,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Toll Tax & Chungi / پرچی خرچ',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Toll Tax & Chungi', ur: 'ٹول ٹیکس و چونگی پرچی'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -616,9 +620,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Other Expenses / دیگر اخراجات',
-                            style: TextStyle(
+                          Text(
+                            AppStrings.val(context, en: 'Other Expenses', ur: 'دیگر اخراجات'),
+                            style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
@@ -655,7 +659,7 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                     children: [
                       Column(
                         children: [
-                          Text('Total Expenses',
+                          Text(AppStrings.val(context, en: 'Total Expenses', ur: 'کل اخراجات'),
                               style: TextStyle(
                                   fontSize: 11, color: Colors.grey.shade700)),
                           const SizedBox(height: 3),
@@ -674,7 +678,7 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                           color: Colors.blueGrey.shade300),
                       Column(
                         children: [
-                          Text('Balance Payable',
+                          Text(AppStrings.val(context, en: 'Balance Payable', ur: 'واجب الادا بقایا'),
                               style: TextStyle(
                                   fontSize: 11, color: Colors.grey.shade700)),
                           const SizedBox(height: 3),
@@ -693,7 +697,7 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                           color: Colors.blueGrey.shade300),
                       Column(
                         children: [
-                          Text('Est. Net Profit (خالص بچت)',
+                          Text(AppStrings.val(context, en: 'Est. Net Profit', ur: 'خالص بچت'),
                               style: TextStyle(
                                   fontSize: 11, color: Colors.grey.shade700)),
                           const SizedBox(height: 3),
@@ -712,9 +716,9 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                 const SizedBox(height: 14),
 
                 // Remarks
-                const Text(
-                  'Trip Notes / ہدایات و تفصیل',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                Text(
+                  AppStrings.val(context, en: 'Trip Notes & Instructions', ur: 'ہدایات و تفصیل'),
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
@@ -736,7 +740,7 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -757,7 +761,7 @@ class _NewTripChallanDialogState extends State<NewTripChallanDialog> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.local_shipping),
-                      label: const Text('Dispatch Trip (ٹرپ روانہ کریں)'),
+                      label: Text(AppStrings.val(context, en: 'Dispatch Trip', ur: 'ٹرپ روانہ کریں')),
                     ),
                   ],
                 ),

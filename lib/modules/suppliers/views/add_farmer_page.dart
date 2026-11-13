@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 import 'package:mandi/data/services/employee_functions_service.dart';
@@ -32,6 +33,7 @@ class _AddFarmerPageState extends State<AddFarmerPage> {
   }
 
   Future<void> _submit() async {
+    final isUrdu = AppStrings.isUrdu(context);
     if (!_formKey.currentState!.validate()) return;
 
     final shopId = context.read<ShopContextProvider>().currentShopId!;
@@ -50,7 +52,13 @@ class _AddFarmerPageState extends State<AddFarmerPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Farmer added & invitation sent.')),
+        SnackBar(
+          content: Text(
+            isUrdu
+                ? 'زمیندار شامل کر لیا گیا اور دعوت نامہ بھیج دیا گیا۔'
+                : 'Farmer added & invitation sent.',
+          ),
+        ),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -65,8 +73,12 @@ class _AddFarmerPageState extends State<AddFarmerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isUrdu = AppStrings.isUrdu(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Farmer (نیا زمیندار)')),
+      appBar: AppBar(
+        title: Text(isUrdu ? 'نیا زمیندار شامل کریں' : 'Add Farmer'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(MSpacing.lg),
         child: Form(
@@ -76,43 +88,43 @@ class _AddFarmerPageState extends State<AddFarmerPage> {
             children: [
               TextFormField(
                 controller: _name,
-                decoration: const InputDecoration(
-                  labelText: 'Farmer Name *',
-                  hintText: 'e.g. Seth Bilal / Chaudhry Aslam',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'زمیندار کا نام *' : 'Farmer Name *',
+                  hintText: isUrdu ? 'مثلاً چوہدری اسلم / حاجی اکرم' : 'e.g. Seth Bilal / Chaudhry Aslam',
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
               ),
               const SizedBox(height: MSpacing.md),
               TextFormField(
                 controller: _phone,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number *',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'فون نمبر *' : 'Phone Number *',
                   hintText: 'e.g. 03001234567',
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    (v == null || v.trim().isEmpty) ? (isUrdu ? 'لازمی ہے' : 'Required') : null,
               ),
               const SizedBox(height: MSpacing.md),
               TextFormField(
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address *',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'ای میل ایڈریس *' : 'Email Address *',
                   hintText: 'e.g. farmer@example.com',
                 ),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
-                  return v.contains('@') ? null : 'Enter a valid email';
+                  if (v == null || v.trim().isEmpty) return isUrdu ? 'لازمی ہے' : 'Required';
+                  return v.contains('@') ? null : (isUrdu ? 'درست ای میل درج کریں' : 'Enter a valid email');
                 },
               ),
               const SizedBox(height: MSpacing.md),
               TextFormField(
                 controller: _productsSupplied,
-                decoration: const InputDecoration(
-                  labelText: 'Crops / Produce',
-                  hintText: 'e.g. Wheat, Basmati Rice, Cotton, Maize',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'فصلیں و جنس' : 'Crops / Produce',
+                  hintText: isUrdu ? 'مثلاً گندم، دھان، کپاس، مکئی' : 'e.g. Wheat, Basmati Rice, Cotton, Maize',
                 ),
               ),
               const SizedBox(height: MSpacing.md),
@@ -120,9 +132,11 @@ class _AddFarmerPageState extends State<AddFarmerPage> {
                 controller: _openingBalance,
                 keyboardType: const TextInputType.numberWithOptions(
                     decimal: true, signed: true),
-                decoration: const InputDecoration(
-                  labelText: 'Opening Balance (PKR)',
-                  hintText: '0 (positive = you owe farmer, negative = advance paid)',
+                decoration: InputDecoration(
+                  labelText: isUrdu ? 'ابتدائی بقایا رقم (روپے)' : 'Opening Balance (PKR)',
+                  hintText: isUrdu
+                      ? '0 (مثبت = واجب الادا، منفی = ایڈوانس پیشگی)'
+                      : '0 (positive = you owe farmer, negative = advance paid)',
                 ),
               ),
               const SizedBox(height: MSpacing.xl),
@@ -137,7 +151,7 @@ class _AddFarmerPageState extends State<AddFarmerPage> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Add Farmer'),
+                    : Text(isUrdu ? 'زمیندار محفوظ کریں' : 'Add Farmer'),
               ),
             ],
           ),

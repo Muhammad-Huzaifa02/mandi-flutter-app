@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/utils/inventory_label_pdf_generator.dart';
 import 'package:mandi/data/models/inventory_label_model.dart';
@@ -259,12 +260,27 @@ class LabelDetailModal extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Metadata Detail Cards
-            _detailRow('Commodity / جنس:', label.displayCommodity),
-            _detailRow('Quality Grade:', label.qualityGrade.toUpperCase().replaceAll('_', ' ')),
-            _detailRow('Packaging Type:', label.packageType.labelEnglish),
-            _detailRow('Location / گودام:', label.displayLocation.isNotEmpty ? label.displayLocation : 'General Yard'),
+            _detailRow(
+              AppStrings.val(context, en: 'Commodity:', ur: 'جنس:'),
+              label.displayCommodity,
+            ),
+            _detailRow(
+              AppStrings.val(context, en: 'Quality Grade:', ur: 'معیار و درجہ:'),
+              label.qualityGrade.toUpperCase().replaceAll('_', ' '),
+            ),
+            _detailRow(
+              AppStrings.val(context, en: 'Packaging Type:', ur: 'باردانہ کی قسم:'),
+              AppStrings.isUrdu(context) ? label.packageType.labelUrdu : label.packageType.labelEnglish,
+            ),
+            _detailRow(
+              AppStrings.val(context, en: 'Location:', ur: 'گودام و مقام:'),
+              label.displayLocation.isNotEmpty ? label.displayLocation : (AppStrings.isUrdu(context) ? 'عام احاطہ' : 'General Yard'),
+            ),
             if (label.partyName.isNotEmpty)
-              _detailRow('Party / Grower:', label.partyName),
+              _detailRow(
+                AppStrings.val(context, en: 'Party / Grower:', ur: 'زمیندار:'),
+                label.partyName,
+              ),
             if (label.vehicleNumber.isNotEmpty)
               _detailRow('Vehicle #:', label.vehicleNumber),
             _detailRow('Gross Weight:', '${label.grossWeightKg.toStringAsFixed(0)} KG'),

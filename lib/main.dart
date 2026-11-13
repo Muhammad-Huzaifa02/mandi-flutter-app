@@ -249,10 +249,10 @@ class MandiApp extends StatelessWidget {
           builder: (context, child) {
             final mediaQuery = MediaQuery.of(context);
             // Universal standard text scaling:
-            // Lock scale factor to 1.0 (standard 100% typography scale) so large/small
-            // system font settings or accessibility zoom do not inflate cards or cause RenderFlex overflows.
-            // If the user deliberately changed the in-app font scale in settings, allow a safe clamp between 0.9 and 1.1.
-            final safeFontScale = themeProvider.fontScale.clamp(0.90, 1.10);
+            // Standardize text scaling to 1.0 (exact 100% design system baseline) across all screens
+            // to ensure absolute uniformity, preventing irregular zoom, card overflow, or misalignments.
+            // When an explicit user override is configured in settings, clamp safely between 0.95 and 1.05.
+            final safeFontScale = themeProvider.fontScale.clamp(0.95, 1.05);
 
             return MediaQuery(
               data: mediaQuery.copyWith(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/ledger_pdf_generator.dart';
@@ -171,12 +172,12 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
           if (canEdit)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
-              tooltip: 'Edit Profile',
+              tooltip: AppStrings.tr(context, 'edit_profile'),
               onPressed: _editProfileDialog,
             ),
           IconButton(
             icon: const Icon(Icons.print_outlined),
-            tooltip: 'Print Ledger Statement PDF',
+            tooltip: AppStrings.tr(context, 'print_ledger_pdf'),
             onPressed: () {
               LedgerPdfGenerator.printCustomerLedger(
                 customer: _customer,
@@ -241,7 +242,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                     avatar: const Icon(Icons.stars,
                         color: MColors.primary, size: 18),
                     label: Text(
-                      '$loyaltyPoints Loyalty Points (Rs. ${totalSpent.toStringAsFixed(0)} spent)',
+                      '$loyaltyPoints ${AppStrings.tr(context, 'loyalty_points')} (Rs. ${totalSpent.toStringAsFixed(0)} ${AppStrings.tr(context, 'spent')})',
                       style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -262,7 +263,7 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Outstanding Khata Balance',
+                  Text(AppStrings.tr(context, 'outstanding_khata_balance'),
                       style: MText.labelMd.copyWith(color: MColors.textSecondary)),
                   const SizedBox(height: MSpacing.xs),
                   Text(
@@ -279,10 +280,10 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                   const SizedBox(height: MSpacing.xs),
                   Text(
                     _customer.runningBalance > 0
-                        ? 'Customer owes you'
+                        ? AppStrings.tr(context, 'customer_owes_you')
                         : (_customer.runningBalance < 0
-                            ? 'Advance payment received'
-                            : 'Khata Settled'),
+                            ? AppStrings.tr(context, 'advance_received')
+                            : AppStrings.tr(context, 'khata_settled')),
                     style: MText.bodySm.copyWith(color: MColors.textSecondary),
                   ),
                 ],
@@ -295,9 +296,9 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Account Ledger History',
+                Text(AppStrings.tr(context, 'account_ledger_history'),
                     style: MText.titleLg.copyWith(color: MColors.textPrimary)),
-                Text('${ledgerEntries.length} Transactions',
+                Text('${ledgerEntries.length} ${AppStrings.tr(context, 'transactions')}',
                     style: MText.bodySm.copyWith(color: MColors.textSecondary)),
               ],
             ),
@@ -408,8 +409,8 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                       ),
                     ),
                     icon: const Icon(Icons.payment_outlined, size: 18),
-                    label: const Text('Record Receipt',
-                        style: TextStyle(fontSize: 13)),
+                    label: Text(AppStrings.tr(context, 'record_receipt'),
+                        style: const TextStyle(fontSize: 13)),
                   ),
                 ),
                 if (_customer.runningBalance > 0 &&
@@ -431,8 +432,8 @@ class _CustomerDetailPageState extends State<CustomerDetailPage> {
                       },
                       icon: const Icon(Icons.send_outlined,
                           color: Colors.white, size: 18),
-                      label: const Text('WhatsApp',
-                          style: TextStyle(color: Colors.white, fontSize: 13)),
+                      label: Text(AppStrings.tr(context, 'whatsapp'),
+                          style: const TextStyle(color: Colors.white, fontSize: 13)),
                     ),
                   ),
                 ],

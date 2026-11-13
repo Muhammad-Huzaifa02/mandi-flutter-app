@@ -1,9 +1,9 @@
-// Wizard Dialog to Distribute Net Commission Profit among Partners
-// (*شراکت داروں میں خالص منافع کی تقسیم وزرڈ*).
+// Wizard Dialog to Distribute Net Commission Profit among Partners.
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/modules/partner_capital/providers/partner_capital_provider.dart';
 
 class DistributeProfitWizardDialog extends StatefulWidget {
@@ -16,8 +16,20 @@ class DistributeProfitWizardDialog extends StatefulWidget {
 class _DistributeProfitWizardDialogState extends State<DistributeProfitWizardDialog> {
   final _currencyFmt = NumberFormat('#,##0', 'en_US');
   final _profitCtrl = TextEditingController(text: '1000000');
-  final _periodCtrl = TextEditingController(text: 'Season Net Commission Profit (سیزن خالص کمیشن منافع)');
+  final _periodCtrl = TextEditingController();
   bool _isDistributing = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_periodCtrl.text.isEmpty) {
+      _periodCtrl.text = AppStrings.val(
+        context,
+        en: 'Season Net Commission Profit',
+        ur: 'سیزن خالص کمیشن منافع',
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -30,7 +42,15 @@ class _DistributeProfitWizardDialogState extends State<DistributeProfitWizardDia
     final profit = double.tryParse(_profitCtrl.text.trim()) ?? 0.0;
     if (profit <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid profit amount.')),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Please enter a valid profit amount.',
+              ur: 'براہ کرم درست منافع رقم درج کریں۔',
+            ),
+          ),
+        ),
       );
       return;
     }
@@ -49,8 +69,14 @@ class _DistributeProfitWizardDialogState extends State<DistributeProfitWizardDia
       if (success) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profit Distributed to Partner Capitals Successfully! (منافع تقسیم ہو گیا)'),
+          SnackBar(
+            content: Text(
+              AppStrings.val(
+                context,
+                en: 'Profit distributed to partner capitals successfully!',
+                ur: 'شراکت داروں میں منافع کامیابی سے تقسیم ہو گیا!',
+              ),
+            ),
             backgroundColor: Colors.teal,
           ),
         );
@@ -72,14 +98,18 @@ class _DistributeProfitWizardDialogState extends State<DistributeProfitWizardDia
     final profit = double.tryParse(_profitCtrl.text.trim()) ?? 0.0;
 
     return AlertDialog(
-      title: const Row(
+      title: Row(
         children: [
-          Icon(Icons.pie_chart, color: Colors.teal),
-          SizedBox(width: 8),
+          const Icon(Icons.pie_chart, color: Colors.teal),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Net Profit Distribution Wizard\n(خالص منافع تقسیم وزرڈ)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              AppStrings.val(
+                context,
+                en: 'Net Profit Distribution Wizard',
+                ur: 'خالص منافع تقسیم وزرڈ',
+              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -89,34 +119,50 @@ class _DistributeProfitWizardDialogState extends State<DistributeProfitWizardDia
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Enter total shop net commission profit to automatically allocate to partners according to their agreed ratios.',
-              style: TextStyle(fontSize: 12, color: Colors.black87),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'Enter total shop net commission profit to automatically allocate to partners according to their agreed ratios.',
+                ur: 'دکان کا کل خالص کمیشن منافع درج کریں تاکہ طے شدہ تناسب کے مطابق تمام شراکت داروں میں تقسیم کیا جا سکے۔',
+              ),
+              style: const TextStyle(fontSize: 12, color: Colors.black87),
             ),
             const SizedBox(height: 14),
             TextField(
               controller: _profitCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Total Net Profit / کل خالص منافع *',
+              decoration: InputDecoration(
+                labelText: AppStrings.val(
+                  context,
+                  en: 'Total Net Profit *',
+                  ur: 'کل خالص منافع *',
+                ),
                 prefixText: 'Rs. ',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.monetization_on),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.monetization_on),
               ),
               onChanged: (_) => setState(() {}),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _periodCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Period / سیزن و تفصیل',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppStrings.val(
+                  context,
+                  en: 'Period / Description',
+                  ur: 'سیزن و تفصیل',
+                ),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'LIVE DISTRIBUTION PREVIEW / متوقع تقسیم تفصیل:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.teal),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'LIVE DISTRIBUTION PREVIEW:',
+                ur: 'متوقع منافع تقسیم تفصیل:',
+              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.teal),
             ),
             const SizedBox(height: 8),
             Container(
@@ -127,7 +173,13 @@ class _DistributeProfitWizardDialogState extends State<DistributeProfitWizardDia
                 border: Border.all(color: Colors.teal.shade200),
               ),
               child: activePartners.isEmpty
-                  ? const Text('No active partners configured.')
+                  ? Text(
+                      AppStrings.val(
+                        context,
+                        en: 'No active partners configured.',
+                        ur: 'کوئی فعال شراکت دار موجود نہیں۔',
+                      ),
+                    )
                   : Column(
                       children: activePartners.map((p) {
                         final share = profit * (p.profitSharingRatio / 100.0);
@@ -160,7 +212,7 @@ class _DistributeProfitWizardDialogState extends State<DistributeProfitWizardDia
       actions: [
         TextButton(
           onPressed: _isDistributing ? null : () => Navigator.pop(context),
-          child: const Text('منسوخ (Cancel)'),
+          child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
         ),
         ElevatedButton(
           onPressed: _isDistributing ? null : _submit,
@@ -171,7 +223,14 @@ class _DistributeProfitWizardDialogState extends State<DistributeProfitWizardDia
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
-              : const Text('منافع تقسیم کریں (Distribute Profit)', style: TextStyle(color: Colors.white)),
+              : Text(
+                  AppStrings.val(
+                    context,
+                    en: 'Distribute Profit',
+                    ur: 'منافع تقسیم کریں',
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                ),
         ),
       ],
     );

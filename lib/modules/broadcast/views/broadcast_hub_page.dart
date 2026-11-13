@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../../core/localization/app_strings.dart';
 import '../../../core/utils/broadcast_report_pdf_generator.dart';
 import '../../../data/models/broadcast_campaign_model.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
@@ -45,27 +46,29 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
     final shopCtx = context.watch<ShopContextProvider>();
     final broadcastProvider = context.watch<BroadcastProvider>();
     final activeShop = shopCtx.currentShop;
+    final isUrdu = AppStrings.isUrdu(context);
 
     if (activeShop == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Mandi Bhav Broadcast Hub')),
-        body: const Center(child: Text('Please select an active shop')),
+        appBar: AppBar(
+          title: Text(AppStrings.val(context, en: 'Mandi Bhav Broadcast Hub', ur: 'منڈی بھاؤ براڈکاسٹ سنٹر')),
+        ),
+        body: Center(
+          child: Text(AppStrings.val(context, en: 'Please select an active shop', ur: 'براہ کرم فعال دکان منتخب کریں')),
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Mandi Bhav Broadcast Hub', style: TextStyle(fontSize: 16)),
-            Text('واٹس ایپ اور ٹیلیگرام ریٹ براڈکاسٹ', style: TextStyle(fontSize: 11, color: Colors.white70)),
-          ],
+        title: Text(
+          AppStrings.val(context, en: 'Mandi Bhav Broadcast Hub', ur: 'منڈی بھاؤ براڈکاسٹ سنٹر'),
+          style: const TextStyle(fontSize: 16),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.print_outlined),
-            tooltip: 'Print Distribution Certificate',
+            tooltip: AppStrings.val(context, en: 'Print Distribution Certificate', ur: 'تقسیم سرٹیفکیٹ پرنٹ کریں'),
             onPressed: () {
               if (broadcastProvider.campaigns.isNotEmpty) {
                 final latest = broadcastProvider.campaigns.first;
@@ -77,14 +80,16 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('No campaigns to print yet')),
+                  SnackBar(
+                    content: Text(AppStrings.val(context, en: 'No campaigns to print yet', ur: 'ابھی کوئی مہم پرنٹ کے لیے موجود نہیں')),
+                  ),
                 );
               }
             },
           ),
           IconButton(
             icon: const Icon(Icons.person_add),
-            tooltip: 'Add Subscriber',
+            tooltip: AppStrings.val(context, en: 'Add Subscriber', ur: 'نیا صارف شامل کریں'),
             onPressed: () {
               showDialog(
                 context: context,
@@ -101,7 +106,7 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Bulletins'),
+                  Text(AppStrings.val(context, en: 'Bulletins', ur: 'پیغامات')),
                   if (broadcastProvider.totalCampaigns > 0) ...[
                     const SizedBox(width: 6),
                     Badge(label: Text('${broadcastProvider.totalCampaigns}')),
@@ -113,7 +118,7 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Subscribers'),
+                  Text(AppStrings.val(context, en: 'Subscribers', ur: 'صارفین')),
                   if (broadcastProvider.activeSubscribersCount > 0) ...[
                     const SizedBox(width: 6),
                     Badge(label: Text('${broadcastProvider.activeSubscribersCount}')),
@@ -121,7 +126,7 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
                 ],
               ),
             ),
-            const Tab(text: 'Quick Dispatch & Bot'),
+            Tab(text: AppStrings.val(context, en: 'Quick Dispatch & Bot', ur: 'فوری ترسیل و باٹ')),
           ],
         ),
       ),
@@ -129,7 +134,7 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
         backgroundColor: const Color(0xFF0F6B3C),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.campaign),
-        label: const Text('New Bulletin (نیا پیغام)'),
+        label: Text(AppStrings.val(context, en: 'New Bulletin', ur: 'نیا پیغام')),
         onPressed: () {
           showDialog(
             context: context,
@@ -139,12 +144,12 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
       ),
       body: Column(
         children: [
-          _buildKpiBanner(broadcastProvider),
+          _buildKpiBanner(context, broadcastProvider),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildBulletinsTab(context, broadcastProvider),
+                _buildBulletinsTab(context, broadcastProvider, isUrdu),
                 _buildSubscribersTab(context, broadcastProvider),
                 _buildQuickDispatchTab(context, broadcastProvider),
               ],
@@ -155,19 +160,19 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
     );
   }
 
-  Widget _buildKpiBanner(BroadcastProvider provider) {
+  Widget _buildKpiBanner(BuildContext context, BroadcastProvider provider) {
     return Container(
       padding: const EdgeInsets.all(12),
       color: Colors.grey.shade100,
       child: Row(
         children: [
-          _buildKpiTile('Total Sent', '${provider.totalSentMessages}', Colors.teal.shade800, Icons.send),
+          _buildKpiTile(AppStrings.val(context, en: 'Total Sent', ur: 'کل بھیجے گئے'), '${provider.totalSentMessages}', Colors.teal.shade800, Icons.send),
           const SizedBox(width: 8),
-          _buildKpiTile('Delivery Rate', '${provider.overallDeliveryRate.toStringAsFixed(1)}%', Colors.green.shade800, Icons.verified),
+          _buildKpiTile(AppStrings.val(context, en: 'Delivery Rate', ur: 'ترسیل شرح'), '${provider.overallDeliveryRate.toStringAsFixed(1)}%', Colors.green.shade800, Icons.verified),
           const SizedBox(width: 8),
-          _buildKpiTile('WhatsApp Subs', '${provider.whatsappSubscribersCount}', const Color(0xFF25D366), Icons.phone_android),
+          _buildKpiTile(AppStrings.val(context, en: 'WhatsApp Subs', ur: 'واٹس ایپ'), '${provider.whatsappSubscribersCount}', const Color(0xFF25D366), Icons.phone_android),
           const SizedBox(width: 8),
-          _buildKpiTile('Telegram Subs', '${provider.telegramSubscribersCount}', const Color(0xFF0088CC), Icons.telegram),
+          _buildKpiTile(AppStrings.val(context, en: 'Telegram Subs', ur: 'ٹیلیگرام'), '${provider.telegramSubscribersCount}', const Color(0xFF0088CC), Icons.telegram),
         ],
       ),
     );
@@ -216,7 +221,7 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
     );
   }
 
-  Widget _buildBulletinsTab(BuildContext context, BroadcastProvider provider) {
+  Widget _buildBulletinsTab(BuildContext context, BroadcastProvider provider, bool isUrdu) {
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -228,9 +233,19 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
           children: [
             Icon(Icons.campaign_outlined, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            const Text('No Broadcast Bulletins Yet', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              AppStrings.val(context, en: 'No Broadcast Bulletins Yet', ur: 'ابھی کوئی پیغام نہیں ہے'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            Text('Create daily rate lists and alerts for farmers and buyers.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'Create daily rate lists and alerts for farmers and buyers.',
+                ur: 'زمینداروں اور خریداروں کے لیے روزانہ ریٹ لسٹ اور پیغامات بنائیں۔',
+              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
           ],
         ),
       );
@@ -264,11 +279,11 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
             ),
             title: Text(campaign.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             subtitle: Text(
-              '${campaign.channel.labelEn} • $dateStr\nRecipients: ${campaign.deliveredCount}/${campaign.totalRecipients}',
+              '${isUrdu ? campaign.channel.labelUr : campaign.channel.labelEn} • $dateStr\n${AppStrings.val(context, en: 'Recipients', ur: 'وصول کنندگان')}: ${campaign.deliveredCount}/${campaign.totalRecipients}',
               style: const TextStyle(fontSize: 11),
             ),
             trailing: Chip(
-              label: Text(campaign.status.labelEn, style: const TextStyle(fontSize: 10)),
+              label: Text(isUrdu ? campaign.status.labelUr : campaign.status.labelEn, style: const TextStyle(fontSize: 10)),
               backgroundColor: campaign.status == BroadcastStatus.sent ? Colors.green.shade50 : Colors.amber.shade50,
             ),
             children: [
@@ -296,7 +311,10 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
                       children: [
                         OutlinedButton.icon(
                           icon: const Icon(Icons.share, size: 14),
-                          label: const Text('Share to Telegram', style: TextStyle(fontSize: 11)),
+                          label: Text(
+                            AppStrings.val(context, en: 'Share to Telegram', ur: 'ٹیلیگرام پر شیئر کریں'),
+                            style: const TextStyle(fontSize: 11),
+                          ),
                           onPressed: () => provider.launchTelegramShare(campaign.messageBody),
                         ),
                         const SizedBox(width: 8),
@@ -306,7 +324,10 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
                             foregroundColor: Colors.white,
                           ),
                           icon: const Icon(Icons.phone_android, size: 14),
-                          label: const Text('Send via WhatsApp', style: TextStyle(fontSize: 11)),
+                          label: Text(
+                            AppStrings.val(context, en: 'Send via WhatsApp', ur: 'واٹس ایپ پر بھیجیں'),
+                            style: const TextStyle(fontSize: 11),
+                          ),
                           onPressed: () => provider.launchWhatsAppUrl('', campaign.messageBody),
                         ),
                       ],
@@ -329,9 +350,19 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
           children: [
             Icon(Icons.people_outline, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 12),
-            const Text('No Subscribers Found', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              AppStrings.val(context, en: 'No Subscribers Found', ur: 'کوئی صارف نہیں ملا'),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            Text('Add farmers and grain merchants to broadcast rate lists.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(
+              AppStrings.val(
+                context,
+                en: 'Add farmers and grain merchants to broadcast rate lists.',
+                ur: 'ریٹ لسٹ نشر کرنے کے لیے زمیندار اور تاجر شامل کریں۔',
+              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
           ],
         ),
       );
@@ -380,10 +411,17 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Instant Broadcast Channels (فوری نشریات)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(
+            AppStrings.val(context, en: 'Instant Broadcast Channels', ur: 'فوری نشریات کے ذرائع'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 8),
           Text(
-            'Quickly broadcast today\'s Mandi Bhav rates to your WhatsApp groups or Telegram public channel with one tap.',
+            AppStrings.val(
+              context,
+              en: 'Quickly broadcast today\'s Mandi Bhav rates to your WhatsApp groups or Telegram public channel with one tap.',
+              ur: 'ایک کلک کے ساتھ آج کے منڈی بھاؤ اپنے واٹس ایپ گروپس یا ٹیلیگرام چینل پر نشر کریں۔',
+            ),
             style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
           ),
           const SizedBox(height: 16),
@@ -402,12 +440,22 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
                     child: const Icon(Icons.phone_android, color: Color(0xFF25D366), size: 28),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('WhatsApp Direct Broadcast', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('Open WhatsApp Web or Mobile with synthesized rates pre-filled', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text(
+                          AppStrings.val(context, en: 'WhatsApp Direct Broadcast', ur: 'واٹس ایپ ڈائریکٹ براڈکاسٹ'),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        Text(
+                          AppStrings.val(
+                            context,
+                            en: 'Open WhatsApp Web or Mobile with synthesized rates pre-filled',
+                            ur: 'منڈی ریٹس کے ساتھ واٹس ایپ اوپن کریں',
+                          ),
+                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                       ],
                     ),
                   ),
@@ -417,7 +465,7 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
                       final latest = provider.campaigns.isNotEmpty ? provider.campaigns.first.messageBody : 'Mandi Bhav Rates: Wheat Rs. 4,000/Maund';
                       provider.launchWhatsAppUrl('', latest);
                     },
-                    child: const Text('Open WhatsApp'),
+                    child: Text(AppStrings.val(context, en: 'Open WhatsApp', ur: 'واٹس ایپ کھولیں')),
                   ),
                 ],
               ),
@@ -439,12 +487,22 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
                     child: const Icon(Icons.telegram, color: Color(0xFF0088CC), size: 28),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Telegram Channel Post', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('Share rates to public Mandi subscribers channel', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text(
+                          AppStrings.val(context, en: 'Telegram Channel Post', ur: 'ٹیلیگرام چینل پوسٹ'),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        Text(
+                          AppStrings.val(
+                            context,
+                            en: 'Share rates to public Mandi subscribers channel',
+                            ur: 'منڈی کے پبلک چینل پر ریٹ شیئر کریں',
+                          ),
+                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                       ],
                     ),
                   ),
@@ -454,7 +512,7 @@ class _BroadcastHubPageState extends State<BroadcastHubPage> with SingleTickerPr
                       final latest = provider.campaigns.isNotEmpty ? provider.campaigns.first.messageBody : 'Mandi Bhav Rates: Wheat Rs. 4,000/Maund';
                       provider.launchTelegramShare(latest);
                     },
-                    child: const Text('Share to Telegram'),
+                    child: Text(AppStrings.val(context, en: 'Share to Telegram', ur: 'ٹیلیگرام شیئر کریں')),
                   ),
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/consignment_lot_model.dart';
 import 'package:mandi/data/models/customer_model.dart';
@@ -69,7 +70,7 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
           const SizedBox(width: MSpacing.xs),
           Expanded(
             child: Text(
-              'Record Auction Bid: ${widget.lot.lotNumber}',
+              '${AppStrings.val(context, en: 'Record Auction Bid', ur: 'بولی ریکارڈ کریں')}: ${widget.lot.lotNumber}',
               style: MText.titleMd.copyWith(color: Colors.white),
               overflow: TextOverflow.ellipsis,
             ),
@@ -84,7 +85,7 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Farmer: ${widget.lot.supplierName} • ${widget.lot.productName}',
+                '${AppStrings.val(context, en: 'Farmer', ur: 'زمیندار')}: ${widget.lot.supplierName} • ${widget.lot.productName}',
                 style: MText.bodySm.copyWith(color: MColors.textOnDarkSub),
               ),
               const SizedBox(height: MSpacing.md),
@@ -92,9 +93,9 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
               // Winning Buyer (Customer) Selector
               DropdownButtonFormField<Customer>(
                 initialValue: _selectedCustomer,
-                decoration: const InputDecoration(
-                  labelText: 'Winning Buyer / Customer (خریدار) *',
-                  prefixIcon: Icon(Icons.person_outline),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(context, en: 'Winning Buyer / Customer *', ur: 'خریدار / گاہک *'),
+                  prefixIcon: const Icon(Icons.person_outline),
                 ),
                 items: customers
                     .map((c) => DropdownMenuItem(
@@ -103,8 +104,9 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
                         ))
                     .toList(),
                 onChanged: (val) => setState(() => _selectedCustomer = val),
-                validator: (val) =>
-                    val == null ? 'Please select a winning buyer' : null,
+                validator: (val) => val == null
+                    ? AppStrings.val(context, en: 'Please select a winning buyer', ur: 'خریدار منتخب کریں')
+                    : null,
               ),
               const SizedBox(height: MSpacing.sm),
 
@@ -114,14 +116,16 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
-                  labelText: 'Final Weight in KG (حتمی وزن) *',
+                  labelText: AppStrings.val(context, en: 'Final Weight in KG *', ur: 'حتمی وزن (کلوگرام) *'),
                   prefixIcon: const Icon(Icons.scale_outlined),
-                  suffixText: '${_currentMaunds.toStringAsFixed(2)} Manns',
+                  suffixText: '${_currentMaunds.toStringAsFixed(2)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                 ),
                 onChanged: (_) => setState(() {}),
                 validator: (val) {
                   final n = double.tryParse(val?.trim() ?? '');
-                  if (n == null || n <= 0) return 'Enter valid weight';
+                  if (n == null || n <= 0) {
+                    return AppStrings.val(context, en: 'Enter valid weight', ur: 'درست وزن درج کریں');
+                  }
                   return null;
                 },
               ),
@@ -132,15 +136,17 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
                 controller: _rateCtrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Bid Rate per Maund (ریٹ فی من 40 کلو) *',
-                  prefixIcon: Icon(Icons.price_change_outlined),
+                decoration: InputDecoration(
+                  labelText: AppStrings.val(context, en: 'Bid Rate per Maund (40 KG) *', ur: 'بولی ریٹ فی من (40 کلو) *'),
+                  prefixIcon: const Icon(Icons.price_change_outlined),
                   prefixText: 'Rs. ',
                 ),
                 onChanged: (_) => setState(() {}),
                 validator: (val) {
                   final n = double.tryParse(val?.trim() ?? '');
-                  if (n == null || n <= 0) return 'Enter valid rate';
+                  if (n == null || n <= 0) {
+                    return AppStrings.val(context, en: 'Enter valid rate', ur: 'درست ریٹ درج کریں');
+                  }
                   return null;
                 },
               ),
@@ -159,22 +165,30 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total Manns (من):',
-                            style: MText.caption.copyWith(color: Colors.white)),
-                        Text('${_currentMaunds.toStringAsFixed(2)} Manns',
-                            style: MText.bodySm.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
+                        Text(
+                          AppStrings.val(context, en: 'Total Maunds:', ur: 'کل من:'),
+                          style: MText.caption.copyWith(color: Colors.white),
+                        ),
+                        Text(
+                          '${_currentMaunds.toStringAsFixed(2)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
+                          style: MText.bodySm.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 3),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Auction Value (کل نیلامی):',
-                            style: MText.bodySm.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: MColors.gold)),
+                        Text(
+                          AppStrings.val(context, en: 'Auction Value:', ur: 'کل نیلامی رقم:'),
+                          style: MText.bodySm.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: MColors.gold,
+                          ),
+                        ),
                         Text(
                           'Rs. ${_totalAuctionValue.toStringAsFixed(0)}',
                           style: MText.bodyMd.copyWith(
@@ -194,7 +208,7 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
       actions: [
         TextButton(
           onPressed: _isSaving ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
         ),
         ElevatedButton(
           onPressed: _isSaving
@@ -205,6 +219,7 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
 
                   setState(() => _isSaving = true);
                   final prov = context.read<ConsignmentProvider>();
+                  final isUrdu = AppStrings.isUrdu(context);
                   final navigator = Navigator.of(context);
                   final messenger = ScaffoldMessenger.of(context);
 
@@ -221,14 +236,23 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
                       messenger.showSnackBar(
                         SnackBar(
                           content: Text(
-                              'Winning bid recorded for ${widget.lot.lotNumber}: Rs. ${_currentRate.toStringAsFixed(0)}/Mann'),
+                            isUrdu
+                                ? '${widget.lot.lotNumber} کے لیے کامیاب بولی درج: Rs. ${_currentRate.toStringAsFixed(0)} فی من'
+                                : 'Winning bid recorded for ${widget.lot.lotNumber}: Rs. ${_currentRate.toStringAsFixed(0)}/Mann',
+                          ),
                         ),
                       );
                     }
                   } catch (e) {
                     if (mounted) {
                       messenger.showSnackBar(
-                        SnackBar(content: Text('Failed to record bid: $e')),
+                        SnackBar(
+                          content: Text(
+                            isUrdu
+                                ? 'بولی محفوظ کرنے میں ناکامی: $e'
+                                : 'Failed to record bid: $e',
+                          ),
+                        ),
                       );
                     }
                   } finally {
@@ -241,7 +265,7 @@ class _RecordBidDialogState extends State<RecordBidDialog> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Save Winning Bid'),
+              : Text(AppStrings.val(context, en: 'Save Winning Bid', ur: 'بولی محفوظ کریں')),
         ),
       ],
     );

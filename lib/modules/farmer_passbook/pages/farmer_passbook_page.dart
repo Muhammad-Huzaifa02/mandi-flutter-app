@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
+import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/models/supplier_model.dart';
@@ -39,7 +40,7 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
         final defaultFarmer = Supplier(
           id: 'farm_001',
           shopId: passbookProv.shopId ?? '',
-          name: 'Chaudhry Riaz (چوہدری ریاض)',
+          name: 'Chaudhry Riaz',
           phone: '0300-1234567',
           runningBalance: 425000.0,
         );
@@ -102,31 +103,31 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
     final farmer = passbookProvider.selectedFarmer;
     final isPayable = passbookProvider.runningBalance >= 0;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(
-          AppStrings.tr(context, 'farmer_passbook_title'),
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
+    return LiquidCrystalBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code, color: Colors.amberAccent),
-            tooltip: AppStrings.tr(context, 'print_qr_card'),
-            onPressed: farmer == null ? null : () => _printIdCard(passbookProvider, shopName, shopPhone),
+        appBar: AppBar(
+          title: Text(
+            AppStrings.tr(context, 'farmer_passbook_title'),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
-          IconButton(
-            icon: const Icon(Icons.print, color: Colors.white),
-            tooltip: AppStrings.tr(context, 'print_passbook_slip'),
-            onPressed: farmer == null ? null : () => _printPassbookSlip(passbookProvider, shopName, shopPhone),
-          ),
-        ],
-      ),
-      body: LiquidCrystalBackground(
-        child: SingleChildScrollView(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: MColors.textPrimary,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.qr_code, color: MColors.gold),
+              tooltip: AppStrings.tr(context, 'print_qr_card'),
+              onPressed: farmer == null ? null : () => _printIdCard(passbookProvider, shopName, shopPhone),
+            ),
+            IconButton(
+              icon: const Icon(Icons.print, color: MColors.primary),
+              tooltip: AppStrings.tr(context, 'print_passbook_slip'),
+              onPressed: farmer == null ? null : () => _printPassbookSlip(passbookProvider, shopName, shopPhone),
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -303,17 +304,17 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'کھاتے کا صوتی خلاصہ (Urdu Audio Summary)',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              AppStrings.tr(context, 'audio_summary_title'),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                             Text(
-                              'زمیندار کو بول کر کھاتہ بیلنس سنائیں',
-                              style: TextStyle(color: Colors.black54, fontSize: 12),
+                              AppStrings.tr(context, 'audio_summary_subtitle'),
+                              style: const TextStyle(color: Colors.black54, fontSize: 12),
                             ),
                           ],
                         ),
@@ -325,7 +326,7 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                           color: Colors.white,
                         ),
                         label: Text(
-                          passbookProvider.isPlayingAudioSummary ? 'روکیں (Stop)' : 'سنیں (Play)',
+                          passbookProvider.isPlayingAudioSummary ? AppStrings.tr(context, 'stop') : AppStrings.tr(context, 'play'),
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -369,8 +370,8 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
               children: [
                 Expanded(
                   child: _buildMetricCard(
-                    title: 'Total Delivered / کل مال',
-                    value: '${_numberFmt.format(passbookProvider.totalDeliveredMaunds)} من',
+                    title: AppStrings.tr(context, 'total_delivered'),
+                    value: '${_numberFmt.format(passbookProvider.totalDeliveredMaunds)} ${AppStrings.tr(context, 'maunds')}',
                     subtitle: '(${_numberFmt.format(passbookProvider.totalDeliveredKg)} KG)',
                     icon: Icons.grain,
                     color: Colors.teal,
@@ -379,9 +380,9 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildMetricCard(
-                    title: 'Gross Auction / کل بولی',
+                    title: AppStrings.tr(context, 'gross_auction'),
                     value: 'Rs. ${_currencyFmt.format(passbookProvider.totalGrossEarnings)}',
-                    subtitle: 'نیلامی کل آمدن',
+                    subtitle: AppStrings.val(context, en: 'Gross Auction Earnings', ur: 'نیلامی کل آمدن'),
                     icon: Icons.monetization_on,
                     color: Colors.blueGrey,
                   ),
@@ -393,9 +394,9 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
               children: [
                 Expanded(
                   child: _buildMetricCard(
-                    title: 'Deductions / منہائی',
+                    title: AppStrings.tr(context, 'deductions'),
                     value: 'Rs. ${_currencyFmt.format(passbookProvider.totalDeductions)}',
-                    subtitle: 'کمیشن، پلے داری و اخراجات',
+                    subtitle: AppStrings.val(context, en: 'Commission & Labor', ur: 'کمیشن، پلے داری و اخراجات'),
                     icon: Icons.remove_circle_outline,
                     color: Colors.deepOrange,
                   ),
@@ -403,9 +404,9 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildMetricCard(
-                    title: 'Cash Paid / ادا شدہ',
+                    title: AppStrings.tr(context, 'cash_paid'),
                     value: 'Rs. ${_currencyFmt.format(passbookProvider.totalPaymentsReceived)}',
-                    subtitle: 'وصول شدہ رقم و پیشگی',
+                    subtitle: AppStrings.val(context, en: 'Received Advances', ur: 'وصول شدہ رقم و پیشگی'),
                     icon: Icons.account_balance_wallet,
                     color: Colors.green,
                   ),
@@ -418,9 +419,9 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'فصل ترسیل و نیلامی تفصیل (Delivered Lots)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                Text(
+                  AppStrings.tr(context, 'delivered_crop_lots'),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
                   '${passbookProvider.deliveries.length} Entries',
@@ -563,17 +564,17 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
             const SizedBox(height: 12),
             const Divider(color: Colors.white24, height: 1),
             const SizedBox(height: 12),
-            _buildDetailRow('کل وزن (Weight):',
-                '${item.maunds.toStringAsFixed(1)} Maunds (${item.weightKg.toStringAsFixed(0)} KG)'),
-            _buildDetailRow('ریٹ فی من (Rate):',
-                'Rs. ${_currencyFmt.format(item.ratePerMaund)} / من'),
-            _buildDetailRow('کل بولی رقم (Gross):',
+            _buildDetailRow(AppStrings.val(ctx, en: 'Weight:', ur: 'کل وزن:'),
+                '${item.maunds.toStringAsFixed(1)} ${AppStrings.tr(ctx, 'maunds')} (${item.weightKg.toStringAsFixed(0)} KG)'),
+            _buildDetailRow(AppStrings.val(ctx, en: 'Rate per Maund:', ur: 'ریٹ فی من:'),
+                'Rs. ${_currencyFmt.format(item.ratePerMaund)} / ${AppStrings.tr(ctx, 'maunds')}'),
+            _buildDetailRow(AppStrings.val(ctx, en: 'Gross Auction:', ur: 'کل بولی رقم:'),
                 'Rs. ${_currencyFmt.format(item.grossAmount)}'),
-            _buildDetailRow('منہائی و کمیشن (Deductions):',
+            _buildDetailRow(AppStrings.val(ctx, en: 'Deductions & Commission:', ur: 'منہائی و کمیشن:'),
                 '- Rs. ${_currencyFmt.format(item.deductions)}',
                 isDanger: true),
             const Divider(color: Colors.white24, height: 16),
-            _buildDetailRow('خالص قابل ادا (Net Payable):',
+            _buildDetailRow(AppStrings.val(ctx, en: 'Net Payable:', ur: 'خالص قابل ادا:'),
                 'Rs. ${_currencyFmt.format(item.netPayable)}',
                 isHighlight: true),
             const SizedBox(height: 18),
@@ -586,7 +587,7 @@ class _FarmerPassbookPageState extends State<FarmerPassbookPage> {
                     borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('بند کریں (Close)'),
+              child: Text(AppStrings.tr(ctx, 'close')),
             ),
           ],
         ),

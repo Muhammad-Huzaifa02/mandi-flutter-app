@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/boli_sheet_pdf_generator.dart';
@@ -58,22 +59,17 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
       filtered = sourceLots;
     }
 
+    final isUrdu = AppStrings.isUrdu(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Consignments & Auction'),
-            Text(
-              'آمد مال و نیلامی بولی',
-              style: TextStyle(fontSize: 11, color: MColors.gold),
-            ),
-          ],
+        title: Text(
+          AppStrings.val(context, en: 'Consignments & Auction', ur: 'آمد مال و نیلامی بولی'),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.print_outlined),
-            tooltip: 'Print Daily Boli Sheet (بولی شیٹ پرنٹ)',
+            tooltip: AppStrings.val(context, en: 'Print Daily Boli Sheet', ur: 'روزانہ بولی شیٹ پرنٹ کریں'),
             onPressed: () {
               BoliSheetPdfGenerator.printOrShareBoliSheet(
                 lots: prov.todayLots.isNotEmpty ? prov.todayLots : prov.lots,
@@ -90,9 +86,9 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
         backgroundColor: MColors.gold,
         foregroundColor: Colors.black,
         icon: const Icon(Icons.add),
-        label: const Text(
-          'New Arrival (نئی آمد)',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        label: Text(
+          AppStrings.val(context, en: 'New Arrival', ur: 'نئی آمد درج کریں'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         onPressed: () {
           Navigator.push(
@@ -116,9 +112,10 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Today Bags',
-                            style: MText.caption
-                                .copyWith(color: MColors.textOnDarkSub)),
+                        Text(
+                          AppStrings.val(context, en: 'Today Bags', ur: 'آج کی بوریاں'),
+                          style: MText.caption.copyWith(color: MColors.textOnDarkSub),
+                        ),
                         const SizedBox(height: 2),
                         Text(
                           '${prov.totalBagsToday}',
@@ -127,9 +124,6 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
                             color: Colors.white,
                           ),
                         ),
-                        Text('کل بوریاں',
-                            style: MText.caption.copyWith(
-                                color: MColors.textOnDarkSub, fontSize: 9)),
                       ],
                     ),
                   ),
@@ -141,20 +135,18 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Total Manns',
-                            style: MText.caption
-                                .copyWith(color: MColors.textOnDarkSub)),
+                        Text(
+                          AppStrings.val(context, en: 'Total Maunds', ur: 'کل وزن (من)'),
+                          style: MText.caption.copyWith(color: MColors.textOnDarkSub),
+                        ),
                         const SizedBox(height: 2),
                         Text(
-                          '${prov.totalMaundsToday.toStringAsFixed(1)} من',
+                          '${prov.totalMaundsToday.toStringAsFixed(1)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')}',
                           style: MText.titleMd.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
-                        Text('کل وزن (من)',
-                            style: MText.caption.copyWith(
-                                color: MColors.textOnDarkSub, fontSize: 9)),
                       ],
                     ),
                   ),
@@ -166,9 +158,10 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Auction Sales',
-                            style: MText.caption
-                                .copyWith(color: MColors.gold)),
+                        Text(
+                          AppStrings.val(context, en: 'Auction Sales', ur: 'کل نیلامی رقم'),
+                          style: MText.caption.copyWith(color: MColors.gold),
+                        ),
                         const SizedBox(height: 2),
                         Text(
                           'Rs. ${prov.totalSoldAmountToday.toStringAsFixed(0)}',
@@ -179,9 +172,6 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text('کل نیلامی رقم',
-                            style: MText.caption.copyWith(
-                                color: MColors.textOnDarkSub, fontSize: 9)),
                       ],
                     ),
                   ),
@@ -196,7 +186,11 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
             child: TextField(
               controller: _searchCtrl,
               decoration: InputDecoration(
-                hintText: 'Search by Lot #, Farmer, Commodity, Vehicle...',
+                hintText: AppStrings.val(
+                  context,
+                  en: 'Search by Lot #, Farmer, Commodity, Vehicle...',
+                  ur: 'ڈھیری نمبر، زمیندار، جنس یا گاڑی تلاش کریں...',
+                ),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: query.isNotEmpty
                     ? IconButton(
@@ -218,17 +212,20 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
             padding: const EdgeInsets.symmetric(horizontal: MSpacing.md),
             child: Row(
               children: [
-                _buildFilterChip(0, 'All (${prov.lots.length})'),
+                _buildFilterChip(
+                  0,
+                  '${AppStrings.val(context, en: 'All', ur: 'تمام')} (${prov.lots.length})',
+                ),
                 const SizedBox(width: MSpacing.xs),
                 _buildFilterChip(
                   1,
-                  'Active Boli (${prov.arrivedLots.length + prov.auctioningLots.length})',
+                  '${AppStrings.val(context, en: 'Active Boli', ur: 'جاری بولی')} (${prov.arrivedLots.length + prov.auctioningLots.length})',
                   activeColor: Colors.orangeAccent,
                 ),
                 const SizedBox(width: MSpacing.xs),
                 _buildFilterChip(
                   2,
-                  'Sold (${prov.soldLots.length})',
+                  '${AppStrings.val(context, en: 'Sold', ur: 'نیلام شدہ')} (${prov.soldLots.length})',
                   activeColor: Colors.greenAccent,
                 ),
               ],
@@ -253,13 +250,21 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
                             const SizedBox(height: MSpacing.sm),
                             Text(
                               query.isEmpty
-                                  ? 'No consignment lots recorded yet.'
-                                  : 'No lots matching "$query"',
+                                  ? AppStrings.val(
+                                      context,
+                                      en: 'No consignment lots recorded yet.',
+                                      ur: 'ابھی کوئی مال یا ڈھیری ریکارڈ نہیں ہوئی۔',
+                                    )
+                                  : '${AppStrings.val(context, en: 'No lots matching', ur: 'کوئی ڈھیری نہیں ملی')} "$query"',
                               style: MText.bodyMd.copyWith(color: Colors.grey),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Tap "New Arrival" below to record a farmer consignment.',
+                              AppStrings.val(
+                                context,
+                                en: 'Tap "New Arrival" below to record a farmer consignment.',
+                                ur: 'زمیندار کا مال درج کرنے کے لیے نیچے "نئی آمد" دبائیں۔',
+                              ),
                               style: MText.caption.copyWith(color: Colors.grey),
                             ),
                           ],
@@ -282,6 +287,7 @@ class _ConsignmentListPageState extends State<ConsignmentListPage> {
                             shopName: shop?.name ?? 'Mandi Commission Shop',
                             shopPhone: shop?.phone,
                             shopCity: shop?.city,
+                            isUrdu: isUrdu,
                           );
                         },
                       ),
@@ -332,12 +338,14 @@ class _ConsignmentLotCard extends StatelessWidget {
   final String shopName;
   final String? shopPhone;
   final String? shopCity;
+  final bool isUrdu;
 
   const _ConsignmentLotCard({
     required this.lot,
     required this.shopName,
     this.shopPhone,
     this.shopCity,
+    required this.isUrdu,
   });
 
   void _printThermalBoliSlip(BuildContext context) {
@@ -350,7 +358,7 @@ class _ConsignmentLotCard extends StatelessWidget {
       if (shopCity != null && shopCity!.isNotEmpty) 'Mandi: $shopCity',
       if (shopPhone != null && shopPhone!.isNotEmpty) 'Ph: $shopPhone',
       '--------------------------------',
-      '*** AUCTION BOLI SLIP / بولی پرچہ ***',
+      '*** AUCTION BOLI SLIP ***',
       'Lot #: ${lot.lotNumber}',
       'Farmer: ${lot.supplierName.isNotEmpty ? lot.supplierName : "Direct Farmer"}',
       if (lot.vehicleNumber.isNotEmpty) 'Vehicle #: ${lot.vehicleNumber}',
@@ -369,7 +377,7 @@ class _ConsignmentLotCard extends StatelessWidget {
 
     ThermalPrintPreviewDialog.show(
       context: context,
-      title: 'Auction Boli Slip',
+      title: AppStrings.val(context, en: 'Auction Boli Slip', ur: 'نیلامی بولی پرچی'),
       subtitle: 'Lot #${lot.lotNumber} • ${lot.productName}',
       previewLines: lines,
       onPrint: (rollWidth, copies) async {
@@ -421,7 +429,9 @@ class _ConsignmentLotCard extends StatelessWidget {
                   ),
                   const SizedBox(width: MSpacing.xs),
                   Text(
-                    lot.productName.isNotEmpty ? lot.productName : 'Produce',
+                    lot.productName.isNotEmpty
+                        ? lot.productName
+                        : AppStrings.val(context, en: 'Produce', ur: 'جنس'),
                     style: MText.titleMd.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -444,7 +454,7 @@ class _ConsignmentLotCard extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      '${lot.status.englishName} (${lot.status.urduName})',
+                      isUrdu ? lot.status.urduName : lot.status.englishName,
                       style: MText.caption.copyWith(
                         color: lot.status.color,
                         fontWeight: FontWeight.bold,
@@ -454,12 +464,12 @@ class _ConsignmentLotCard extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.receipt_long, size: 18),
-                    tooltip: 'Print Thermal Boli Slip (تھرمل پرچی)',
+                    tooltip: AppStrings.val(context, en: 'Print Thermal Boli Slip', ur: 'تھرمل بولی پرچی پرنٹ کریں'),
                     onPressed: () => _printThermalBoliSlip(context),
                   ),
                   IconButton(
                     icon: const Icon(Icons.print_outlined, size: 18),
-                    tooltip: 'Print Lot Slip (پرچہ پرنٹ)',
+                    tooltip: AppStrings.val(context, en: 'Print Lot Slip', ur: 'ڈھیری پرچہ پرنٹ کریں'),
                     onPressed: () {
                       BoliSheetPdfGenerator.printLotSlip(
                         lot: lot,
@@ -481,7 +491,7 @@ class _ConsignmentLotCard extends StatelessWidget {
               const Icon(Icons.person_outline, size: 14, color: Colors.grey),
               const SizedBox(width: 4),
               Text(
-                'Farmer: ${lot.supplierName.isNotEmpty ? lot.supplierName : 'Direct Farmer'}',
+                '${AppStrings.val(context, en: 'Farmer', ur: 'زمیندار')}: ${lot.supplierName.isNotEmpty ? lot.supplierName : AppStrings.val(context, en: 'Direct Farmer', ur: 'براہ راست زمیندار')}',
                 style: MText.bodySm.copyWith(color: Colors.white70),
               ),
               if (lot.vehicleNumber.isNotEmpty) ...[
@@ -503,12 +513,12 @@ class _ConsignmentLotCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${lot.bagCount} Bags • ${lot.weightKg.toStringAsFixed(1)} KG (${lot.maunds.toStringAsFixed(1)} من)',
+                '${lot.bagCount} ${AppStrings.val(context, en: 'Bags', ur: 'بوریاں')} • ${lot.weightKg.toStringAsFixed(1)} KG (${lot.maunds.toStringAsFixed(1)} ${AppStrings.val(context, en: 'Maunds', ur: 'من')})',
                 style: MText.caption.copyWith(color: MColors.textOnDarkSub),
               ),
               if (lot.ratePerMaund > 0)
                 Text(
-                  'Rs. ${lot.ratePerMaund.toStringAsFixed(0)} / Mann',
+                  'Rs. ${lot.ratePerMaund.toStringAsFixed(0)} / ${AppStrings.val(context, en: 'Maund', ur: 'من')}',
                   style: MText.caption.copyWith(
                     fontWeight: FontWeight.bold,
                     color: MColors.gold,
@@ -531,11 +541,11 @@ class _ConsignmentLotCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Buyer: ${lot.winningBuyerName.isNotEmpty ? lot.winningBuyerName : 'Buyer'}',
+                    '${AppStrings.val(context, en: 'Buyer', ur: 'خریدار')}: ${lot.winningBuyerName.isNotEmpty ? lot.winningBuyerName : AppStrings.val(context, en: 'Buyer', ur: 'خریدار')}',
                     style: MText.caption.copyWith(color: Colors.greenAccent),
                   ),
                   Text(
-                    'Total: Rs. ${lot.estimatedTotal.toStringAsFixed(0)}',
+                    '${AppStrings.val(context, en: 'Total', ur: 'کل')}: Rs. ${lot.estimatedTotal.toStringAsFixed(0)}',
                     style: MText.caption.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.greenAccent,
@@ -555,7 +565,7 @@ class _ConsignmentLotCard extends StatelessWidget {
               if (!lot.isSold) ...[
                 OutlinedButton.icon(
                   icon: const Icon(Icons.gavel_rounded, size: 14),
-                  label: const Text('Record Bid (بولی درج کریں)'),
+                  label: Text(AppStrings.val(context, en: 'Record Bid', ur: 'بولی درج کریں')),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: MColors.gold,
                     side: const BorderSide(color: MColors.gold),
@@ -574,7 +584,7 @@ class _ConsignmentLotCard extends StatelessWidget {
               ] else ...[
                 ElevatedButton.icon(
                   icon: const Icon(Icons.receipt_long, size: 14),
-                  label: const Text('Create Invoice (بل بنائیں)'),
+                  label: Text(AppStrings.val(context, en: 'Create Invoice', ur: 'بل بنائیں')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: MColors.gold,
                     foregroundColor: Colors.black,

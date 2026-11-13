@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
-import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/utils/roznamcha_calculator.dart';
 import 'package:mandi/core/utils/roznamcha_pdf_generator.dart';
 import 'package:mandi/data/models/roznamcha_entry_model.dart';
@@ -13,9 +13,9 @@ import 'package:mandi/modules/purchase_orders/providers/purchase_order_provider.
 import 'package:mandi/modules/expenses/providers/expense_provider.dart';
 import 'package:mandi/providers/shop_context_provider.dart';
 
-/// Full interactive daily cash book register (روزنامچہ / Roznamcha).
+/// Full interactive daily cash book register (Roznamcha).
 /// Reconciles daily opening cash, sales cash inflows, khata recoveries,
-/// supplier cash payouts, procurement payments, and operating expenses.
+/// farmer cash payouts, procurement payments, and operating expenses.
 class RoznamchaPage extends StatefulWidget {
   const RoznamchaPage({super.key});
 
@@ -63,33 +63,36 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
   }
 
   void _showEditOpeningDialog() {
+    final isUrdu = AppStrings.isUrdu(context);
     final controller =
         TextEditingController(text: _openingCash.toStringAsFixed(0));
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.account_balance_wallet_outlined, color: MColors.gold),
-            SizedBox(width: MSpacing.xs),
-            Text('Opening Cash in Hand'),
+            const Icon(Icons.account_balance_wallet_outlined, color: MColors.gold),
+            const SizedBox(width: MSpacing.xs),
+            Text(isUrdu ? 'ابتدائی نقد رقم' : 'Opening Cash in Hand'),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Enter the physical cash available in the cash drawer (گلہ) at the start of this day:',
-              style: TextStyle(fontSize: 13, color: Colors.grey),
+            Text(
+              isUrdu
+                  ? 'اس دن کے آغاز پر گلہ میں موجود نقد رقم درج کریں:'
+                  : 'Enter the physical cash available in the cash drawer at the start of this day:',
+              style: const TextStyle(fontSize: 13, color: Colors.grey),
             ),
             const SizedBox(height: MSpacing.md),
             TextField(
               controller: controller,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Opening Cash (Rs.) *',
+              decoration: InputDecoration(
+                labelText: isUrdu ? 'ابتدائی نقد رقم (روپے) *' : 'Opening Cash (Rs.) *',
                 prefixText: 'Rs. ',
               ),
             ),
@@ -98,7 +101,7 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('Cancel'),
+            child: Text(isUrdu ? 'منسوخ' : 'Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -108,15 +111,25 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                      'Opening cash updated to Rs. ${val.toStringAsFixed(0)}'),
+                    isUrdu
+                        ? 'ابتدائی نقد رقم روپے ${val.toStringAsFixed(0)} پر اپ ڈیٹ ہو گئی۔'
+                        : 'Opening cash updated to Rs. ${val.toStringAsFixed(0)}',
+                  ),
                 ),
               );
             },
-            child: const Text('Save'),
+            child: Text(isUrdu ? 'محفوظ کریں' : 'Save'),
           ),
         ],
       ),
     );
+  }
+
+  void _changeDateByDays(int days) {
+    setState(() {
+      _selectedDate = _selectedDate.add(Duration(days: days));
+      _loadOpeningBalance();
+    });
   }
 
   Future<void> _pickDate() async {
@@ -124,42 +137,33 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: DateTime.now(),
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() => _selectedDate = picked);
-      await _loadOpeningBalance();
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+        _loadOpeningBalance();
+      });
     }
-  }
-
-  void _changeDateByDays(int delta) {
-    setState(() {
-      _selectedDate = _selectedDate.add(Duration(days: delta));
-    });
-    _loadOpeningBalance();
-  }
-
-  bool _isToday(DateTime dt) {
-    final now = DateTime.now();
-    return dt.year == now.year && dt.month == now.month && dt.day == now.day;
   }
 
   @override
   Widget build(BuildContext context) {
-    final shopCtx = context.watch<ShopContextProvider>();
-    final shop = shopCtx.currentShop;
-    final invoiceProv = context.watch<InvoiceProvider>();
-    final paymentProv = context.watch<PaymentProvider>();
-    final poProv = context.watch<PurchaseOrderProvider>();
-    final expenseProv = context.watch<ExpenseProvider>();
+    final isUrdu = AppStrings.isUrdu(context);
+    final shop = context.watch<ShopContextProvider>().currentShop;
+    final invoices = context.watch<InvoiceProvider>().invoices;
+    final payments = context.watch<PaymentProvider>().payments;
+    final purchaseOrders =
+        context.watch<PurchaseOrderProvider>().purchaseOrders;
+    final expenses = context.watch<ExpenseProvider>().expenses;
 
     final report = RoznamchaCalculator.computeDailyRoznamcha(
       targetDate: _selectedDate,
       openingBalance: _openingCash,
-      invoices: invoiceProv.invoices,
-      payments: paymentProv.payments,
-      purchaseOrders: poProv.purchaseOrders,
-      expenses: expenseProv.expenses,
+      invoices: invoices,
+      payments: payments,
+      purchaseOrders: purchaseOrders,
+      expenses: expenses,
     );
 
     List<RoznamchaEntry> filteredEntries;
@@ -176,20 +180,11 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Daily Cash Book'),
-            Text(
-              'روزنامچہ نقد و گلہ',
-              style: TextStyle(fontSize: 11, color: MColors.gold),
-            ),
-          ],
-        ),
+        title: Text(isUrdu ? 'روزنامچہ کیش بک' : 'Daily Cash Book'),
         actions: [
           IconButton(
             icon: const Icon(Icons.print_outlined),
-            tooltip: 'Print Daily Roznamcha (PDF)',
+            tooltip: isUrdu ? 'روزنامچہ پی ڈی ایف پرنٹ کریں' : 'Print Daily Roznamcha (PDF)',
             onPressed: () {
               RoznamchaPdfGenerator.printOrShareRoznamcha(
                 report: report,
@@ -209,13 +204,13 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
               horizontal: MSpacing.md,
               vertical: MSpacing.xs,
             ),
-            color: MColors.surfaceDark,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  tooltip: 'Previous Day',
+                  tooltip: isUrdu ? 'پچھلا دن' : 'Previous Day',
                   onPressed: () => _changeDateByDays(-1),
                 ),
                 InkWell(
@@ -224,61 +219,41 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: MSpacing.sm,
-                      vertical: MSpacing.xs,
+                      vertical: 6,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.calendar_today,
-                            size: 16, color: MColors.gold),
-                        const SizedBox(width: MSpacing.xs),
+                        const Icon(
+                          Icons.calendar_month_outlined,
+                          size: 18,
+                          color: MColors.primary,
+                        ),
+                        const SizedBox(width: 6),
                         Text(
                           dateDisplayStr,
-                          style: MText.titleMd.copyWith(
+                          style: MText.bodyMd.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
                           ),
                         ),
-                        if (_isToday(_selectedDate)) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: MColors.primary.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: MColors.primary.withValues(alpha: 0.4),
-                              ),
-                            ),
-                            child: Text(
-                              'TODAY',
-                              style: MText.caption.copyWith(
-                                color: MColors.gold,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 9,
-                              ),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(width: 4),
-                        const Icon(Icons.arrow_drop_down, color: Colors.grey),
                       ],
                     ),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.chevron_right),
-                  tooltip: 'Next Day',
-                  onPressed: () => _changeDateByDays(1),
+                  tooltip: isUrdu ? 'اگلا دن' : 'Next Day',
+                  onPressed: _selectedDate.isBefore(
+                    DateTime.now().subtract(const Duration(hours: 1)),
+                  )
+                      ? () => _changeDateByDays(1)
+                      : null,
                 ),
               ],
             ),
           ),
 
-          // KPI Cards Carousel
+          // Daily Financial Balance KPI Cards
           Padding(
             padding: const EdgeInsets.all(MSpacing.md),
             child: Column(
@@ -287,91 +262,99 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
                   children: [
                     // Opening Cash
                     Expanded(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(MSpacing.sm),
-                        onTap: _showEditOpeningDialog,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: MRadius.sm,
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        child: InkWell(
+                          onTap: _showEditOpeningDialog,
+                          borderRadius: MRadius.sm,
+                          child: Padding(
+                            padding: const EdgeInsets.all(MSpacing.sm),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Opening Cash',
-                                  style: MText.caption.copyWith(
-                                    color: MColors.textOnDarkSub,
-                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      isUrdu ? 'ابتدائی نقد' : 'Opening Cash',
+                                      style: MText.caption.copyWith(
+                                        color: MColors.textSecondary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.edit_outlined,
+                                      size: 14,
+                                      color: MColors.gold,
+                                    ),
+                                  ],
                                 ),
-                                const Icon(
-                                  Icons.edit_outlined,
-                                  size: 14,
-                                  color: MColors.gold,
+                                const SizedBox(height: 2),
+                                Text(
+                                  _isLoadingOpening
+                                      ? '...'
+                                      : (isUrdu
+                                          ? 'روپے ${report.openingBalance.toStringAsFixed(0)}'
+                                          : 'Rs. ${report.openingBalance.toStringAsFixed(0)}'),
+                                  style: MText.titleMd.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: MColors.textPrimary,
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _isLoadingOpening
-                                  ? '...'
-                                  : 'Rs. ${report.openingBalance.toStringAsFixed(0)}',
-                              style: MText.titleMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              'ابتدائی نقد رقم',
-                              style: MText.caption.copyWith(
-                                fontSize: 9,
-                                color: MColors.textOnDarkSub,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: MSpacing.sm),
                     // Closing Cash
                     Expanded(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(MSpacing.sm),
-                        borderColor: MColors.gold.withValues(alpha: 0.4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Closing Cash',
-                                  style: MText.caption.copyWith(
-                                    color: MColors.gold,
-                                    fontWeight: FontWeight.bold,
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: MRadius.sm,
+                          side: BorderSide(color: MColors.gold.withValues(alpha: 0.5)),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(MSpacing.sm),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    isUrdu ? 'اختتامی کیش' : 'Closing Cash',
+                                    style: MText.caption.copyWith(
+                                      color: MColors.gold,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                const Icon(
-                                  Icons.lock_clock_outlined,
-                                  size: 14,
+                                  const Icon(
+                                    Icons.lock_clock_outlined,
+                                    size: 14,
+                                    color: MColors.gold,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isUrdu
+                                    ? 'روپے ${report.closingBalance.toStringAsFixed(0)}'
+                                    : 'Rs. ${report.closingBalance.toStringAsFixed(0)}',
+                                style: MText.titleMd.copyWith(
+                                  fontWeight: FontWeight.bold,
                                   color: MColors.gold,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Rs. ${report.closingBalance.toStringAsFixed(0)}',
-                              style: MText.titleMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: MColors.gold,
                               ),
-                            ),
-                            Text(
-                              'میزان موجود در گلہ',
-                              style: MText.caption.copyWith(
-                                fontSize: 9,
-                                color: MColors.textOnDarkSub,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -382,88 +365,110 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
                   children: [
                     // Total Cash In
                     Expanded(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(MSpacing.sm),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.arrow_downward_rounded,
-                                  size: 14,
-                                  color: Colors.greenAccent,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Cash In (+)',
-                                  style: MText.caption.copyWith(
-                                    color: Colors.greenAccent,
-                                    fontWeight: FontWeight.bold,
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: MRadius.sm,
+                          side: BorderSide(color: Colors.green.shade200),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(MSpacing.sm),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.arrow_downward_rounded,
+                                    size: 14,
+                                    color: Colors.green,
                                   ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    isUrdu ? 'کیش آمد (+)' : 'Cash In (+)',
+                                    style: MText.caption.copyWith(
+                                      color: Colors.green.shade700,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isUrdu
+                                    ? 'روپے ${report.totalCashIn.toStringAsFixed(0)}'
+                                    : 'Rs. ${report.totalCashIn.toStringAsFixed(0)}',
+                                style: MText.titleMd.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade700,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Rs. ${report.totalCashIn.toStringAsFixed(0)}',
-                              style: MText.titleMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.greenAccent,
                               ),
-                            ),
-                            Text(
-                              '${report.cashInEntries.length} receipts',
-                              style: MText.caption.copyWith(
-                                fontSize: 9,
-                                color: MColors.textOnDarkSub,
+                              Text(
+                                isUrdu
+                                    ? '${report.cashInEntries.length} وصولیاں'
+                                    : '${report.cashInEntries.length} receipts',
+                                style: MText.caption.copyWith(
+                                  fontSize: 10,
+                                  color: MColors.textSecondary,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: MSpacing.sm),
                     // Total Cash Out
                     Expanded(
-                      child: GlassCard(
-                        padding: const EdgeInsets.all(MSpacing.sm),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.arrow_upward_rounded,
-                                  size: 14,
-                                  color: Colors.redAccent,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Cash Out (-)',
-                                  style: MText.caption.copyWith(
-                                    color: Colors.redAccent,
-                                    fontWeight: FontWeight.bold,
+                      child: Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: MRadius.sm,
+                          side: BorderSide(color: Colors.red.shade200),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(MSpacing.sm),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.arrow_upward_rounded,
+                                    size: 14,
+                                    color: MColors.danger,
                                   ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    isUrdu ? 'کیش اخراج (-)' : 'Cash Out (-)',
+                                    style: MText.caption.copyWith(
+                                      color: MColors.danger,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isUrdu
+                                    ? 'روپے ${report.totalCashOut.toStringAsFixed(0)}'
+                                    : 'Rs. ${report.totalCashOut.toStringAsFixed(0)}',
+                                style: MText.titleMd.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: MColors.danger,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Rs. ${report.totalCashOut.toStringAsFixed(0)}',
-                              style: MText.titleMd.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.redAccent,
                               ),
-                            ),
-                            Text(
-                              '${report.cashOutEntries.length} disbursements',
-                              style: MText.caption.copyWith(
-                                fontSize: 9,
-                                color: MColors.textOnDarkSub,
+                              Text(
+                                isUrdu
+                                    ? '${report.cashOutEntries.length} ادائیگیاں'
+                                    : '${report.cashOutEntries.length} disbursements',
+                                style: MText.caption.copyWith(
+                                  fontSize: 10,
+                                  color: MColors.textSecondary,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -478,18 +483,21 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
             padding: const EdgeInsets.symmetric(horizontal: MSpacing.md),
             child: Row(
               children: [
-                _buildFilterChip(0, 'All (${report.entries.length})'),
+                _buildFilterChip(
+                  0,
+                  isUrdu ? 'تمام (${report.entries.length})' : 'All (${report.entries.length})',
+                ),
                 const SizedBox(width: MSpacing.xs),
                 _buildFilterChip(
                   1,
-                  'Cash In (${report.cashInEntries.length})',
-                  activeColor: Colors.greenAccent,
+                  isUrdu ? 'آمد (${report.cashInEntries.length})' : 'Cash In (${report.cashInEntries.length})',
+                  activeColor: Colors.green,
                 ),
                 const SizedBox(width: MSpacing.xs),
                 _buildFilterChip(
                   2,
-                  'Cash Out (${report.cashOutEntries.length})',
-                  activeColor: Colors.redAccent,
+                  isUrdu ? 'اخراج (${report.cashOutEntries.length})' : 'Cash Out (${report.cashOutEntries.length})',
+                  activeColor: MColors.danger,
                 ),
               ],
             ),
@@ -510,12 +518,16 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
                         ),
                         const SizedBox(height: MSpacing.sm),
                         Text(
-                          'No cash transactions on $dateDisplayStr',
+                          isUrdu
+                              ? '$dateDisplayStr پر کوئی لین دین نہیں'
+                              : 'No cash transactions on $dateDisplayStr',
                           style: MText.bodyMd.copyWith(color: Colors.grey),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Transactions recorded via Invoices, Payments, or Expenses appear here.',
+                          isUrdu
+                              ? 'انوائس، ادائیگیوں یا اخراجات سے درج کیے گئے لین دین یہاں ظاہر ہوں گے۔'
+                              : 'Transactions recorded via Invoices, Payments, or Expenses appear here.',
                           style: MText.caption.copyWith(color: Colors.grey),
                           textAlign: TextAlign.center,
                         ),
@@ -532,83 +544,94 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
                       final timeStr =
                           '${entry.dateTime.hour.toString().padLeft(2, '0')}:${entry.dateTime.minute.toString().padLeft(2, '0')}';
 
-                      return GlassCard(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: MSpacing.md,
-                          vertical: MSpacing.sm,
+                      return Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: MRadius.md,
+                          side: BorderSide(color: Colors.grey.shade200),
                         ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundColor:
-                                  entry.color.withValues(alpha: 0.15),
-                              child: Icon(
-                                entry.icon,
-                                size: 18,
-                                color: entry.isCashIn
-                                    ? Colors.greenAccent
-                                    : Colors.redAccent,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: MSpacing.md,
+                            vertical: MSpacing.sm,
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 18,
+                                backgroundColor:
+                                    entry.color.withValues(alpha: 0.15),
+                                child: Icon(
+                                  entry.icon,
+                                  size: 18,
+                                  color: entry.isCashIn
+                                      ? Colors.green
+                                      : MColors.danger,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: MSpacing.sm),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          entry.partyName,
+                              const SizedBox(width: MSpacing.sm),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            entry.partyName,
+                                            style: MText.bodyMd.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              color: MColors.textPrimary,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          isUrdu
+                                              ? '${entry.isCashIn ? '+' : '-'} روپے ${entry.amount.toStringAsFixed(0)}'
+                                              : '${entry.isCashIn ? '+' : '-'} Rs. ${entry.amount.toStringAsFixed(0)}',
                                           style: MText.bodyMd.copyWith(
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                            color: entry.isCashIn
+                                                ? Colors.green
+                                                : MColors.danger,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${entry.isCashIn ? '+' : '-'} Rs. ${entry.amount.toStringAsFixed(0)}',
-                                        style: MText.bodyMd.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: entry.isCashIn
-                                            ? Colors.greenAccent
-                                            : Colors.redAccent,
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            '${entry.reference} • ${entry.description} • $timeStr',
+                                            style: MText.caption.copyWith(
+                                              color: MColors.textSecondary,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          '${entry.reference} • ${entry.description} • $timeStr',
+                                        Text(
+                                          isUrdu
+                                              ? 'میزان: روپے ${entry.runningBalance.toStringAsFixed(0)}'
+                                              : 'Bal: Rs. ${entry.runningBalance.toStringAsFixed(0)}',
                                           style: MText.caption.copyWith(
-                                            color: MColors.textOnDarkSub,
+                                            color: MColors.gold,
+                                            fontWeight: FontWeight.w600,
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      ),
-                                      Text(
-                                        'Bal: Rs. ${entry.runningBalance.toStringAsFixed(0)}',
-                                        style: MText.caption.copyWith(
-                                          color: MColors.gold,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -632,18 +655,18 @@ class _RoznamchaPageState extends State<RoznamchaPage> {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isSelected
-                ? color.withValues(alpha: 0.15)
-                : MColors.surfaceDark.withValues(alpha: 0.5),
+                ? color.withValues(alpha: 0.12)
+                : Colors.grey.shade100,
             borderRadius: MRadius.sm,
             border: Border.all(
-              color: isSelected ? color : Colors.white10,
+              color: isSelected ? color : Colors.grey.shade300,
               width: isSelected ? 1.5 : 1,
             ),
           ),
           child: Text(
             label,
             style: MText.caption.copyWith(
-              color: isSelected ? color : MColors.textOnDarkSub,
+              color: isSelected ? color : MColors.textSecondary,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),

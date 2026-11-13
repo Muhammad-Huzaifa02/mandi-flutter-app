@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/data/models/cheque_model.dart';
 import 'package:mandi/modules/banking/providers/bank_provider.dart';
@@ -28,14 +29,27 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
   late TextEditingController _bounceReasonCtrl;
   bool _isSaving = false;
 
-  static const List<String> _commonBounceReasons = [
-    'Insufficient Funds / فنڈز کی کمی',
-    'Signature Mismatch / دستخط میں فرق',
-    'Payment Stopped by Drawer / ادائیگی روکی گئی',
-    'Account Frozen or Closed / اکاؤنٹ منجمد یا بند',
-    'Post-Dated Presented Early / قبل از وقت جمع کرایا گیا',
-    'Other reason / دیگر وجہ',
-  ];
+  static List<String> _getBounceReasons(bool isUrdu) {
+    if (isUrdu) {
+      return const [
+        'فنڈز کی کمی',
+        'دستخط میں فرق',
+        'ادائیگی روکی گئی',
+        'اکاؤنٹ منجمد یا بند',
+        'قبل از وقت جمع کرایا گیا',
+        'دیگر وجہ',
+      ];
+    } else {
+      return const [
+        'Insufficient Funds',
+        'Signature Mismatch',
+        'Payment Stopped by Drawer',
+        'Account Frozen or Closed',
+        'Post-Dated Presented Early',
+        'Other Reason',
+      ];
+    }
+  }
 
   @override
   void initState() {
@@ -73,7 +87,11 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
     try {
       if (_selectedAction == ChequeStatus.deposited) {
         if (_targetBankAccountId == null || _targetBankAccountId!.isEmpty) {
-          throw Exception('Please select a Bank Account where cheque is deposited.');
+          throw Exception(AppStrings.val(
+            context,
+            en: 'Please select a Bank Account where cheque is deposited.',
+            ur: 'براہ کرم بینک اکاؤنٹ منتخب کریں جہاں چیک جمع کرایا گیا ہو۔',
+          ));
         }
         await bankProv.markAsDeposited(
           chequeId: widget.cheque.id,
@@ -88,7 +106,11 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
       } else if (_selectedAction == ChequeStatus.bounced) {
         final reason = _bounceReasonCtrl.text.trim();
         if (reason.isEmpty) {
-          throw Exception('Please provide a reason for the bounced cheque.');
+          throw Exception(AppStrings.val(
+            context,
+            en: 'Please provide a reason for the bounced cheque.',
+            ur: 'براہ کرم چیک باؤنس ہونے کی وجہ درج کریں۔',
+          ));
         }
         await bankProv.markAsBounced(
           chequeId: widget.cheque.id,
@@ -97,10 +119,15 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
       }
 
       if (mounted) {
+        final msg = AppStrings.val(
+          context,
+          en: 'Cheque status updated successfully.',
+          ur: 'چیک کا سٹیٹس کامیابی سے تبدیل ہو گیا۔',
+        );
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cheque status updated successfully.'),
+          SnackBar(
+            content: Text(msg),
             backgroundColor: MColors.primary,
           ),
         );
@@ -110,7 +137,7 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
         setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('${AppStrings.val(context, en: "Error:", ur: "خرابی:")} $e'),
             backgroundColor: MColors.danger,
           ),
         );
@@ -121,6 +148,8 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
   @override
   Widget build(BuildContext context) {
     final bankAccounts = context.watch<BankProvider>().bankAccounts;
+    final isUrdu = AppStrings.isUrdu(context);
+    final bounceReasons = _getBounceReasons(isUrdu);
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: MRadius.lg),
@@ -136,7 +165,11 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Update Cheque Status (سٹیٹس تبدیل کریں)',
+                    AppStrings.val(
+                      context,
+                      en: 'Update Cheque Status',
+                      ur: 'چیک سٹیٹس تبدیل کریں',
+                    ),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -163,15 +196,15 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Cheque #${widget.cheque.chequeNumber}',
+                          '${AppStrings.val(context, en: "Cheque #", ur: "چیک نمبر #")}${widget.cheque.chequeNumber}',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          'Party: ${widget.cheque.partyName} (${widget.cheque.bankName})',
+                          '${AppStrings.val(context, en: "Party", ur: "پارٹی")}: ${widget.cheque.partyName} (${widget.cheque.bankName})',
                           style: const TextStyle(fontSize: 12),
                         ),
                         Text(
-                          'Due Date: ${_dateFmt.format(widget.cheque.dueDate)}',
+                          '${AppStrings.val(context, en: "Due Date", ur: "مقررہ تاریخ")}: ${_dateFmt.format(widget.cheque.dueDate)}',
                           style: const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ],
@@ -191,7 +224,11 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
 
               // Action Choice Radio/Cards
               Text(
-                'Select New Status: ',
+                AppStrings.val(
+                  context,
+                  en: 'Select New Status:',
+                  ur: 'نیا سٹیٹس منتخب کریں:',
+                ),
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -200,24 +237,48 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
 
               _buildStatusOption(
                 status: ChequeStatus.deposited,
-                title: 'Mark as Deposited (بینک میں جمع کر دیا)',
-                subtitle: 'Sent to bank for clearance process',
+                title: AppStrings.val(
+                  context,
+                  en: 'Mark as Deposited',
+                  ur: 'بینک میں جمع کر دیا',
+                ),
+                subtitle: AppStrings.val(
+                  context,
+                  en: 'Sent to bank for clearance process',
+                  ur: 'کلیئرنس کے عمل کے لیے بینک جمع کروا دیا گیا',
+                ),
                 color: Colors.blueAccent,
                 icon: Icons.upload_file_outlined,
               ),
               const SizedBox(height: 6),
               _buildStatusOption(
                 status: ChequeStatus.cleared,
-                title: 'Mark as Cleared (کلیئر ہو گیا - رقم موصول)',
-                subtitle: 'Funds successfully realized into bank account',
+                title: AppStrings.val(
+                  context,
+                  en: 'Mark as Cleared',
+                  ur: 'کلیئر ہو گیا - رقم موصول',
+                ),
+                subtitle: AppStrings.val(
+                  context,
+                  en: 'Funds successfully realized into bank account',
+                  ur: 'رقم کامیابی کے ساتھ بینک اکاؤنٹ میں منتقل ہو گئی',
+                ),
                 color: MColors.primary,
                 icon: Icons.check_circle_outline,
               ),
               const SizedBox(height: 6),
               _buildStatusOption(
                 status: ChequeStatus.bounced,
-                title: 'Mark as Bounced / Dishonored (باؤنس ہو گیا)',
-                subtitle: 'Cheque returned unpaid with bank memo',
+                title: AppStrings.val(
+                  context,
+                  en: 'Mark as Bounced / Dishonored',
+                  ur: 'باؤنس ہو گیا',
+                ),
+                subtitle: AppStrings.val(
+                  context,
+                  en: 'Cheque returned unpaid with bank memo',
+                  ur: 'چیک بغیر ادائیگی بینک میمو کے ساتھ واپس آ گیا',
+                ),
                 color: MColors.danger,
                 icon: Icons.error_outline,
               ),
@@ -228,9 +289,13 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
               if (_selectedAction == ChequeStatus.deposited) ...[
                 DropdownButtonFormField<String>(
                   initialValue: _targetBankAccountId,
-                  decoration: const InputDecoration(
-                    labelText: 'Select Bank Account Where Deposited *',
-                    prefixIcon: Icon(Icons.account_balance),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'Select Bank Account Where Deposited *',
+                      ur: 'بینک اکاؤنٹ منتخب کریں جہاں جمع کرایا گیا *',
+                    ),
+                    prefixIcon: const Icon(Icons.account_balance),
                   ),
                   items: bankAccounts.map((b) {
                     return DropdownMenuItem(
@@ -246,11 +311,15 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
 
               if (_selectedAction == ChequeStatus.bounced) ...[
                 DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: 'Bounce Reason (وجہ باؤنس) *',
-                    prefixIcon: Icon(Icons.warning_amber_rounded),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'Bounce Reason *',
+                      ur: 'باؤنس ہونے کی وجہ *',
+                    ),
+                    prefixIcon: const Icon(Icons.warning_amber_rounded),
                   ),
-                  items: _commonBounceReasons.map((r) {
+                  items: bounceReasons.map((r) {
                     return DropdownMenuItem(value: r, child: Text(r));
                   }).toList(),
                   onChanged: (r) {
@@ -262,9 +331,17 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _bounceReasonCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Custom Reason or Memo Details',
-                    hintText: 'e.g. Return memo #482 insufficient funds',
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'Custom Reason or Memo Details',
+                      ur: 'تفصیلی وجہ یا میمو تفصیلات',
+                    ),
+                    hintText: AppStrings.val(
+                      context,
+                      en: 'e.g. Return memo #482 insufficient funds',
+                      ur: 'مثلاً میمو نمبر 482 فنڈز کی کمی',
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -284,9 +361,13 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
                   }
                 },
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Action Date (تاریخ)',
-                    prefixIcon: Icon(Icons.calendar_today, size: 18),
+                  decoration: InputDecoration(
+                    labelText: AppStrings.val(
+                      context,
+                      en: 'Action Date',
+                      ur: 'تاریخ',
+                    ),
+                    prefixIcon: const Icon(Icons.calendar_today, size: 18),
                   ),
                   child: Text(_dateFmt.format(_actionDate)),
                 ),
@@ -300,7 +381,11 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
                 children: [
                   TextButton(
                     onPressed: _isSaving ? null : () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: Text(AppStrings.val(
+                      context,
+                      en: 'Cancel',
+                      ur: 'منسوخ',
+                    )),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton.icon(
@@ -315,7 +400,11 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
                             ),
                           )
                         : const Icon(Icons.check),
-                    label: const Text('Apply Status'),
+                    label: Text(AppStrings.val(
+                      context,
+                      en: 'Apply Status',
+                      ur: 'سٹیٹس لاگو کریں',
+                    )),
                   ),
                 ],
               ),
@@ -362,7 +451,7 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: FontWeight.bold,
                       fontSize: 13,
                       color: isSelected ? color : null,
                     ),
@@ -383,4 +472,3 @@ class _UpdateChequeStatusDialogState extends State<UpdateChequeStatusDialog> {
     );
   }
 }
-

@@ -31,17 +31,17 @@ enum VehicleType {
   String get labelUrdu {
     switch (this) {
       case VehicleType.tractorTrolley:
-        return 'ٹریکٹر ٹرالی (Tractor Trolley)';
+        return 'ٹریکٹر ٹرالی';
       case VehicleType.mazdaTruck:
-        return 'مزدا 6 وہیلر (Mazda Truck)';
+        return 'مزدا 6 وہیلر';
       case VehicleType.shehzore:
-        return 'شہزور ڈالہ (Shehzore)';
+        return 'شہزور ڈالہ';
       case VehicleType.pickupDala:
-        return 'پک اپ ڈالہ (Pickup Dala)';
+        return 'پک اپ ڈالہ';
       case VehicleType.rickshawLoader:
-        return 'لوڈر رکشہ (Rickshaw Loader)';
+        return 'لوڈر رکشہ';
       case VehicleType.trailer10Wheeler:
-        return 'ٹرالر 10 وہیلر (10-Wheeler)';
+        return 'ٹرالر 10 وہیلر';
     }
   }
 
@@ -105,11 +105,11 @@ enum OwnershipType {
   String get labelUrdu {
     switch (this) {
       case OwnershipType.shopOwned:
-        return 'ذاتی گاڑی (Shop Owned)';
+        return 'ذاتی گاڑی';
       case OwnershipType.contractedCarrier:
-        return 'کنٹریکٹ کیریئر (Contracted)';
+        return 'کنٹریکٹ کیریئر';
       case OwnershipType.rental:
-        return 'کرایہ کی گاڑی (Rental)';
+        return 'کرایہ کی گاڑی';
     }
   }
 
@@ -235,11 +235,11 @@ enum TripStatus {
   String get labelUrdu {
     switch (this) {
       case TripStatus.inTransit:
-        return 'راستے میں (In Transit)';
+        return 'راستے میں';
       case TripStatus.completed:
-        return 'مکمل (Completed)';
+        return 'مکمل';
       case TripStatus.cancelled:
-        return 'منسوخ (Cancelled)';
+        return 'منسوخ';
     }
   }
 

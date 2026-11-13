@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/data/models/customer_loyalty_rebate_model.dart';
@@ -24,9 +25,8 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
   final _currencyFmt = NumberFormat('#,##0', 'en_US');
 
   Customer? _selectedCustomer;
-  final _seasonCtrl = TextEditingController(text: 'Rabi 2026 (ربیع سیزن)');
-  final _programCtrl =
-      TextEditingController(text: 'Seasonal Grain Volume Rebate');
+  final _seasonCtrl = TextEditingController();
+  final _programCtrl = TextEditingController();
   final _maundsCtrl = TextEditingController(text: '1200'); // >1000 Silver tier
   final _turnoverCtrl = TextEditingController(text: '4800000'); // Rs. 4.8M
   final _percentageCtrl = TextEditingController(text: '1.0'); // 1%
@@ -39,6 +39,25 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
     super.initState();
     _selectedCustomer = widget.preselectedCustomer;
     _recalcTier();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_seasonCtrl.text.isEmpty) {
+      _seasonCtrl.text = AppStrings.val(
+        context,
+        en: 'Rabi 2026 Season',
+        ur: 'ربیع 2026 سیزن',
+      );
+    }
+    if (_programCtrl.text.isEmpty) {
+      _programCtrl.text = AppStrings.val(
+        context,
+        en: 'Seasonal Grain Volume Rebate',
+        ur: 'سیزنل والیم رعایت پروگرام',
+      );
+    }
   }
 
   @override
@@ -68,7 +87,16 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
     final cust = _selectedCustomer;
     if (cust == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('برائے مہربانی گاہک منتخب کریں'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Please select a customer.',
+              ur: 'برائے مہربانی گاہک منتخب کریں',
+            ),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -95,13 +123,28 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('رعایت واؤچر کامیابی سے منظور کر لیا گیا (${cust.name})'),
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Rebate voucher approved successfully (${cust.name})',
+              ur: 'رعایت واؤچر کامیابی سے منظور کر لیا گیا (${cust.name})',
+            ),
+          ),
           backgroundColor: Colors.green,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('رعایت اندراج میں خرابی پیش آگئی'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(
+            AppStrings.val(
+              context,
+              en: 'Failed to record rebate.',
+              ur: 'رعایت اندراج میں خرابی پیش آگئی',
+            ),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -134,17 +177,25 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                       child: const Icon(Icons.stars_rounded, color: Colors.amber, size: 28),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'گاہک والیم رعایت واؤچر (Volume Rebate)',
-                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                            AppStrings.val(
+                              context,
+                              en: 'Customer Volume Rebate',
+                              ur: 'گاہک والیم رعایت واؤچر',
+                            ),
+                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            'سیزنل خریداروں کے لیے ٹریڈنگ بونس اور کریڈٹ واؤچر جاری کریں',
-                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                            AppStrings.val(
+                              context,
+                              en: 'Issue trading bonus & credit voucher for seasonal buyers',
+                              ur: 'سیزنل خریداروں کے لیے ٹریڈنگ بونس اور کریڈٹ واؤچر جاری کریں',
+                            ),
+                            style: const TextStyle(fontSize: 11, color: Colors.grey),
                           ),
                         ],
                       ),
@@ -167,18 +218,26 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                       DropdownButtonFormField<Customer>(
                         initialValue: _selectedCustomer,
                         decoration: InputDecoration(
-                          labelText: 'خریدار / گاہک (Customer)',
+                          labelText: AppStrings.val(
+                            context,
+                            en: 'Buyer / Customer *',
+                            ur: 'خریدار یا گاہک *',
+                          ),
                           prefixIcon: const Icon(Icons.person_outline),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         items: customers.map((c) {
                           return DropdownMenuItem(
                             value: c,
-                            child: Text('${c.name} (${c.phone.isNotEmpty ? c.phone : "Mandi Buyer"})'),
+                            child: Text(
+                              '${c.name} (${c.phone.isNotEmpty ? c.phone : AppStrings.val(context, en: "Mandi Buyer", ur: "منڈی خریدار")})',
+                            ),
                           );
                         }).toList(),
                         onChanged: (val) => setState(() => _selectedCustomer = val),
-                        validator: (val) => val == null ? 'گاہک لازمی منتخب کریں' : null,
+                        validator: (val) => val == null
+                            ? AppStrings.val(context, en: 'Customer is required', ur: 'گاہک لازمی منتخب کریں')
+                            : null,
                       ),
                       const SizedBox(height: 14),
 
@@ -189,7 +248,11 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                             child: TextFormField(
                               controller: _seasonCtrl,
                               decoration: InputDecoration(
-                                labelText: 'سیزن / سال (Season)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Season / Year',
+                                  ur: 'سیزن یا سال',
+                                ),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
@@ -199,7 +262,11 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                             child: TextFormField(
                               controller: _programCtrl,
                               decoration: InputDecoration(
-                                labelText: 'پروگرام کا نام (Program)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Program Name',
+                                  ur: 'پروگرام کا نام',
+                                ),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
@@ -216,9 +283,13 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                               controller: _maundsCtrl,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: InputDecoration(
-                                labelText: 'سیزن خریداری من (Maunds)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Season Purchases (Maunds) *',
+                                  ur: 'سیزن خریداری من *',
+                                ),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                suffixText: 'من',
+                                suffixText: AppStrings.val(context, en: 'Maunds', ur: 'من'),
                               ),
                               onChanged: (_) {
                                 _recalcTier();
@@ -226,7 +297,9 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                               },
                               validator: (val) {
                                 final v = double.tryParse(val ?? '');
-                                if (v == null || v <= 0) return 'درست وزن درج کریں';
+                                if (v == null || v <= 0) {
+                                  return AppStrings.val(context, en: 'Enter a valid weight', ur: 'درست وزن درج کریں');
+                                }
                                 return null;
                               },
                             ),
@@ -237,14 +310,20 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                               controller: _turnoverCtrl,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: InputDecoration(
-                                labelText: 'کل ٹرن اوور مالیت روپے (Turnover)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Total Turnover (Rs.) *',
+                                  ur: 'کل ٹرن اوور مالیت روپے *',
+                                ),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                 prefixText: 'Rs. ',
                               ),
                               onChanged: (_) => setState(() {}),
                               validator: (val) {
                                 final v = double.tryParse(val ?? '');
-                                if (v == null || v <= 0) return 'درست رقم درج کریں';
+                                if (v == null || v <= 0) {
+                                  return AppStrings.val(context, en: 'Enter a valid amount', ur: 'درست رقم درج کریں');
+                                }
                                 return null;
                               },
                             ),
@@ -261,7 +340,11 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                               controller: _percentageCtrl,
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               decoration: InputDecoration(
-                                labelText: 'رعایت شرح فیصد (Rebate %)',
+                                labelText: AppStrings.val(
+                                  context,
+                                  en: 'Rebate %',
+                                  ur: 'رعایت شرح فیصد',
+                                ),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                 suffixText: '%',
                               ),
@@ -284,9 +367,12 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text('حاصل کردہ درجہ', style: TextStyle(fontSize: 10, color: Colors.grey)),
                                       Text(
-                                        _tier.labelEnglish,
+                                        AppStrings.val(context, en: 'Achieved Tier', ur: 'حاصل کردہ درجہ'),
+                                        style: const TextStyle(fontSize: 10, color: Colors.grey),
+                                      ),
+                                      Text(
+                                        AppStrings.val(context, en: _tier.labelEnglish, ur: _tier.labelUrdu),
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 13,
@@ -308,7 +394,11 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                         controller: _notesCtrl,
                         maxLines: 2,
                         decoration: InputDecoration(
-                          labelText: 'اضافی شرائط یا نوٹ (Notes)',
+                          labelText: AppStrings.val(
+                            context,
+                            en: 'Additional Terms or Notes',
+                            ur: 'اضافی شرائط یا نوٹ',
+                          ),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
@@ -324,9 +414,13 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'منظور شدہ رعایت رقم (Rebate Credit Amount)',
-                                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                                Text(
+                                  AppStrings.val(
+                                    context,
+                                    en: 'Rebate Credit Amount',
+                                    ur: 'منظور شدہ رعایت رقم',
+                                  ),
+                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
@@ -371,7 +465,7 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                   children: [
                     TextButton(
                       onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-                      child: const Text('منسوخ (Cancel)'),
+                      child: Text(AppStrings.val(context, en: 'Cancel', ur: 'منسوخ کریں')),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
@@ -390,7 +484,9 @@ class _NewLoyaltyRebateDialogState extends State<NewLoyaltyRebateDialog> {
                             )
                           : const Icon(Icons.check_circle_outline),
                       label: Text(
-                        _isSaving ? 'منظور ہو رہا ہے...' : 'رعایت منظور کریں (Approve Rebate)',
+                        _isSaving
+                            ? AppStrings.val(context, en: 'Approving...', ur: 'منظور ہو رہا ہے...')
+                            : AppStrings.val(context, en: 'Approve Rebate', ur: 'رعایت منظور کریں'),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
