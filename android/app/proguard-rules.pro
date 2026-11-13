@@ -24,3 +24,5 @@
 -dontwarn javax.annotation.**
 -dontwarn org.checkerframework.**
 -dontwarn com.google.protobuf.**
+-dontwarn com.google.android.play.core.**
+-dontwarn androidx.biometric.**
