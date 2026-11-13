@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -409,4 +410,18 @@ class AppTheme {
         brandColor: const Color(0xFF0B6637),
         brightness: Brightness.dark,
       );
+}
+
+/// Cross-platform adaptive scroll behavior enabling drag gestures with mouse,
+/// trackpad, stylus, and touch on Web, Desktop, Tablet, and Mobile.
+class MandiScrollBehavior extends MaterialScrollBehavior {
+  const MandiScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
+      };
 }

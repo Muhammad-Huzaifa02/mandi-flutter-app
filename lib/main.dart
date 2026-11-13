@@ -236,6 +236,7 @@ class MandiApp extends StatelessWidget {
             brightness: Brightness.light,
           ),
           themeMode: ThemeMode.light,
+          scrollBehavior: const MandiScrollBehavior(),
           locale: localeProvider.locale,
           supportedLocales: const [
             Locale('en', ''),

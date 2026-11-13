@@ -1,12 +1,12 @@
 {
-    "name": "mandi",
-    "short_name": "mandi",
+    "name": "Mandi — Multi-Tenant AgTech ERP | منڈی بہی کھاتہ",
+    "short_name": "Mandi",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#F4F7F5",
+    "theme_color": "#0B6637",
+    "description": "Professional Multi-Tenant AgTech ERP for Commission Agents, Farmers, and Buyers in Grain Markets across Pakistan.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

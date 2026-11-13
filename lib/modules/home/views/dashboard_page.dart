@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:mandi/core/localization/app_strings.dart';
 import 'package:mandi/core/theme/app_theme.dart';
+import 'package:mandi/core/utils/responsive.dart';
 import 'package:mandi/core/widgets/glass_card.dart';
 import 'package:mandi/core/widgets/liquid_crystal_background.dart';
 import 'package:mandi/data/services/supabase_service.dart';
@@ -347,8 +348,16 @@ class DashboardPage extends StatelessWidget {
           ],
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(MSpacing.lg),
-          child: Column(
+          child: AdaptiveContainer(
+            padding: EdgeInsets.symmetric(
+              horizontal: context.responsive(
+                mobile: MSpacing.md,
+                tablet: MSpacing.lg,
+                desktop: MSpacing.xl,
+              ),
+              vertical: MSpacing.lg,
+            ),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GlassCard(
@@ -971,6 +980,7 @@ class DashboardPage extends StatelessWidget {
           ],
         ),
       ),
+      ),
     ),
   );
   }
@@ -989,16 +999,20 @@ class _ManageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final minW = context.responsive<double>(mobile: 88, tablet: 104, desktop: 114);
+    final maxW = context.responsive<double>(mobile: 98, tablet: 116, desktop: 124);
+    final minH = context.responsive<double>(mobile: 96, tablet: 104, desktop: 112);
+
     return GlassCard(
       onTap: onTap,
       borderRadius: AppDimensions.cardRadius,
       padding: const EdgeInsets.symmetric(
           vertical: MSpacing.sm, horizontal: 4),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          minWidth: 88,
-          maxWidth: 98,
-          minHeight: 96,
+        constraints: BoxConstraints(
+          minWidth: minW,
+          maxWidth: maxW,
+          minHeight: minH,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
